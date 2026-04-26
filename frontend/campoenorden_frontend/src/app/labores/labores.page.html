@@ -1,0 +1,132 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Labores</ion-title>
+    <ion-buttons slot="end">
+      <ion-button>
+        <ion-icon slot="icon-only" name="add-circle"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+  <ion-toolbar *ngIf="!loading && labores.length > 0">
+    <div class="chip-scroll">
+      <ion-chip [outline]="filterTipo === ''" (click)="filtrarPorTipo('')">
+        <ion-label>Todas</ion-label>
+      </ion-chip>
+      <ion-chip [outline]="filterTipo !== 'PULVERIZACION'" (click)="filtrarPorTipo('PULVERIZACION')">
+        <ion-icon name="water"></ion-icon>
+        <ion-label>Pulverización</ion-label>
+      </ion-chip>
+      <ion-chip [outline]="filterTipo !== 'SIEMBRA'" (click)="filtrarPorTipo('SIEMBRA')">
+        <ion-icon name="leaf"></ion-icon>
+        <ion-label>Siembra</ion-label>
+      </ion-chip>
+      <ion-chip [outline]="filterTipo !== 'FERTILIZACION'" (click)="filtrarPorTipo('FERTILIZACION')">
+        <ion-icon name="flask"></ion-icon>
+        <ion-label>Fertilización</ion-label>
+      </ion-chip>
+      <ion-chip [outline]="filterTipo !== 'COSECHA'" (click)="filtrarPorTipo('COSECHA')">
+        <ion-icon name="grid"></ion-icon>
+        <ion-label>Cosecha</ion-label>
+      </ion-chip>
+    </div>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <div class="labores-container">
+    <div *ngIf="loading" class="loading">
+      <ion-spinner name="crescent"></ion-spinner>
+      <p>Cargando labores...</p>
+    </div>
+
+    <div *ngIf="error" class="error">
+      <ion-icon name="warning-outline"></ion-icon>
+      <p>{{error}}</p>
+      <ion-button (click)="cargarLabores()">Reintentar</ion-button>
+    </div>
+
+    <div *ngIf="!loading && labores.length === 0" class="empty">
+      <ion-icon name="construct-outline"></ion-icon>
+      <p>No hay labores cargadas</p>
+      <ion-button>
+        <ion-icon name="add"></ion-icon>
+        Agregar Labor
+      </ion-button>
+    </div>
+
+    <div *ngIf="!loading && labores.length > 0" class="labores-grid">
+      <div class="labor-card" *ngFor="let labor of labores">
+        <div class="card-header" [class]="'header-' + labor.tipo.toLowerCase()">
+          <div class="header-left">
+            <ion-icon [name]="getTipoIcon(labor.tipo)"></ion-icon>
+            <span class="labor-tipo">{{labor.tipo_display}}</span>
+          </div>
+          <span class="labor-fecha">{{labor.fecha | date:'dd/MM/yy'}}</span>
+        </div>
+        
+        <div class="card-body">
+          <div class="campo-row">
+            <ion-icon name="leaf"></ion-icon>
+            <span>{{labor.campo_nombre || labor.lote_nombre}}</span>
+          </div>
+          
+          <div class="stats-grid">
+            <div class="stat-box">
+              <span class="stat-value">{{labor.hectareas | number:'1.0-2'}}</span>
+              <span class="stat-label">ha</span>
+            </div>
+            <div class="stat-box" *ngIf="labor.qq_ha">
+              <span class="stat-value">{{labor.qq_ha | number:'1.0-1'}}</span>
+              <span class="stat-label">qq/ha</span>
+            </div>
+          </div>
+          
+          <div class="costos-grid" *ngIf="labor.costo_total">
+            <div class="costo-item">
+              <span class="costo-label">Costo total</span>
+              <span class="costo-value">${{labor.costo_total | number:'1.0-0'}}</span>
+            </div>
+            <div class="costo-item" *ngIf="labor.costo_pesos_ha">
+              <span class="costo-label">$/ha</span>
+              <span class="costo-value">${{labor.costo_pesos_ha | number:'1.0-0'}}</span>
+            </div>
+            <div class="costo-item" *ngIf="labor.costo_dolares_ha">
+              <span class="costo-label">U$S/ha</span>
+              <span class="costo-value">U$S{{labor.costo_dolares_ha | number:'1.0-0'}}</span>
+            </div>
+          </div>
+          
+          <div class="contratista-row" *ngIf="labor.contratista_nombre">
+            <ion-icon name="person"></ion-icon>
+            <span>{{labor.contratista_nombre}}</span>
+          </div>
+          
+          <div class="insumos-section" *ngIf="hasInsumos(labor)">
+            <span class="insumos-title">Insumos aplicados:</span>
+            <div class="insumo-item" *ngFor="let insumo of labor.insumos">
+              <span class="insumo-nombre">{{insumo.insumo_nombre}}</span>
+              <span class="insumo-dosis">{{insumo.dosis}} {{insumo.unidad_dosis}}</span>
+              <span class="insumo-costo">${{insumo.costo_total | number:'1.0-0'}}</span>
+            </div>
+          </div>
+          
+          <div class="observaciones-row" *ngIf="labor.observaciones">
+            <span class="obs-label">Obs:</span>
+            <span class="obs-text">{{labor.observaciones}}</span>
+          </div>
+        </div>
+        
+        <div class="card-footer">
+          <ion-button fill="clear" size="small">
+            <ion-icon slot="start" name="create"></ion-icon>
+            Editar
+          </ion-button>
+          <ion-button fill="clear" size="small">
+            <ion-icon slot="start" name="eye"></ion-icon>
+            Ver
+          </ion-button>
+        </div>
+      </div>
+    </div>
+  </div>
+</ion-content>

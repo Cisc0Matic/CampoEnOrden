@@ -1,0 +1,78 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Documentos</ion-title>
+    <ion-buttons slot="end">
+      <ion-button>
+        <ion-icon slot="icon-only" name="add-circle"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <div class="documentos-container">
+    <div *ngIf="loading" class="loading">
+      <ion-spinner name="crescent"></ion-spinner>
+    </div>
+
+    <div *ngIf="error" class="error">
+      <ion-icon name="warning-outline"></ion-icon>
+      <p>{{error}}</p>
+    </div>
+
+    <div *ngIf="!loading && documentos.length === 0" class="empty">
+      <ion-icon name="folder-outline"></ion-icon>
+      <p>No hay documentos cargados</p>
+    </div>
+
+    <div *ngIf="!loading && documentos.length > 0" class="docs-grid">
+      <div class="doc-card" *ngFor="let doc of documentos">
+        <div class="card-header" [class]="'header-' + doc.tipo.toLowerCase()">
+          <ion-icon [name]="getTipoIcon(doc.tipo)"></ion-icon>
+          <div class="header-info">
+            <span class="doc-tipo">{{doc.tipo_display}}</span>
+            <span class="doc-numero">{{doc.numero}}</span>
+          </div>
+          <ion-badge [color]="getEstadoColor(doc.estado)">
+            {{doc.estado_display}}
+          </ion-badge>
+        </div>
+        
+        <div class="card-body">
+          <div class="info-row" *ngIf="doc.campo_nombre">
+            <ion-icon name="leaf"></ion-icon>
+            <span>{{doc.campo_nombre}}</span>
+          </div>
+          
+          <div class="info-row" *ngIf="doc.titular_nombre">
+            <ion-icon name="person"></ion-icon>
+            <span>{{doc.titular_nombre}}</span>
+          </div>
+          
+          <div class="monto-row" *ngIf="doc.monto">
+            <span class="monto-value">${{doc.monto | number:'1.0-2'}}</span>
+          </div>
+          
+          <div class="fechas-row" *ngIf="doc.fecha_documento">
+            <span>{{doc.fecha_documento | date:'dd/MM/yy'}}</span>
+          </div>
+          
+          <div class="obs-row" *ngIf="doc.observaciones">
+            <span>{{doc.observaciones}}</span>
+          </div>
+        </div>
+        
+        <div class="card-footer">
+          <ion-button fill="clear" size="small">
+            <ion-icon slot="start" name="eye"></ion-icon>
+            Ver
+          </ion-button>
+          <ion-button fill="clear" size="small">
+            <ion-icon slot="start" name="download"></ion-icon>
+            PDF
+          </ion-button>
+        </div>
+      </div>
+    </div>
+  </div>
+</ion-content>

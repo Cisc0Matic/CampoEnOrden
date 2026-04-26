@@ -1,0 +1,102 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Lotes / Campañas</ion-title>
+    <ion-buttons slot="end">
+      <ion-button>
+        <ion-icon slot="icon-only" name="add-circle"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <div class="lotes-container">
+    <div *ngIf="loading" class="loading">
+      <ion-spinner name="crescent"></ion-spinner>
+      <p>Cargando lotes...</p>
+    </div>
+
+    <div *ngIf="error" class="error">
+      <ion-icon name="warning-outline"></ion-icon>
+      <p>{{error}}</p>
+      <ion-button (click)="cargarLotes()">Reintentar</ion-button>
+    </div>
+
+    <div *ngIf="!loading && lotes.length === 0" class="empty">
+      <ion-icon name="grid-outline"></ion-icon>
+      <p>No hay lotes cargados</p>
+      <ion-button>
+        <ion-icon name="add"></ion-icon>
+        Agregar Lote
+      </ion-button>
+    </div>
+
+    <div *ngIf="!loading && lotes.length > 0" class="lotes-grid">
+      <div class="lote-card" *ngFor="let lote of lotes">
+        <div class="card-header">
+          <div class="header-left">
+            <ion-icon [name]="getCultivoIcon(lote.cultivo_nombre)"></ion-icon>
+            <span class="cultivo-nombre">{{lote.cultivo_nombre}}</span>
+          </div>
+          <ion-badge [color]="lote.activo ? 'success' : 'medium'">
+            {{lote.activo ? 'Activo' : 'Inactivo'}}
+          </ion-badge>
+        </div>
+        
+        <div class="card-body">
+          <div class="campo-row">
+            <ion-icon name="leaf"></ion-icon>
+            <span>{{lote.campo_nombre}}</span>
+          </div>
+          
+          <div class="campana-row">
+            <ion-icon name="calendar"></ion-icon>
+            <span>{{lote.campana_nombre}}</span>
+          </div>
+          
+          <div class="stats-grid">
+            <div class="stat-box">
+              <span class="stat-value">{{lote.superficie | number:'1.0-2'}}</span>
+              <span class="stat-label">ha</span>
+            </div>
+            <div class="stat-box" *ngIf="lote.rendimiento_estimado">
+              <span class="stat-value">{{lote.rendimiento_estimado | number:'1.0-1'}}</span>
+              <span class="stat-label">qq/ha</span>
+            </div>
+          </div>
+          
+          <div class="precio-grid" *ngIf="lote.precio_tn">
+            <div class="precio-item">
+              <span class="precio-label">Precio</span>
+              <span class="precio-value">${{lote.precio_tn | number:'1.0-0'}}/tn</span>
+            </div>
+            <div class="precio-item" *ngIf="lote.tipo_cambio">
+              <span class="precio-label">TC</span>
+              <span class="precio-value">${{lote.tipo_cambio | number:'1.0-0'}}</span>
+            </div>
+          </div>
+          
+          <div class="ubicacion-row" *ngIf="lote.ubicacion">
+            <ion-icon name="location"></ion-icon>
+            <span>{{lote.ubicacion}}</span>
+          </div>
+          
+          <div class="observaciones-row" *ngIf="lote.observaciones">
+            <span class="obs-text">{{lote.observaciones}}</span>
+          </div>
+        </div>
+        
+        <div class="card-footer">
+          <ion-button fill="clear" size="small">
+            <ion-icon slot="start" name="create"></ion-icon>
+            Editar
+          </ion-button>
+          <ion-button fill="clear" size="small">
+            <ion-icon slot="start" name="eye"></ion-icon>
+            Ver
+          </ion-button>
+        </div>
+      </div>
+    </div>
+  </div>
+</ion-content>

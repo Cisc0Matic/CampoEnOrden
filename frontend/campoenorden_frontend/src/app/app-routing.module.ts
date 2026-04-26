@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
-import { AuthGuard } from './auth/auth.guard'; // Import AuthGuard
-import { LoginComponent } from './auth/login/login.component'; // Import LoginComponent
+import { AuthGuard } from './auth/auth.guard';
+import { LoginComponent } from './auth/login/login.component';
 
 const routes: Routes = [
   {
@@ -16,13 +16,6 @@ const routes: Routes = [
   {
     path: 'tabs', 
     loadChildren: () => import('./tabs/tabs.module').then(m => m.TabsPageModule),
-    // CAMBIAMOS canLoad POR canActivate
-    //canActivate: [AuthGuard] 
-  },
-  {
-    path: 'labores',
-    loadChildren: () => import('./labores/labores.module').then(m => m.LaboresModule),
-    canLoad: [AuthGuard]
   },
   {
     path: '**',

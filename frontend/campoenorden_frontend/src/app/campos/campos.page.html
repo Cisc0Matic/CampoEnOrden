@@ -1,0 +1,102 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Campos</ion-title>
+    <ion-buttons slot="end">
+      <ion-button>
+        <ion-icon slot="icon-only" name="add-circle"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <div class="campos-container">
+    <div *ngIf="loading" class="loading">
+      <ion-spinner name="crescent"></ion-spinner>
+      <p>Cargando campos...</p>
+    </div>
+
+    <div *ngIf="error" class="error">
+      <ion-icon name="warning-outline"></ion-icon>
+      <p>{{error}}</p>
+      <ion-button (click)="cargarCampos()">Reintentar</ion-button>
+    </div>
+
+    <div *ngIf="!loading && campos.length === 0" class="empty">
+      <ion-icon name="leaf-outline"></ion-icon>
+      <p>No hay campos cargados</p>
+      <ion-button>
+        <ion-icon name="add"></ion-icon>
+        Agregar Campo
+      </ion-button>
+    </div>
+
+    <div *ngIf="!loading && campos.length > 0" class="campos-grid">
+      <div class="campo-card" *ngFor="let campo of campos">
+        <div class="card-header" [class]="'header-' + campo.estado_contrato.toLowerCase()">
+          <div class="header-left">
+            <ion-icon name="leaf"></ion-icon>
+            <span class="campo-nombre">{{campo.nombre}}</span>
+          </div>
+          <ion-badge [color]="getEstadoColor(campo.estado_contrato)">
+            {{campo.estado_contrato_display || campo.estado_contrato}}
+          </ion-badge>
+        </div>
+        
+        <div class="card-body">
+          <div class="ubicacion-row" *ngIf="campo.ubicacion">
+            <ion-icon name="location"></ion-icon>
+            <span>{{campo.ubicacion}}</span>
+          </div>
+          
+          <div class="stats-grid">
+            <div class="stat-box">
+              <span class="stat-value">{{campo.superficie_total | number:'1.0-2'}}</span>
+              <span class="stat-label">ha totales</span>
+            </div>
+            <div class="stat-box">
+              <span class="stat-value">{{campo.superficie_trabajada || 0 | number:'1.0-2'}}</span>
+              <span class="stat-label">ha trabajadas</span>
+            </div>
+          </div>
+          
+          <div class="info-row" *ngIf="hasAlquiler(campo)">
+            <span class="info-label">Alquiler pendiente:</span>
+            <span class="info-value warning">${{campo.alquiler_pendiente | number:'1.0-0'}}</span>
+          </div>
+          
+          <div class="costos-grid" *ngIf="campo.costo_total">
+            <div class="costo-item">
+              <span class="costo-label">Costo total</span>
+              <span class="costo-value">${{campo.costo_total | number:'1.0-0'}}</span>
+            </div>
+            <div class="costo-item">
+              <span class="costo-label">Por/ha</span>
+              <span class="costo-value">${{campo.costo_por_ha | number:'1.0-0'}}</span>
+            </div>
+          </div>
+          
+          <div class="condiciones-row" *ngIf="campo.condiciones_alquiler">
+            <span class="condiciones-label">Condiciones:</span>
+            <span class="condiciones-text">{{campo.condiciones_alquiler}}</span>
+          </div>
+        </div>
+        
+        <div class="card-footer">
+          <ion-button fill="clear" size="small">
+            <ion-icon slot="start" name="document-text"></ion-icon>
+            Docs
+          </ion-button>
+          <ion-button fill="clear" size="small">
+            <ion-icon slot="start" name="create"></ion-icon>
+            Editar
+          </ion-button>
+          <ion-button fill="clear" size="small">
+            <ion-icon slot="start" name="eye"></ion-icon>
+            Ver
+          </ion-button>
+        </div>
+      </div>
+    </div>
+  </div>
+</ion-content>

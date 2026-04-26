@@ -1,0 +1,35 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Ajustes</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <div class="categoria-filters">
+    <ion-chip *ngFor="let cat of categorias" 
+              [outline]="categoriaSeleccionada !== cat"
+              (click)="filtrarPorCategoria(cat === categoriaSeleccionada ? '' : cat)">
+      {{getCategoriaLabel(cat)}}
+    </ion-chip>
+  </div>
+
+  <div *ngIf="loading" class="loading">
+    <ion-spinner name="crescent"></ion-spinner>
+  </div>
+
+  <ion-list *ngIf="!loading && parametros.length > 0">
+    <ion-item *ngFor="let param of parametros">
+      <ion-label>
+        <h2>{{param.nombre}}</h2>
+        <p>{{param.categoria_display}} - {{param.campana_nombre}}</p>
+      </ion-label>
+      <ion-badge slot="end" color="success" *ngIf="param.vigente">
+        {{param.valor | number:'1.0-2'}} {{param.unidad}}
+      </ion-badge>
+    </ion-item>
+  </ion-list>
+
+  <div *ngIf="!loading && parametros.length === 0" class="empty">
+    <p>No hay parámetros configurados</p>
+  </div>
+</ion-content>

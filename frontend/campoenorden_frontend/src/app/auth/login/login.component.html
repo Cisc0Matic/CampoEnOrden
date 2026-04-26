@@ -19,12 +19,20 @@
       </ion-item>
     </ion-list>
 
-    <ion-button expand="block" type="submit" class="submit-btn" [disabled]="loginForm.invalid">
-      Iniciar Sesión
+    <ion-button expand="block" type="submit" class="submit-btn" [disabled]="loginForm.invalid || loading">
+      <ion-spinner *ngIf="loading" name="dots"></ion-spinner>
+      <span *ngIf="!loading">Iniciar Sesión</span>
     </ion-button>
 
     <ion-text color="danger" *ngIf="errorMessage" class="error-message">
       <p>{{ errorMessage }}</p>
     </ion-text>
   </form>
+  
+  <div class="debug-section">
+    <ion-button fill="clear" size="small" (click)="clearToken()">
+      <ion-icon slot="start" name="refresh"></ion-icon>
+      Limpiar sesión
+    </ion-button>
+  </div>
 </div>

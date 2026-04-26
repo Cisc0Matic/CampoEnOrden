@@ -38,13 +38,12 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     # Third-party apps
-    'corsheaders', # Added corsheaders
+    'corsheaders',
     'rest_framework',
     'rest_framework_simplejwt',
     # Local apps
     'users',
     'core',
-    'labores',
     'logistica',
 ]
 

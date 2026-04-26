@@ -18,6 +18,7 @@ export class LoginComponent implements OnInit {
   loginForm: FormGroup;
   errorMessage: string | null = null;
   showPassword = false;
+  loading = false;
 
   constructor(
     private fb: FormBuilder,
@@ -35,26 +36,51 @@ export class LoginComponent implements OnInit {
 
   async ngOnInit() {
     await this.storage.create();
+    
+    const token = await this.storage.get('jwt_token');
+    if (token) {
+      console.log('Ya hay token, redirigiendo...');
+      this.goToTabs();
+    }
+  }
+
+  goToTabs() {
+    this.ngZone.run(() => {
+      this.router.navigate(['/tabs']);
+    });
   }
 
   async onSubmit() {
     this.errorMessage = null;
+    this.loading = true;
+    
     if (this.loginForm.invalid) {
       this.loginForm.markAllAsTouched();
+      this.loading = false;
       return;
     }
 
     const { username, password } = this.loginForm.value;
 
-    if (username === 'admin' && password === '123456') {
-      await this.storage.set('jwt_token', 'hardcoded_token');
-      this.ngZone.run(async () => {
-        await this.navCtrl.navigateRoot('/tabs/home');
-      });
+    // LOGIN DE EMERGENCIA - QUITAR EN PRODUCCIÓN
+    if (username === 'demo' && password === 'demo') {
+      try {
+        const response: any = await firstValueFrom(
+          this.apiService.post('token/', { username: 'demo', password: 'demo123' })
+        );
+        if (response && response.access) {
+          await this.storage.set('jwt_token', response.access);
+          await this.storage.set('username', username);
+          this.goToTabs();
+        }
+      } catch (error) {
+        this.errorMessage = 'Demo no disponible. ¿Backend corriendo?';
+      }
+      this.loading = false;
       return;
     }
 
-try {
+    try {
       const response: any = await firstValueFrom(
         this.apiService.post('token/', { username, password })
       );
@@ -63,9 +89,8 @@ try {
 
       if (response && response.access) {
         await this.storage.set('jwt_token', response.access);
-        this.ngZone.run(async () => {
-          await this.navCtrl.navigateRoot('/tabs/home');
-        });
+        await this.storage.set('username', username);
+        this.goToTabs();
       } else if (response && response.detail) {
         this.errorMessage = response.detail;
       } else {
@@ -73,11 +98,18 @@ try {
       }
     } catch (error: any) {
       console.error('Login error:', error);
-      this.errorMessage = error?.error?.detail || error?.message || 'Error de conexión.';
+      this.errorMessage = 'Error de conexión. ¿Backend corriendo?';
+    } finally {
+      this.loading = false;
     }
   }
 
   togglePassword() {
     this.showPassword = !this.showPassword;
+  }
+  
+  async clearToken() {
+    await this.storage.remove('jwt_token');
+    window.location.reload();
   }
 }

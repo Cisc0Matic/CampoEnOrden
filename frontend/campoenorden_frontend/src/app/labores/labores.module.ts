@@ -1,21 +1,15 @@
 import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-
 import { IonicModule } from '@ionic/angular';
+import { RouterModule, Routes } from '@angular/router';
+import { LaboresPage } from './labores.page';
 
-import { LaboresRoutingModule } from './labores-routing.module';
-import { LaborListComponent } from './labor-list/labor-list.component';
-import { LaborFormComponent } from './labor-form/labor-form.component'; // Import LaborFormComponent
+const routes: Routes = [{ path: '', component: LaboresPage }];
 
 @NgModule({
   imports: [
-    CommonModule,
-    FormsModule,
     IonicModule,
-    LaboresRoutingModule,
-    LaborFormComponent // Import LaborFormComponent as it's standalone
+    RouterModule.forChild(routes)
   ],
-  declarations: [] // LaborListComponent is standalone, so no need to declare here
+  exports: [RouterModule]
 })
-export class LaboresModule { }
+export class LaboresPageModule {}

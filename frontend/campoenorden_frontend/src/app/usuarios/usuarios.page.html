@@ -1,0 +1,29 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Usuarios</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <div *ngIf="loading" class="loading">
+    <ion-spinner name="crescent"></ion-spinner>
+  </div>
+
+  <ion-list *ngIf="!loading && personas.length > 0">
+    <ion-item *ngFor="let persona of personas">
+      <ion-icon [name]="getRolIcon(persona.rol)" slot="start"></ion-icon>
+      <ion-label>
+        <h2>{{persona.nombre}}</h2>
+        <p>{{persona.nombre_rol}}</p>
+        <p>{{persona.documento || persona.cuil}}</p>
+      </ion-label>
+      <ion-badge slot="end" [color]="persona.activo ? 'success' : 'medium'">
+        {{persona.activo ? 'Activo' : 'Inactivo'}}
+      </ion-badge>
+    </ion-item>
+  </ion-list>
+
+  <div *ngIf="!loading && personas.length === 0" class="empty">
+    <p>No hay personas cargadas</p>
+  </div>
+</ion-content>

@@ -1,0 +1,239 @@
+.labores-container {
+  padding: 12px;
+  background: var(--ion-color-light);
+  min-height: 100%;
+}
+
+.loading, .error, .empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 64px 24px;
+  text-align: center;
+  
+  p {
+    margin-top: 16px;
+    color: var(--ion-color-medium);
+  }
+}
+
+.empty ion-button {
+  margin-top: 24px;
+}
+
+.labores-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  padding-bottom: 24px;
+}
+
+.labor-card {
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  
+  .card-header {
+    padding: 12px 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    
+    &.header-pulverizacion {
+      background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+    }
+    &.header-siembra {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    }
+    &.header-fertilizacion {
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    }
+    &.header-cosecha {
+      background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+    }
+    &.header-otra {
+      background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+    }
+    
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      
+      ion-icon {
+        color: white;
+        font-size: 18px;
+      }
+      
+      .labor-tipo {
+        color: white;
+        font-size: 13px;
+        font-weight: 600;
+      }
+    }
+    
+    .labor-fecha {
+      color: rgba(255,255,255,0.8);
+      font-size: 11px;
+    }
+  }
+  
+  .card-body {
+    padding: 14px;
+    flex: 1;
+    
+    .campo-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--ion-color-medium);
+      margin-bottom: 12px;
+      
+      ion-icon {
+        font-size: 14px;
+      }
+    }
+    
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 12px;
+      
+      .stat-box {
+        background: var(--ion-color-light);
+        border-radius: 10px;
+        padding: 10px 8px;
+        text-align: center;
+        
+        .stat-value {
+          display: block;
+          font-size: 16px;
+          font-weight: 700;
+          color: var(--ion-color-dark);
+        }
+        
+        .stat-label {
+          font-size: 10px;
+          color: var(--ion-color-medium);
+        }
+      }
+    }
+    
+    .costos-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      padding: 10px 0;
+      border-top: 1px solid var(--ion-color-light);
+      
+      .costo-item {
+        text-align: center;
+        
+        .costo-label {
+          display: block;
+          font-size: 9px;
+          color: var(--ion-color-medium);
+        }
+        
+        .costo-value {
+          display: block;
+          font-size: 13px;
+          font-weight: 700;
+          color: #10b981;
+        }
+      }
+    }
+    
+    .contratista-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--ion-color-medium);
+      padding-top: 8px;
+      border-top: 1px solid var(--ion-color-light);
+      
+      ion-icon {
+        font-size: 14px;
+      }
+    }
+    
+    .insumos-section {
+      margin-top: 10px;
+      padding: 8px;
+      background: var(--ion-color-light);
+      border-radius: 8px;
+      
+      .insumos-title {
+        display: block;
+        font-size: 10px;
+        color: var(--ion-color-medium);
+        text-transform: uppercase;
+        margin-bottom: 6px;
+      }
+      
+      .insumo-item {
+        display: flex;
+        justify-content: space-between;
+        font-size: 11px;
+        padding: 4px 0;
+        
+        .insumo-nombre {
+          flex: 1;
+          color: var(--ion-color-dark);
+        }
+        
+        .insumo-dosis {
+          color: var(--ion-color-medium);
+          margin: 0 8px;
+        }
+        
+        .insumo-costo {
+          font-weight: 600;
+          color: var(--ion-color-success);
+        }
+      }
+    }
+    
+    .observaciones-row {
+      font-size: 11px;
+      padding: 8px;
+      background: #fef3c7;
+      border-radius: 8px;
+      margin-top: 8px;
+      
+      .obs-label {
+        font-weight: 600;
+        color: #92400e;
+      }
+      
+      .obs-text {
+        color: #78350f;
+      }
+    }
+  }
+  
+  .card-footer {
+    padding: 8px;
+    border-top: 1px solid var(--ion-color-light);
+    display: flex;
+    justify-content: space-around;
+    
+    ion-button {
+      --padding-start: 8px;
+      --padding-end: 8px;
+      --color: var(--ion-color-medium);
+      font-size: 11px;
+      
+      ion-icon {
+        font-size: 14px;
+      }
+    }
+  }
+}

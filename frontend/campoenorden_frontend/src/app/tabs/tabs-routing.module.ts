@@ -1,8 +1,6 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { TabsPage } from './tabs.page';
-import { Tab1Page } from '../tab1/tab1.page';
-import { Tab1PageModule } from '../tab1/tab1.module';
 
 const routes: Routes = [
   {
@@ -10,33 +8,53 @@ const routes: Routes = [
     component: TabsPage,
     children: [
       {
-        path: 'home',
-        component: Tab1Page
+        path: 'inicio',
+        loadComponent: () => import('../dashboard/dashboard.component').then(m => m.DashboardComponent)
       },
       {
-        path: 'tab2',
-        loadChildren: () => import('../tab2/tab2.module').then(m => m.Tab2PageModule)
+        path: 'campos',
+        loadComponent: () => import('../campos/campos.page').then(m => m.CamposPage)
       },
       {
-        path: 'tab3',
-        loadChildren: () => import('../tab3/tab3.module').then(m => m.Tab3PageModule)
+        path: 'lotes',
+        loadComponent: () => import('../lotes/lotes.page').then(m => m.LotesPage)
+      },
+      {
+        path: 'labores',
+        loadComponent: () => import('../labores/labores.page').then(m => m.LaboresPage)
+      },
+      {
+        path: 'logistica',
+        loadComponent: () => import('../logistica/logistica.page').then(m => m.LogisticaPage)
+      },
+      {
+        path: 'documentos',
+        loadComponent: () => import('../documentos/documentos.page').then(m => m.DocumentosPage)
+      },
+      {
+        path: 'usuarios',
+        loadComponent: () => import('../usuarios/usuarios.page').then(m => m.UsuariosPage)
+      },
+      {
+        path: 'ajustes',
+        loadComponent: () => import('../ajustes/ajustes.page').then(m => m.AjustesPage)
       },
       {
         path: '',
-        redirectTo: 'home',
+        redirectTo: 'inicio',
         pathMatch: 'full'
       }
     ]
   },
   {
     path: '',
-    redirectTo: 'home',
+    redirectTo: 'inicio',
     pathMatch: 'full'
   }
 ];
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],
-  exports: [RouterModule] // Asegurate de exportarlo
+  exports: [RouterModule]
 })
 export class TabsPageRoutingModule {}

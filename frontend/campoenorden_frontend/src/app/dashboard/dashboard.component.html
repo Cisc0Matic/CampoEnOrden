@@ -1,0 +1,138 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Resumen del Día</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="cerrarSesion()">
+        <ion-icon slot="icon-only" name="log-out"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <div class="dashboard-container">
+    <div class="header-section">
+      <h1>Resumen del Día</h1>
+      <p class="subtitle">Indicadores generales de tu negocio</p>
+    </div>
+
+    <div *ngIf="loading" class="loading-container">
+      <ion-spinner name="crescent"></ion-spinner>
+      <p>Cargando indicadores...</p>
+    </div>
+
+    <div *ngIf="error && !loading" class="error-container">
+      <ion-icon name="warning-outline"></ion-icon>
+      <p>{{error}}</p>
+      <ion-button (click)="cargarDashboard()">Reintentar</ion-button>
+    </div>
+
+    <div *ngIf="!loading && datos" class="contenido">
+      <div class="progress-section">
+        <div class="progress-header">
+          <span class="progress-title">superficie trabajada</span>
+          <span class="progress-value">{{datos.hectareas_trabajadas | number:'1.0-0'}} / {{datos.hectareas_totales | number:'1.0-0'}} ha</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" [style.width.%]="getProgressWidth()"></div>
+        </div>
+        <span class="progress-percent">{{getProgressWidth() | number:'1.0-0'}}% trabajado</span>
+      </div>
+
+      <div class="indicadores-grid">
+        <div class="indicador-card">
+          <div class="indicador-icon primary">
+            <ion-icon name="leaf"></ion-icon>
+          </div>
+          <div class="indicador-content">
+            <span class="indicador-label">Campos Activos</span>
+            <span class="indicador-value">{{datos.campos_activos}}</span>
+          </div>
+        </div>
+
+        <div class="indicador-card">
+          <div class="indicador-icon success">
+            <ion-icon name="layers"></ion-icon>
+          </div>
+          <div class="indicador-content">
+            <span class="indicador-label">ha Totales</span>
+            <span class="indicador-value">{{datos.hectareas_totales | number:'1.0-0'}}</span>
+          </div>
+        </div>
+
+        <div class="indicador-card">
+          <div class="indicador-icon warning">
+            <ion-icon name="construct"></ion-icon>
+          </div>
+          <div class="indicador-content">
+            <span class="indicador-label">Labores</span>
+            <span class="indicador-value">{{datos.labores_cargadas | number:'1.0-0'}}</span>
+          </div>
+        </div>
+
+        <div class="indicador-card highlight">
+          <div class="indicador-icon">
+            <ion-icon name="cash"></ion-icon>
+          </div>
+          <div class="indicador-content">
+            <span class="indicador-label">Costos Totales</span>
+            <span class="indicador-value">${{datos.costos_totales | number:'1.0-0'}}</span>
+          </div>
+        </div>
+
+        <div class="indicador-card highlight">
+          <div class="indicador-icon">
+            <ion-icon name="trending-up"></ion-icon>
+          </div>
+          <div class="indicador-content">
+            <span class="indicador-label">Costo por Ha</span>
+            <span class="indicador-value">${{datos.costos_por_ha | number:'1.0-0'}}</span>
+          </div>
+        </div>
+
+        <div class="indicador-card danger" *ngIf="datos.documentos_pendientes > 0">
+          <div class="indicador-icon">
+            <ion-icon name="document-text"></ion-icon>
+          </div>
+          <div class="indicador-content">
+            <span class="indicador-label">Docs Pendientes</span>
+            <span class="indicador-value">{{datos.documentos_pendientes}}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="alertas-section" *ngIf="datos.alertas?.length">
+        <h2>
+          <ion-icon name="warning"></ion-icon>
+          Alertas
+        </h2>
+        <div class="alerta-item" *ngFor="let alerta of datos.alertas" [class]="getAlertClass(alerta)">
+          <ion-icon [name]="getAlertIcon(alerta)"></ion-icon>
+          <span>{{alerta}}</span>
+        </div>
+      </div>
+
+      <div class="acciones-section">
+        <h2>Accesos Rápidos</h2>
+        <div class="acciones-grid">
+          <ion-button fill="outline" routerLink="/tabs/campos">
+            <ion-icon slot="start" name="leaf"></ion-icon>
+            Campos
+          </ion-button>
+          <ion-button fill="outline" routerLink="/tabs/lotes">
+            <ion-icon slot="start" name="grid"></ion-icon>
+            Lotes
+          </ion-button>
+          <ion-button fill="outline" routerLink="/tabs/labores">
+            <ion-icon slot="start" name="construct"></ion-icon>
+            Labores
+          </ion-button>
+          <ion-button fill="outline" routerLink="/tabs/logistica">
+            <ion-icon slot="start" name="truck"></ion-icon>
+            Fletes
+          </ion-button>
+        </div>
+      </div>
+    </div>
+  </div>
+</ion-content>
