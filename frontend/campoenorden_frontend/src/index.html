@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="utf-8" />
+  <title>CampoEnOrden</title>
+
+  <base href="/" />
+
+  <meta name="color-scheme" content="light" />
+  <meta name="viewport" content="viewport-fit=cover, width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="format-detection" content="telephone=no" />
+  <meta name="msapplication-tap-highlight" content="no" />
+  <meta name="theme-color" content="#2E7D32" />
+
+  <link rel="icon" type="image/png" href="assets/icon/favicon.png" />
+  <link rel="manifest" href="manifest.json" />
+
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="CampoEnOrden" />
+  <link rel="apple-touch-icon" href="assets/icon/icon-192.png" />
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio:2) and (orientation: portrait)" href="assets/icon/icon-512.png" />
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio:2) and (orientation: portrait)" href="assets/icon/icon-512.png" />
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio:3) and (orientation: portrait)" href="assets/icon/icon-512.png" />
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio:3) and (orientation: portrait)" href="assets/icon/icon-512.png" />
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio:2) and (orientation: portrait)" href="assets/icon/icon-512.png" />
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio:3) and (orientation: portrait)" href="assets/icon/icon-512.png" />
+</head>
+
+<body>
+  <app-root></app-root>
+  <noscript>Por favor, habilita JavaScript para usar esta aplicación.</noscript>
+
+  <style>
+    #pwa-install-backdrop {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 99999;
+      backdrop-filter: blur(4px);
+    }
+    
+    #pwa-install-backdrop.visible {
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+    }
+    
+    #pwa-install-card {
+      background: #fff;
+      border-radius: 20px 20px 0 0;
+      padding: 24px;
+      padding-bottom: max(24px, env(safe-area-inset-bottom));
+      width: 100%;
+      max-width: 400px;
+      animation: slideUp 0.3s ease-out;
+    }
+    
+    @keyframes slideUp {
+      from {
+        transform: translateY(100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+    
+    .pwa-install-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    
+    .pwa-install-icon {
+      width: 48px;
+      height: 48px;
+      background: #2E7D32;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .pwa-install-icon svg {
+      width: 28px;
+      height: 28px;
+      color: #fff;
+    }
+    
+    .pwa-install-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #1a1a1a;
+      margin: 0;
+    }
+    
+    .pwa-install-subtitle {
+      font-size: 14px;
+      color: #666;
+      margin: 4px 0 0;
+    }
+    
+    .pwa-install-desc {
+      font-size: 14px;
+      color: #444;
+      line-height: 1.5;
+      margin-bottom: 20px;
+    }
+    
+    .pwa-install-actions {
+      display: flex;
+      gap: 12px;
+    }
+    
+    .pwa-install-btn {
+      flex: 1;
+      padding: 14px 20px;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .pwa-install-btn-primary {
+      background: #2E7D32;
+      color: #fff;
+      border: none;
+    }
+    
+    .pwa-install-btn-primary:hover {
+      background: #1B5E20;
+    }
+    
+    .pwa-install-btn-secondary {
+      background: transparent;
+      color: #666;
+      border: 1px solid #ddd;
+    }
+    
+    .pwa-install-btn-secondary:hover {
+      background: #f5f5f5;
+    }
+    
+    @media (min-width: 768px) {
+      #pwa-install-backdrop,
+      #pwa-install-card {
+        display: none !important;
+      }
+    }
+  </style>
+
+  <div id="pwa-install-backdrop">
+    <div id="pwa-install-card">
+      <div class="pwa-install-header">
+        <div class="pwa-install-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+        </div>
+        <div>
+          <h3 class="pwa-install-title">Instalar CampoEnOrden</h3>
+          <p class="pwa-install-subtitle">Añadir a pantalla de inicio</p>
+        </div>
+      </div>
+      <p class="pwa-install-desc">Instala la app para un acceso más rápido y sin necesidad de conexión a internet. Funcionará como una aplicación nativa.</p>
+      <div class="pwa-install-actions">
+        <button class="pwa-install-btn pwa-install-btn-secondary" id="pwa-dismiss-btn">Ahora no</button>
+        <button class="pwa-install-btn pwa-install-btn-primary" id="pwa-install-btn">Instalar</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      'use strict';
+      
+      const backdrop = document.getElementById('pwa-install-backdrop');
+      const installBtn = document.getElementById('pwa-install-btn');
+      const dismissBtn = document.getElementById('pwa-dismiss-btn');
+      
+      let deferredPrompt = null;
+      
+      // Check if already installed or on desktop
+      const isInstalled = window.matchMedia('(display-mode: standalone)').matches || 
+                        window.navigator.standalone === true ||
+                        sessionStorage.getItem('pwaInstalled');
+      const isDesktop = window.innerWidth >= 768;
+      
+      // Skip if installed or desktop
+      if (isInstalled || isDesktop) {
+        return;
+      }
+      
+      // Check if dismissed recently
+      const dismissed = localStorage.getItem('pwaInstallDismissed');
+      const dismissedTime = dismissed ? parseInt(dismissed) : 0;
+      const oneWeek = 7 * 24 * 60 * 60 * 1000;
+      if (Date.now() - dismissedTime < oneWeek) {
+        return;
+      }
+      
+      // Listen for beforeinstallprompt
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        showInstallCard();
+      });
+      
+      function showInstallCard() {
+        if (isDesktop || isInstalled) return;
+        backdrop.classList.add('visible');
+      }
+      
+      installBtn.addEventListener('click', async () => {
+        if (!deferredPrompt) {
+          // Fallback for iOS or other browsers
+          alert('Para instalar: Usa el menú del navegador > Añadir a pantalla de inicio');
+          dismissCard();
+          return;
+        }
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+          sessionStorage.setItem('pwaInstalled', 'true');
+        }
+        deferredPrompt = null;
+        dismissCard();
+      });
+      
+      dismissBtn.addEventListener('click', () => {
+        localStorage.setItem('pwaInstallDismissed', Date.now().toString());
+        dismissCard();
+      });
+      
+      function dismissCard() {
+        backdrop.classList.remove('visible');
+      }
+      
+      // Try to show after a delay if no beforeinstallprompt
+      setTimeout(() => {
+        if (!deferredPrompt && !sessionStorage.getItem('pwaInstalled') && !isDesktop) {
+          showInstallCard();
+        }
+      }, 5000);
+      
+      // Listen for app installed
+      window.addEventListener('appinstalled', () => {
+        sessionStorage.setItem('pwaInstalled', 'true');
+        dismissCard();
+      });
+    })();
+  </script>
+</body>
+
+</html>

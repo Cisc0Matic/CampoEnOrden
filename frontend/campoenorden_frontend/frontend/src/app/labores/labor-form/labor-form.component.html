@@ -1,0 +1,61 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/labores"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ laborId ? 'Editar Labor' : 'Nueva Labor' }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <form [formGroup]="laborForm" (ngSubmit)="saveLabor()">
+    <ion-list>
+      <ion-item>
+        <ion-select label="Lote" labelPlacement="floating" formControlName="lote" placeholder="Seleccione un lote">
+          <ion-select-option *ngIf="loadingLotes">Cargando lotes...</ion-select-option>
+          <ion-select-option *ngIf="errorLotes">{{ errorLotes }}</ion-select-option>
+          <ion-select-option *ngFor="let lote of lotes" [value]="lote.id">{{ lote.nombre }}</ion-select-option>
+        </ion-select>
+        <ion-note slot="error" *ngIf="laborForm.get('lote')?.invalid && laborForm.get('lote')?.touched">
+          El lote es requerido.
+        </ion-note>
+      </ion-item>
+
+      <ion-item>
+        <ion-input label="Fecha" labelPlacement="floating" type="date" formControlName="fecha"></ion-input>
+        <ion-note slot="error" *ngIf="laborForm.get('fecha')?.invalid && laborForm.get('fecha')?.touched">
+          La fecha es requerida.
+        </ion-note>
+      </ion-item>
+
+      <ion-item>
+        <ion-input label="Tipo de Aplicación" labelPlacement="floating" formControlName="tipo_aplicacion"></ion-input>
+        <ion-note slot="error" *ngIf="laborForm.get('tipo_aplicacion')?.invalid && laborForm.get('tipo_aplicacion')?.touched">
+          El tipo de aplicación es requerido.
+        </ion-note>
+      </ion-item>
+
+      <ion-item>
+        <ion-textarea label="Insumos" labelPlacement="floating" formControlName="insumos" autoGrow="true"></ion-textarea>
+      </ion-item>
+
+      <ion-item>
+        <ion-input label="Costo" labelPlacement="floating" type="number" formControlName="costo"></ion-input>
+        <ion-note slot="error" *ngIf="laborForm.get('costo')?.invalid && laborForm.get('costo')?.touched">
+          El costo es requerido y debe ser un número positivo.
+        </ion-note>
+      </ion-item>
+
+      <ion-item>
+        <ion-textarea label="Observaciones" labelPlacement="floating" formControlName="observaciones" autoGrow="true"></ion-textarea>
+      </ion-item>
+    </ion-list>
+
+    <ion-button expand="block" type="submit" [disabled]="laborForm.invalid">
+      {{ laborId ? 'Guardar Cambios' : 'Crear Labor' }}
+    </ion-button>
+    <ion-button expand="block" fill="outline" color="medium" (click)="goBack()">
+      Cancelar
+    </ion-button>
+  </form>
+</ion-content>

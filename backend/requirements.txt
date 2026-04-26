@@ -1,0 +1,19 @@
+Django==6.0.4
+djangorestframework
+djangorestframework-simplejwt
+# mysqlclient requires MySQL client development headers and libraries.
+# On Debian/Ubuntu: sudo apt-get install libmysqlclient-dev
+# On CentOS/RHEL: sudo yum install mysql-devel
+# If you encounter issues, consider using PyMySQL (pip install PyMySQL)
+# and configuring it in settings.py:
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'mysql.connector.django', # or 'django.db.backends.mysql' with PyMySQL
+#         'NAME': 'campoenorden_db',
+#         'USER': 'root',
+#         'PASSWORD': 'password',
+#         'HOST': 'localhost',
+#         'PORT': '3306',
+#     }
+# }
+# PyMySQL

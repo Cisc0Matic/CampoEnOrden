@@ -1,0 +1,30 @@
+<div class="login-wrapper">
+  <div class="login-logo">
+    <ion-icon name="leaf" color="primary"></ion-icon>
+    <h1>CampoEnOrden</h1>
+    <p>Gestión agrícola</p>
+  </div>
+
+  <form class="login-form" [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+    <ion-list lines="none">
+      <ion-item>
+        <ion-label position="floating">Usuario</ion-label>
+        <ion-input formControlName="username" type="text" placeholder="Ingresa tu usuario"></ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="floating">Contraseña</ion-label>
+        <ion-input formControlName="password" [type]="showPassword ? 'text' : 'password'" placeholder="Ingresa tu contraseña"></ion-input>
+        <ion-icon slot="end" [name]="showPassword ? 'eye-off' : 'eye'" (click)="togglePassword()" class="password-icon"></ion-icon>
+      </ion-item>
+    </ion-list>
+
+    <ion-button expand="block" type="submit" class="submit-btn" [disabled]="loginForm.invalid">
+      Iniciar Sesión
+    </ion-button>
+
+    <ion-text color="danger" *ngIf="errorMessage" class="error-message">
+      <p>{{ errorMessage }}</p>
+    </ion-text>
+  </form>
+</div>

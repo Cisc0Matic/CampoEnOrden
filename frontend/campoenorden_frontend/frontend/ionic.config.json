@@ -1,0 +1,7 @@
+{
+  "name": "frontend/campoenorden_frontend",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}

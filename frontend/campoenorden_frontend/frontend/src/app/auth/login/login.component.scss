@@ -1,0 +1,145 @@
+:host {
+  display: block;
+  height: 100%;
+  width: 100%;
+}
+
+.login-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100%;
+  width: 100%;
+  padding: env(safe-area-inset-top) 20px env(safe-area-inset-bottom);
+  box-sizing: border-box;
+}
+
+.login-logo {
+  text-align: center;
+  margin-bottom: 32px;
+
+  ion-icon {
+    font-size: 64px;
+    color: var(--ion-color-primary);
+  }
+
+  h1 {
+    margin: 12px 0 4px;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--ion-color-primary);
+  }
+
+  p {
+    margin: 0;
+    color: var(--ion-color-medium);
+    font-size: 14px;
+  }
+}
+
+.login-form {
+  width: 100%;
+  max-width: 300px;
+}
+
+ion-list {
+  width: 100%;
+  background: transparent;
+  padding: 0;
+  margin-bottom: 16px;
+}
+
+ion-item {
+  --background: var(--ion-color-light);
+  --border-radius: 8px;
+  --padding-start: 12px;
+  --padding-end: 12px;
+  --min-height: 44px;
+  margin-bottom: 12px;
+
+  ion-label {
+    font-size: 13px;
+    font-weight: 500;
+    margin: 0;
+  }
+}
+
+ion-input {
+  --padding-start: 8px;
+  --padding-end: 8px;
+  font-size: 14px;
+  --placeholder-color: var(--ion-color-medium);
+  min-height: 44px;
+}
+
+.password-icon {
+  font-size: 18px;
+  color: var(--ion-color-medium);
+  cursor: pointer;
+  padding: 8px;
+}
+
+.submit-btn {
+  width: 100%;
+  margin-top: 8px;
+  --border-radius: 8px;
+  height: 44px;
+  font-size: 15px;
+  font-weight: 600;
+  --background: var(--ion-color-primary);
+  --color: #fff;
+}
+
+.error-message {
+  text-align: center;
+  margin-top: 12px;
+  font-size: 13px;
+}
+
+@media (min-width: 768px) {
+  .login-wrapper {
+    justify-content: center;
+  }
+
+  .login-logo {
+    margin-bottom: 40px;
+
+    ion-icon {
+      font-size: 80px;
+    }
+
+    h1 {
+      font-size: 36px;
+    }
+
+    p {
+      font-size: 16px;
+    }
+  }
+
+  .login-form {
+    max-width: 360px;
+  }
+
+  ion-item {
+    --min-height: 52px;
+    --border-radius: 10px;
+    margin-bottom: 16px;
+
+    ion-label {
+      font-size: 14px;
+    }
+  }
+
+  ion-input {
+    font-size: 16px;
+    min-height: 52px;
+  }
+
+  .submit-btn {
+    height: 52px;
+    font-size: 17px;
+    margin-top: 16px;
+  }
+}

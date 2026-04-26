@@ -1,0 +1,14 @@
+{
+  "appId": "com.campoenorden.app",
+  "appName": "CampoEnOrden",
+  "webDir": "www",
+  "bundledWebRuntime": false,
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 2000
+    }
+  },
+  "server": {
+    "androidScheme": "https"
+  }
+}

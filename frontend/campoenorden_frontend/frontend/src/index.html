@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="utf-8" />
+  <title>CampoEnOrden</title>
+
+  <base href="/" />
+
+  <meta name="color-scheme" content="light" />
+  <meta name="viewport" content="viewport-fit=cover, width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="format-detection" content="telephone=no" />
+  <meta name="msapplication-tap-highlight" content="no" />
+  <meta name="theme-color" content="#2E7D32" />
+
+  <link rel="icon" type="image/png" href="assets/icon/favicon.png" />
+  <link rel="manifest" href="manifest.json" />
+
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="CampoEnOrden" />
+  <link rel="apple-touch-icon" href="assets/icon/icon-192.png" />
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 1024px) and (device-height: 1366px) and (-webkit设备的像素比率为2) and (orientation: portrait)" href="assets/icon/icon-512.png" />
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 768px) and (device-height: 1024px) and (-webkit设备的像素比率为2) and (orientation: portrait)" href="assets/icon/icon-512.png" />
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 430px) and (device-height: 932px) and (-webkit设备的像素比率为3) and (orientation: portrait)" href="assets/icon/icon-512.png" />
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 393px) and (device-height: 852px) and (-webkit设备的像素比率为3) and (orientation: portrait)" href="assets/icon/icon-512.png" />
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 375px) and (device-height: 667px) and (-webkit设备的像素比率为2) and (orientation: portrait)" href="assets/icon/icon-512.png" />
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 390px) and (device-height: 844px) and (-webkit设备的像素比率为3) and (orientation: portrait)" href="assets/icon/icon-512.png" />
+</head>
+
+<body>
+  <app-root></app-root>
+  <noscript>Por favor, habilita JavaScript para usar esta aplicación.</noscript>
+
+  <style>
+    #pwa-install-container {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 16px;
+      padding-bottom: max(16px, env(safe-area-inset-bottom));
+      background: linear-gradient(to top, rgba(255,255,255,0.95) 60%, transparent);
+      display: none;
+      justify-content: center;
+      z-index: 99999;
+    }
+    
+    #pwa-install-container.visible {
+      display: flex;
+    }
+    
+    #pwa-install-btn {
+      background: #2E7D32;
+      color: #fff;
+      border: none;
+      padding: 14px 28px;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(46, 125, 50, 0.4);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    #pwa-install-btn:active {
+      transform: scale(0.98);
+    }
+  </style>
+  
+  <div id="pwa-install-container">
+    <button id="pwa-install-btn">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="7 10 12 15 17 10"/>
+        <line x1="12" y1="15" x2="12" y2="3"/>
+      </svg>
+      Instalar App
+    </button>
+  </div>
+
+  <script>
+    (function() {
+      'use strict';
+      
+      let deferredPrompt = null;
+      const installContainer = document.getElementById('pwa-install-container');
+      const installBtn = document.getElementById('pwa-install-btn');
+      
+      // Check if already installed
+      if (window.matchMedia('(display-mode: standalone)').matches || 
+          window.navigator.standalone === true ||
+          sessionStorage.getItem('pwaInstalled')) {
+        return;
+      }
+      
+      // Hide on iOS - use different method
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+      if (isIOS) {
+        // For iOS, just show the install option
+        console.log('iOS detected - use Add to Home Screen from share menu');
+        return;
+      }
+      
+      // Listen for beforeinstallprompt
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        
+        // Check if user has dismissed before
+        const dismissed = localStorage.getItem('pwaInstallDismissed');
+        if (!dismissed) {
+          setTimeout(() => {
+            installContainer.classList.add('visible');
+          }, 3000);
+        }
+      });
+      
+      // Handle install button click
+      installBtn.addEventListener('click', async () => {
+        if (!deferredPrompt) return;
+        
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        
+        if (outcome === 'accepted') {
+          sessionStorage.setItem('pwaInstalled', 'true');
+        }
+        
+        deferredPrompt = null;
+        installContainer.classList.remove('visible');
+      });
+      
+      // Listen for app installed
+      window.addEventListener('appinstalled', () => {
+        sessionStorage.setItem('pwaInstalled', 'true');
+        installContainer.classList.remove('visible');
+        deferredPrompt = null;
+      });
+      
+      // Check after page load
+      window.addEventListener('load', () => {
+        setTimeout(() => {
+          if (!deferredPrompt && !sessionStorage.getItem('pwaInstalled')) {
+            // Try to trigger install prompt by checking if we can call it
+            if (window.PWAInstallPrompt) {
+              console.log('Custom install available');
+            }
+          }
+        }, 5000);
+      });
+    })();
+  </script>
+</body>
+
+</html>

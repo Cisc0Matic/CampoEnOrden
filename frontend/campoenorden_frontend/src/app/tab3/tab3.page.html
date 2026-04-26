@@ -1,0 +1,35 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-title>Logística</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <ion-segment value="fletes" (ionChange)="segmentChanged($event)">
+    <ion-segment-button value="fletes">
+      <ion-label>Fletes</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="informes">
+      <ion-label>Informes</ion-label>
+    </ion-segment-button>
+  </ion-segment>
+
+  <ion-list>
+    <ion-item *ngFor="let flete of fletes" button detail>
+      <ion-icon slot="start" name="truck" color="tertiary"></ion-icon>
+      <ion-label>
+        <h2>{{ flete.transporte }}</h2>
+        <p>{{ flete.destino }}</p>
+      </ion-label>
+      <ion-badge slot="end" [color]="flete.estado === 'completado' ? 'success' : 'warning'">
+        {{ flete.estado }}
+      </ion-badge>
+    </ion-item>
+  </ion-list>
+
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button>
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>

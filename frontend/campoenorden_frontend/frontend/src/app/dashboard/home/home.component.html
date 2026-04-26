@@ -1,0 +1,42 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Dashboard</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="fetchProtectedData()">
+        <ion-icon slot="icon-only" name="refresh"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <ion-text color="danger" *ngIf="errorMessage">
+    <p class="ion-text-center">{{ errorMessage }}</p>
+  </ion-text>
+
+  <ion-card *ngIf="data.length > 0">
+    <ion-card-header>
+      <ion-card-title>Datos Protegidos (Ejemplo: Usuarios)</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <mat-list>
+        <mat-list-item *ngFor="let item of data">
+          <mat-icon matListItemIcon>person</mat-icon>
+          <div matListItemTitle>{{ item.username }}</div>
+          <div matListItemLine>{{ item.email }}</div>
+        </mat-list-item>
+      </mat-list>
+    </ion-card-content>
+  </ion-card>
+
+  <ion-card *ngIf="data.length === 0 && !errorMessage">
+    <ion-card-header>
+      <ion-card-title>Cargando Datos...</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <p>Intenta iniciar sesión si no ves datos.</p>
+    </ion-card-content>
+  </ion-card>
+
+  <ion-button expand="block" routerLink="/login">Ir a Login</ion-button>
+</ion-content>
