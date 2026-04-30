@@ -38,7 +38,7 @@ export class DashboardComponent implements OnInit {
     this.cargarDashboard();
   }
 
-  cargarDashboard() {
+cargarDashboard() {
     this.loading = true;
     this.error = null;
     
@@ -49,22 +49,11 @@ export class DashboardComponent implements OnInit {
       },
       error: (err) => {
         console.error('Error cargando dashboard:', err);
-        // Si es 401 (Unauthorized), cerrar sesión
         if (err.status === 401) {
           this.cerrarSesion();
           return;
         }
-        this.error = 'Backend no disponible. Mostrando datos de ejemplo.';
-        this.datos = {
-          campos_activos: 3,
-          hectareas_totales: 1500,
-          hectareas_trabajadas: 1200,
-          labores_cargadas: 12,
-          costos_totales: 450000,
-          costos_por_ha: 375,
-          documentos_pendientes: 2,
-          alertas: ['2 documento(s) pendiente(s) de revisar']
-        };
+        this.datos = null;
         this.loading = false;
       }
     });

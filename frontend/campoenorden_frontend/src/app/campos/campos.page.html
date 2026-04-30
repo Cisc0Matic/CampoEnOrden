@@ -33,12 +33,12 @@
 
     <div *ngIf="!loading && campos.length > 0" class="campos-grid">
       <div class="campo-card" *ngFor="let campo of campos">
-        <div class="card-header" [class]="'header-' + campo.estado_contrato.toLowerCase()">
+        <div class="card-header">
           <div class="header-left">
             <ion-icon name="leaf"></ion-icon>
             <span class="campo-nombre">{{campo.nombre}}</span>
           </div>
-          <ion-badge [color]="getEstadoColor(campo.estado_contrato)">
+          <ion-badge color="success">
             {{campo.estado_contrato_display || campo.estado_contrato}}
           </ion-badge>
         </div>
@@ -52,33 +52,28 @@
           <div class="stats-grid">
             <div class="stat-box">
               <span class="stat-value">{{campo.superficie_total | number:'1.0-2'}}</span>
-              <span class="stat-label">ha totales</span>
+              <span class="stat-label">ha</span>
             </div>
             <div class="stat-box">
               <span class="stat-value">{{campo.superficie_trabajada || 0 | number:'1.0-2'}}</span>
-              <span class="stat-label">ha trabajadas</span>
+              <span class="stat-label">ha trab</span>
             </div>
           </div>
           
           <div class="info-row" *ngIf="hasAlquiler(campo)">
-            <span class="info-label">Alquiler pendiente:</span>
+            <span class="info-label">Alquiler:</span>
             <span class="info-value warning">${{campo.alquiler_pendiente | number:'1.0-0'}}</span>
           </div>
           
           <div class="costos-grid" *ngIf="campo.costo_total">
             <div class="costo-item">
-              <span class="costo-label">Costo total</span>
+              <span class="costo-label">Costo</span>
               <span class="costo-value">${{campo.costo_total | number:'1.0-0'}}</span>
             </div>
             <div class="costo-item">
               <span class="costo-label">Por/ha</span>
               <span class="costo-value">${{campo.costo_por_ha | number:'1.0-0'}}</span>
             </div>
-          </div>
-          
-          <div class="condiciones-row" *ngIf="campo.condiciones_alquiler">
-            <span class="condiciones-label">Condiciones:</span>
-            <span class="condiciones-text">{{campo.condiciones_alquiler}}</span>
           </div>
         </div>
         
@@ -90,10 +85,6 @@
           <ion-button fill="clear" size="small">
             <ion-icon slot="start" name="create"></ion-icon>
             Editar
-          </ion-button>
-          <ion-button fill="clear" size="small">
-            <ion-icon slot="start" name="eye"></ion-icon>
-            Ver
           </ion-button>
         </div>
       </div>

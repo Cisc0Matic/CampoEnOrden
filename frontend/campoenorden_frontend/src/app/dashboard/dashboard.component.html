@@ -27,6 +27,18 @@
       <ion-button (click)="cargarDashboard()">Reintentar</ion-button>
     </div>
 
+    <div *ngIf="!loading && !datos" class="empty-container">
+      <ion-icon name="analytics-outline"></ion-icon>
+      <p>Aún no hay datos cargados</p>
+      <span class="empty-hint">Comienza agregando campos, lotes y labores para ver estadísticas</span>
+      <div class="empty-actions">
+        <ion-button fill="outline" routerLink="/tabs/campos">
+          <ion-icon slot="start" name="add"></ion-icon>
+          Agregar Campo
+        </ion-button>
+      </div>
+    </div>
+
     <div *ngIf="!loading && datos" class="contenido">
       <div class="progress-section">
         <div class="progress-header">

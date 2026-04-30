@@ -1,6 +1,5 @@
 .campos-container {
-  --padding: 12px;
-  padding: var(--padding);
+  padding: 12px;
   background: var(--ion-color-light);
   min-height: 100%;
 }
@@ -12,33 +11,10 @@
   justify-content: center;
   padding: 64px 24px;
   text-align: center;
-  
-  p {
-    margin-top: 16px;
-    color: var(--ion-color-medium);
-  }
-  
-  ion-spinner {
-    width: 48px;
-    height: 48px;
-    color: var(--ion-color-primary);
-  }
-  
-  ion-icon {
-    font-size: 72px;
-    color: var(--ion-color-medium);
-  }
 }
 
 .empty ion-button {
   margin-top: 24px;
-  --background: var(--ion-color-primary);
-  --background-hover: var(--ion-color-primary-shade);
-  --color: white;
-}
-
-.error ion-button {
-  margin-top: 16px;
 }
 
 .campos-grid {
@@ -55,31 +31,13 @@
   display: flex;
   flex-direction: column;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  
-  &:active {
-    transform: scale(0.98);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
-  }
   
   .card-header {
     padding: 14px;
+    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    
-    &.header-activo {
-      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-    }
-    &.header-vencido {
-      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-    }
-    &.header-pendiente {
-      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-    }
-    &.header-renovado {
-      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-    }
     
     .header-left {
       display: flex;
@@ -100,9 +58,6 @@
     
     ion-badge {
       font-size: 10px;
-      font-weight: 600;
-      padding: 4px 8px;
-      border-radius: 12px;
     }
   }
   
@@ -116,10 +71,11 @@
       gap: 6px;
       font-size: 12px;
       color: var(--ion-color-medium);
-      margin-bottom: 12px;
+      margin-bottom: 4px;
       
       ion-icon {
         font-size: 14px;
+        color: #22c55e;
       }
     }
     
@@ -127,7 +83,7 @@
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 8px;
-      margin-bottom: 12px;
+      margin: 12px 0;
       
       .stat-box {
         background: var(--ion-color-light);
@@ -145,8 +101,6 @@
         .stat-label {
           font-size: 10px;
           color: var(--ion-color-medium);
-          text-transform: uppercase;
-          letter-spacing: 0.3px;
         }
       }
     }
@@ -203,19 +157,7 @@
       background: var(--ion-color-light);
       border-radius: 8px;
       margin-top: 8px;
-      
-      .condiciones-label {
-        display: block;
-        font-size: 9px;
-        color: var(--ion-color-medium);
-        text-transform: uppercase;
-        margin-bottom: 4px;
-      }
-      
-      .condiciones-text {
-        color: var(--ion-color-dark);
-        line-height: 1.4;
-      }
+      color: var(--ion-color-medium);
     }
   }
   
@@ -229,13 +171,7 @@
       --padding-start: 8px;
       --padding-end: 8px;
       --color: var(--ion-color-medium);
-      --color-hover: var(--ion-color-primary);
       font-size: 11px;
-      margin: 0;
-      
-      ion-icon {
-        font-size: 14px;
-      }
     }
   }
 }
