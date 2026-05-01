@@ -1,11 +1,32 @@
+.ajustes-container {
+  padding: 12px;
+  background: var(--ion-background-color);
+  min-height: 100%;
+}
+
 .categoria-filters {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
   padding: 12px;
-  background: var(--ion-color-light);
+  background: var(--ion-color-step-50);
 }
 
-.loading, .empty { display: flex; align-items: center; justify-content: center; padding: 48px; }
-ion-item h2 { font-weight: 600; }
-ion-item p { color: var(--ion-color-medium); font-size: 13px; }
+.loading, .error, .empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+  text-align: center;
+}
+
+ion-item h2 {
+  font-weight: 600;
+  color: var(--ion-text-color);
+}
+
+ion-item p {
+  color: var(--ion-color-medium);
+  font-size: 13px;
+}
