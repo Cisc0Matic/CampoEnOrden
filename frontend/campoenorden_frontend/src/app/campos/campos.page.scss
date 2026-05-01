@@ -1,6 +1,6 @@
 .campos-container {
   padding: 12px;
-  background: var(--ion-color-light);
+  background: var(--ion-background-color);
   min-height: 100%;
 }
 
@@ -25,16 +25,16 @@
 }
 
 .campo-card {
-  background: white;
+  background: var(--ion-color-step-50);
   border-radius: 16px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 12px rgba(var(--ion-color-dark-rgb), 0.08);
   
   .card-header {
     padding: 14px;
-    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+    background: linear-gradient(135deg, var(--ion-color-primary) 0%, var(--ion-color-secondary) 100%);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -45,12 +45,12 @@
       gap: 8px;
       
       ion-icon {
-        color: white;
+        color: var(--ion-color-primary-contrast);
         font-size: 20px;
       }
       
       .campo-nombre {
-        color: white;
+        color: var(--ion-color-primary-contrast);
         font-size: 14px;
         font-weight: 600;
       }
@@ -75,7 +75,17 @@
       
       ion-icon {
         font-size: 14px;
-        color: #22c55e;
+        color: var(--ion-color-primary);
+      }
+    }
+    
+    .personas-row {
+      font-size: 11px;
+      color: var(--ion-color-medium);
+      margin-bottom: 4px;
+      
+      strong {
+        color: var(--ion-text-color);
       }
     }
     
@@ -86,7 +96,7 @@
       margin: 12px 0;
       
       .stat-box {
-        background: var(--ion-color-light);
+        background: var(--ion-color-step-100);
         border-radius: 10px;
         padding: 10px 8px;
         text-align: center;
@@ -95,10 +105,11 @@
           display: block;
           font-size: 16px;
           font-weight: 700;
-          color: var(--ion-color-dark);
+          color: var(--ion-text-color);
         }
         
         .stat-label {
+          display: block;
           font-size: 10px;
           color: var(--ion-color-medium);
         }
@@ -110,7 +121,7 @@
       justify-content: space-between;
       font-size: 12px;
       padding: 8px 0;
-      border-top: 1px solid var(--ion-color-light);
+      border-top: 1px solid var(--ion-color-step-150);
       margin-top: 8px;
       
       .info-label {
@@ -121,17 +132,17 @@
         font-weight: 600;
         
         &.warning {
-          color: #f59e0b;
+          color: var(--ion-color-warning);
         }
       }
     }
     
     .costos-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 1fr 1fr 1fr;
       gap: 8px;
       padding: 10px 0;
-      border-top: 1px solid var(--ion-color-light);
+      border-top: 1px solid var(--ion-color-step-150);
       
       .costo-item {
         text-align: center;
@@ -146,7 +157,15 @@
           display: block;
           font-size: 14px;
           font-weight: 700;
-          color: #10b981;
+          color: var(--ion-color-success);
+          
+          &.positive {
+            color: var(--ion-color-success);
+          }
+          
+          &.negative {
+            color: var(--ion-color-danger);
+          }
         }
       }
     }
@@ -154,7 +173,7 @@
     .condiciones-row {
       font-size: 11px;
       padding: 8px;
-      background: var(--ion-color-light);
+      background: var(--ion-color-step-100);
       border-radius: 8px;
       margin-top: 8px;
       color: var(--ion-color-medium);
@@ -163,7 +182,7 @@
   
   .card-footer {
     padding: 8px;
-    border-top: 1px solid var(--ion-color-light);
+    border-top: 1px solid var(--ion-color-step-150);
     display: flex;
     justify-content: space-around;
     

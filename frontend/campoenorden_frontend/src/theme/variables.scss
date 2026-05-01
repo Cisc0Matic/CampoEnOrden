@@ -1,4 +1,4 @@
-// Ionic theme variables
+// Ionic theme variables - CampoEnOrden Professional Theme
 :root {
   // Primary: Green palette for CampoEnOrden
   --ion-color-primary: #2E7D32;
@@ -71,38 +71,60 @@
   --ion-color-light-contrast-rgb: 0,0,0;
   --ion-color-light-shade: #d7d8da;
   --ion-color-light-tint: #f5f6f9;
-
-  // CampoEnOrden custom colors
-  --ion-color-campo-primary: #2E7D32;
-  --ion-color-campo-secondary: #4CAF50;
-  --ion-color-campo-light: #E8F5E9;
-  --ion-color-campo-dark: #1B5E20;
 }
 
-// Dark mode overrides
+// Light theme (default)
+:root {
+  --ion-background-color: #f5f5f5;
+  --ion-background-color-rgb: 245,245,245;
+  --ion-text-color: #222428;
+  --ion-text-color-rgb: 34,36,40;
+  --ion-border-color: #e0e0e0;
+  
+  // Step colors for light mode
+  --ion-color-step-50: #f9f9f9;
+  --ion-color-step-100: #f0f0f0;
+  --ion-color-step-150: #e8e8e8;
+  --ion-color-step-200: #e0e0e0;
+  --ion-color-step-250: #d8d8d8;
+  --ion-color-step-300: #d0d0d0;
+  --ion-color-step-350: #c8c8c8;
+  --ion-color-step-400: #c0c0c0;
+  --ion-color-step-450: #b8b8b8;
+  --ion-color-step-500: #b0b0b0;
+  --ion-color-step-550: #a8a8a8;
+  --ion-color-step-600: #a0a0a0;
+  --ion-color-step-650: #989898;
+  --ion-color-step-700: #909090;
+  --ion-color-step-750: #888888;
+  --ion-color-step-800: #808080;
+}
+
+// Dark theme - Professional dark mode
 @media (prefers-color-scheme: dark) {
   :root {
     --ion-background-color: #121212;
     --ion-background-color-rgb: 18,18,18;
-    --ion-text-color: #ffffff;
-    --ion-text-color-rgb: 255,255,255;
-    --ion-border-color: #222222;
-    --ion-color-step-50: #1a1a1a;
+    --ion-text-color: #e0e0e0;
+    --ion-text-color-rgb: 224,224,224;
+    --ion-border-color: #2a2a2a;
+    
+    --ion-color-step-50: #1e1e1e;
     --ion-color-step-100: #2a2a2a;
-    --ion-color-step-150: #3a3a3a;
-    --ion-color-step-200: #4a4a4a;
-    --ion-color-step-250: #5a5a5a;
-    --ion-color-step-300: #6a6a6a;
-    --ion-color-step-350: #7a7a7a;
-    --ion-color-step-400: #8a8a8a;
-    --ion-color-step-450: #9a9a9a;
-    --ion-color-step-500: #aaaaaa;
-    --ion-color-step-550: #babadb;
-    --ion-color-step-600: #cacaca;
-    --ion-color-step-650: #dadada;
-    --ion-color-step-700: #eaeaea;
-    --ion-color-step-750: #fafafa;
-    --ion-color-step-800: #ffffff;
+    --ion-color-step-150: #363636;
+    --ion-color-step-200: #424242;
+    --ion-color-step-250: #4e4e4e;
+    --ion-color-step-300: #5a5a5a;
+    --ion-color-step-350: #666666;
+    --ion-color-step-400: #727272;
+    --ion-color-step-450: #7e7e7e;
+    --ion-color-step-500: #8a8a8a;
+    --ion-color-step-550: #969696;
+    --ion-color-step-600: #a2a2a2;
+    --ion-color-step-650: #aeaeae;
+    --ion-color-step-700: #bababa;
+    --ion-color-step-750: #c6c6c6;
+    --ion-color-step-800: #d2d2d2;
   }
 }
 
@@ -110,23 +132,24 @@
 .ion-palette-dark {
   --ion-background-color: #121212;
   --ion-background-color-rgb: 18,18,18;
-  --ion-text-color: #ffffff;
-  --ion-text-color-rgb: 255,255,255;
-  --ion-border-color: #222222;
-  --ion-color-step-50: #1a1a1a;
+  --ion-text-color: #e0e0e0;
+  --ion-text-color-rgb: 224,224,224;
+  --ion-border-color: #2a2a2a;
+  
+  --ion-color-step-50: #1e1e1e;
   --ion-color-step-100: #2a2a2a;
-  --ion-color-step-150: #3a3a3a;
-  --ion-color-step-200: #4a4a4a;
-  --ion-color-step-250: #5a5a5a;
-  --ion-color-step-300: #6a6a6a;
-  --ion-color-step-350: #7a7a7a;
-  --ion-color-step-400: #8a8a8a;
-  --ion-color-step-450: #9a9a9a;
-  --ion-color-step-500: #aaaaaa;
-  --ion-color-step-550: #babadb;
-  --ion-color-step-600: #cacaca;
-  --ion-color-step-650: #dadada;
-  --ion-color-step-700: #eaeaea;
-  --ion-color-step-750: #fafafa;
-  --ion-color-step-800: #ffffff;
+  --ion-color-step-150: #363636;
+  --ion-color-step-200: #424242;
+  --ion-color-step-250: #4e4e4e;
+  --ion-color-step-300: #5a5a5a;
+  --ion-color-step-350: #666666;
+  --ion-color-step-400: #727272;
+  --ion-color-step-450: #7e7e7e;
+  --ion-color-step-500: #8a8a8a;
+  --ion-color-step-550: #969696;
+  --ion-color-step-600: #a2a2a2;
+  --ion-color-step-650: #aeaeae;
+  --ion-color-step-700: #bababa;
+  --ion-color-step-750: #c6c6c6;
+  --ion-color-step-800: #d2d2d2;
 }

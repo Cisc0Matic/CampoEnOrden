@@ -1,8 +1,9 @@
 .dashboard-container {
   --padding: 16px;
   padding: var(--padding);
-  background: var(--ion-color-light);
+  background: var(--ion-background-color);
   min-height: 100%;
+  color: var(--ion-text-color);
 }
 
 .header-section {
@@ -13,7 +14,7 @@
     font-size: 26px;
     font-weight: 700;
     margin: 0;
-    color: var(--ion-color-dark);
+    color: var(--ion-text-color);
   }
   
   .subtitle {
@@ -79,7 +80,7 @@
   border-radius: 16px;
   padding: 16px;
   margin-bottom: 16px;
-  box-shadow: 0 2px 8px rgba(var(--ion-color-dark-rgb), 0.1);
+  box-shadow: 0 2px 8px rgba(var(--ion-color-dark-rgb), 0.08);
   
   .progress-header {
     display: flex;
@@ -89,7 +90,7 @@
     .progress-title {
       font-size: 13px;
       font-weight: 600;
-      color: var(--ion-color-dark);
+      color: var(--ion-text-color);
       text-transform: capitalize;
     }
     
@@ -136,7 +137,7 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
-  box-shadow: 0 2px 8px rgba(var(--ion-color-dark-rgb), 0.1);
+  box-shadow: 0 2px 8px rgba(var(--ion-color-dark-rgb), 0.08);
   
   &.highlight {
     background: linear-gradient(135deg, var(--ion-color-primary) 0%, var(--ion-color-secondary) 100%);
@@ -205,7 +206,7 @@
   .indicador-value {
     font-size: 20px;
     font-weight: 700;
-    color: var(--ion-color-dark);
+    color: var(--ion-text-color);
   }
 }
 
@@ -214,20 +215,20 @@
   border-radius: 14px;
   padding: 16px;
   margin-bottom: 20px;
-  box-shadow: 0 2px 8px rgba(var(--ion-color-dark-rgb), 0.1);
+  box-shadow: 0 2px 8px rgba(var(--ion-color-dark-rgb), 0.08);
   
   h2 {
     font-size: 16px;
     font-weight: 600;
     margin: 0 0 12px 0;
-    color: var(--ion-color-dark);
+    color: var(--ion-text-color);
     display: flex;
     align-items: center;
     gap: 8px;
     
     ion-icon {
       font-size: 18px;
-      color: #f59e0b;
+      color: var(--ion-color-warning);
     }
   }
 }
@@ -283,7 +284,7 @@
     font-size: 16px;
     font-weight: 600;
     margin: 0 0 12px 0;
-    color: var(--ion-color-dark);
+    color: var(--ion-text-color);
   }
 }
 
@@ -297,7 +298,7 @@
     --border-radius: 12px;
     --background: var(--ion-color-step-50);
     --border-color: var(--ion-color-medium);
-    --color: var(--ion-color-dark);
+    --color: var(--ion-text-color);
     height: 48px;
     font-size: 13px;
     
@@ -313,6 +314,6 @@
   
   ion-button {
     --background: var(--ion-color-medium);
-    --color: white;
+    --color: var(--ion-color-medium-contrast);
   }
 }
