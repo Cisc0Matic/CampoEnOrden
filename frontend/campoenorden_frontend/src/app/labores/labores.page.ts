@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { ApiService } from '../services/api.service';
+import { Router, RouterModule } from '@angular/router';
 
 interface Labor {
   id: number;
@@ -10,11 +11,13 @@ interface Labor {
   fecha: string;
   lote_nombre: string;
   campo_nombre: string;
+  lote_id: number;
   hectareas: number;
   costo_total: number;
   costo_dolares_ha: number;
   costo_pesos_ha: number;
   contratista_nombre: string;
+  contratista_id: number;
   qq_ha: number;
   observaciones: string;
   insumos: any[];
@@ -25,7 +28,7 @@ interface Labor {
   templateUrl: './labores.page.html',
   styleUrls: ['./labores.page.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule]
+  imports: [CommonModule, IonicModule, RouterModule]
 })
 export class LaboresPage implements OnInit {
   labores: Labor[] = [];
@@ -33,7 +36,7 @@ export class LaboresPage implements OnInit {
   error: string | null = null;
   filterTipo = '';
 
-  constructor(private api: ApiService) {}
+  constructor(private api: ApiService, private router: Router) {}
 
   ngOnInit() {
     this.cargarLabores();
@@ -82,5 +85,22 @@ export class LaboresPage implements OnInit {
 
   hasInsumos(labor: Labor): boolean {
     return labor.insumos && labor.insumos.length > 0;
+  }
+
+  agregarLabor() {
+    this.router.navigate(['/tabs/labores/crear']);
+  }
+
+  editarLabor(labor: Labor) {
+    this.router.navigate(['/tabs/labores/editar', labor.id]);
+  }
+
+  verDetalleLabor(labor: Labor) {
+    this.router.navigate(['/tabs/labores', labor.id]);
+  }
+
+  getInsumoTotal(labor: Labor): number {
+    if (!labor.insumos) return 0;
+    return labor.insumos.reduce((sum, i) => sum + (i.costo_total || 0), 0);
   }
 }

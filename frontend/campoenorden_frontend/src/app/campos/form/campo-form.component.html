@@ -1,0 +1,89 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>{{isEdit ? 'Editar' : 'Nuevo'}} Campo</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="guardar()" [disabled]="loading">
+        <ion-icon slot="icon-only" name="checkmark"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <form [formGroup]="campoForm" class="form-container">
+    <ion-list>
+      <ion-item>
+        <ion-label position="floating">Nombre *</ion-label>
+        <ion-input formControlName="nombre" placeholder="Ej: Campo San José"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label position="floating">Ubicación</ion-label>
+        <ion-input formControlName="ubicacion" placeholder="Ej: Ruta 8, Km 120"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label position="floating">Superficie Total (ha) *</ion-label>
+        <ion-input type="number" formControlName="superficie_total"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label position="floating">Superficie Trabajada (ha)</ion-label>
+        <ion-input type="number" formControlName="superficie_trabajada"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label>Estado del Contrato</ion-label>
+        <ion-select formControlName="estado_contrato">
+          <ion-select-option *ngFor="let e of estados" [value]="e.value">{{e.label}}</ion-select-option>
+        </ion-select>
+      </ion-item>
+      <ion-item>
+        <ion-label>Locadores (Dueños)</ion-label>
+        <ion-select formControlName="locadores_ids" multiple="true" [compareWith]="compararPersona">
+          <ion-select-option *ngFor="let p of personas" [value]="p.id">{{p.nombre}} ({{p.documento}})</ion-select-option>
+        </ion-select>
+      </ion-item>
+      <ion-item>
+        <ion-label>Locatarios (Arrendatarios)</ion-label>
+        <ion-select formControlName="locatarios_ids" multiple="true" [compareWith]="compararPersona">
+          <ion-select-option *ngFor="let p of personas" [value]="p.id">{{p.nombre}} ({{p.documento}})</ion-select-option>
+        </ion-select>
+      </ion-item>
+      <ion-item>
+        <ion-label position="floating">Costo Total ($)</ion-label>
+        <ion-input type="number" formControlName="costo_total"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label position="floating">Costo por ha ($)</ion-label>
+        <ion-input type="number" formControlName="costo_por_ha"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label position="floating">Margen ($)</ion-label>
+        <ion-input type="number" formControlName="margen"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label position="floating">Alquiler Pendiente ($)</ion-label>
+        <ion-input type="number" formControlName="alquiler_pendiente"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label position="floating">Condiciones de Alquiler</ion-label>
+        <ion-textarea formControlName="condiciones_alquiler" placeholder="Ej: Pago mensual, ajuste anual..."></ion-textarea>
+      </ion-item>
+      <ion-item>
+        <ion-label position="floating">Observaciones</ion-label>
+        <ion-textarea formControlName="observaciones" placeholder="Notas adicionales..."></ion-textarea>
+      </ion-item>
+    </ion-list>
+
+    <div class="error" *ngIf="error">
+      <p>{{error}}</p>
+    </div>
+
+    <div class="form-actions">
+      <ion-button expand="block" (click)="guardar()" [disabled]="loading">
+        <ion-spinner *ngIf="loading" name="crescent"></ion-spinner>
+        {{isEdit ? 'Actualizar' : 'Crear'}} Campo
+      </ion-button>
+      <ion-button expand="block" fill="clear" (click)="router.navigate(['/campos'])">
+        Cancelar
+      </ion-button>
+    </div>
+  </form>
+</ion-content>

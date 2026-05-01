@@ -2,7 +2,7 @@
   <ion-toolbar>
     <ion-title>Labores</ion-title>
     <ion-buttons slot="end">
-      <ion-button>
+      <ion-button (click)="agregarLabor()">
         <ion-icon slot="icon-only" name="add-circle"></ion-icon>
       </ion-button>
     </ion-buttons>
@@ -48,7 +48,7 @@
     <div *ngIf="!loading && labores.length === 0" class="empty">
       <ion-icon name="construct-outline"></ion-icon>
       <p>No hay labores cargadas</p>
-      <ion-button>
+      <ion-button (click)="agregarLabor()">
         <ion-icon name="add"></ion-icon>
         Agregar Labor
       </ion-button>
@@ -81,8 +81,8 @@
             </div>
           </div>
           
-          <div class="costos-grid" *ngIf="labor.costo_total">
-            <div class="costo-item">
+          <div class="costos-grid">
+            <div class="costo-item" *ngIf="labor.costo_total">
               <span class="costo-label">Costo total</span>
               <span class="costo-value">${{labor.costo_total | number:'1.0-0'}}</span>
             </div>
@@ -102,26 +102,34 @@
           </div>
           
           <div class="insumos-section" *ngIf="hasInsumos(labor)">
-            <span class="insumos-title">Insumos aplicados:</span>
+            <span class="insumos-title">Insumos aplicados ({{labor.insumos.length}}):</span>
             <div class="insumo-item" *ngFor="let insumo of labor.insumos">
-              <span class="insumo-nombre">{{insumo.insumo_nombre}}</span>
-              <span class="insumo-dosis">{{insumo.dosis}} {{insumo.unidad_dosis}}</span>
-              <span class="insumo-costo">${{insumo.costo_total | number:'1.0-0'}}</span>
+              <div class="insumo-header">
+                <span class="insumo-nombre">{{insumo.insumo_nombre}}</span>
+                <span class="insumo-badge">{{insumo.unidad_dosis}}</span>
+              </div>
+              <div class="insumo-details">
+                <span>{{insumo.dosis}} {{insumo.unidad_dosis}} aplicado</span>
+                <span>${{insumo.precio_unitario | number:'1.0-2'}}/u</span>
+              </div>
+              <div class="insumo-total-row">
+                <span>Total: {{insumo.total_aplicado}} {{insumo.unidad_dosis}}</span>
+                <span class="insumo-costo">${{insumo.costo_total | number:'1.0-0'}}</span>
+              </div>
             </div>
-          </div>
-          
-          <div class="observaciones-row" *ngIf="labor.observaciones">
-            <span class="obs-label">Obs:</span>
-            <span class="obs-text">{{labor.observaciones}}</span>
+            <div class="insumo-total" *ngIf="labor.insumos.length > 1">
+              <span>Total insumos:</span>
+              <span>${{getInsumoTotal(labor) | number:'1.0-0'}}</span>
+            </div>
           </div>
         </div>
         
         <div class="card-footer">
-          <ion-button fill="clear" size="small">
+          <ion-button fill="clear" size="small" (click)="editarLabor(labor)">
             <ion-icon slot="start" name="create"></ion-icon>
             Editar
           </ion-button>
-          <ion-button fill="clear" size="small">
+          <ion-button fill="clear" size="small" (click)="verDetalleLabor(labor)">
             <ion-icon slot="start" name="eye"></ion-icon>
             Ver
           </ion-button>
@@ -129,4 +137,5 @@
       </div>
     </div>
   </div>
+  <router-outlet></router-outlet>
 </ion-content>

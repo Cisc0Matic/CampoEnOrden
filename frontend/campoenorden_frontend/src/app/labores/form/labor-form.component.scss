@@ -1,0 +1,32 @@
+.form-container {
+  padding: 16px;
+  background: var(--ion-color-light);
+  min-height: 100%;
+}
+
+ion-item {
+  --padding-start: 0;
+  --inner-padding-end: 0;
+  margin-bottom: 8px;
+}
+
+.insumos-section {
+  margin-top: 16px;
+  padding: 16px;
+  background: var(--ion-color-step-50);
+  border-radius: 8px;
+}
+
+.insumo-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.form-actions {
+  margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}

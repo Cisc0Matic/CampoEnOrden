@@ -40,9 +40,31 @@ class InsumoViewSet(viewsets.ModelViewSet):
 
 
 class CampoViewSet(viewsets.ModelViewSet):
-    queryset = Campo.objects.all()
+    queryset = Campo.objects.all().prefetch_related('locadores', 'locatarios', 'documentos')
     serializer_class = CampoSerializer
     filterset_fields = ['estado_contrato']
+    
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        include_stats = self.request.query_params.get('include_stats', False)
+        if include_stats:
+            queryset = queryset.annotate(
+                documentos_count=Count('documentos', distinct=True),
+                locadores_nombres=Count('locadores'),
+                locatarios_nombres=Count('locatarios')
+            )
+        return queryset
+    
+    def list(self, request, *args, **kwargs):
+        response = super().list(request, *args, **kwargs)
+        if request.query_params.get('include_stats'):
+            for campo in response.data:
+                campo_obj = self.queryset.get(pk=campo['id'])
+                campo['margen'] = float(campo_obj.margen or 0)
+                campo['documentos_count'] = campo_obj.documentos.count()
+                campo['locadores_nombres'] = ', '.join(campo_obj.locadores.values_list('nombre', flat=True)[:3])
+                campo['locatarios_nombres'] = ', '.join(campo_obj.locatarios.values_list('nombre', flat=True)[:3])
+        return response
 
 
 class LoteViewSet(viewsets.ModelViewSet):
@@ -55,6 +77,30 @@ class LaborViewSet(viewsets.ModelViewSet):
     queryset = Labor.objects.all()
     serializer_class = LaborSerializer
     filterset_fields = ['lote', 'tipo', 'fecha', 'contratista']
+    
+    def perform_create(self, serializer):
+        # Handle nested insumos
+        insumos_data = self.request.data.get('insumos', [])
+        instance = serializer.save()
+        for insumo_data in insumos_data:
+            insumo_data['labor'] = instance.id
+            insumo_serializer = LaborInsumoSerializer(data=insumo_data)
+            if insumo_serializer.is_valid():
+                insumo_serializer.save()
+        return instance
+    
+    def perform_update(self, serializer):
+        # Handle nested insumos
+        insumos_data = self.request.data.get('insumos', [])
+        instance = serializer.save()
+        # Delete existing insumos and recreate
+        instance.insumos.all().delete()
+        for insumo_data in insumos_data:
+            insumo_data['labor'] = instance.id
+            insumo_serializer = LaborInsumoSerializer(data=insumo_data)
+            if insumo_serializer.is_valid():
+                insumo_serializer.save()
+        return instance
 
 
 class FleteViewSet(viewsets.ModelViewSet):
@@ -66,7 +112,25 @@ class FleteViewSet(viewsets.ModelViewSet):
 class DocumentoViewSet(viewsets.ModelViewSet):
     queryset = Documento.objects.all()
     serializer_class = DocumentoSerializer
-    filterset_fields = ['tipo', 'estado', 'campo', 'titular']
+    filterset_fields = ['tipo', 'estado', 'campo', 'titular', 'labor', 'flete']
+    
+    def perform_create(self, serializer):
+        # Handle file upload
+        archivo = self.request.FILES.get('archivo')
+        if archivo:
+            instance = serializer.save(archivo=archivo)
+        else:
+            instance = serializer.save()
+        return instance
+    
+    def perform_update(self, serializer):
+        # Handle file upload
+        archivo = self.request.FILES.get('archivo')
+        if archivo:
+            instance = serializer.save(archivo=archivo)
+        else:
+            instance = serializer.save()
+        return instance
 
 
 class ParametroViewSet(viewsets.ModelViewSet):
@@ -77,14 +141,28 @@ class ParametroViewSet(viewsets.ModelViewSet):
 
 @api_view(['GET'])
 def dashboard(request):
+    from django.db.models import Value
+    from django.db.models.fields import DecimalField, IntegerField
+    
     campos_activos = Campo.objects.filter(estado_contrato='ACTIVO').count()
-    hectareas_totales = Campo.objects.aggregate(total=Coalesce(Sum('superficie_total'), 0))['total']
-    hectareas_trabajadas = Campo.objects.aggregate(total=Coalesce(Sum('superficie_trabajada'), 0))['total']
+    hectareas_totales = Campo.objects.aggregate(
+        total=Coalesce(Sum('superficie_total'), Value(0, output_field=DecimalField()))
+    )['total']
+    hectareas_trabajadas = Campo.objects.aggregate(
+        total=Coalesce(Sum('superficie_trabajada'), Value(0, output_field=DecimalField()))
+    )['total']
     labors_count = Labor.objects.count()
     
-    costos_labores = Labor.objects.aggregate(total=Coalesce(Sum('costo_total'), 0))['total']
-    costos_fletes = Flete.objects.aggregate(total=Coalesce(Sum('flete_corto'), 0))['total'] + \
-                  Flete.objects.aggregate(total=Coalesce(Sum('flete_largo'), 0))['total']
+    costos_labores = Labor.objects.aggregate(
+        total=Coalesce(Sum('costo_total'), Value(0, output_field=DecimalField()))
+    )['total']
+    costos_fletes_corto = Flete.objects.aggregate(
+        total=Coalesce(Sum('flete_corto'), Value(0, output_field=DecimalField()))
+    )['total']
+    costos_fletes_largo = Flete.objects.aggregate(
+        total=Coalesce(Sum('flete_largo'), Value(0, output_field=DecimalField()))
+    )['total']
+    costos_fletes = costos_fletes_corto + costos_fletes_largo
     costos_totales = costos_labores + costos_fletes
     
     if hectareas_trabajadas and hectareas_trabajadas > 0:
@@ -113,8 +191,7 @@ def dashboard(request):
         'documentos_pendientes': documentos_pendientes,
         'alertas': alertas
     }
-    serializer = DashboardSerializer(data)
-    return Response(serializer.data)
+    return Response(data)
 
 
 @api_view(['GET'])

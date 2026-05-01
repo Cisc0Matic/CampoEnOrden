@@ -2,10 +2,35 @@
   <ion-toolbar>
     <ion-title>Documentos</ion-title>
     <ion-buttons slot="end">
-      <ion-button>
+      <ion-button (click)="agregarDocumento()">
         <ion-icon slot="icon-only" name="add-circle"></ion-icon>
       </ion-button>
     </ion-buttons>
+  </ion-toolbar>
+  <ion-toolbar *ngIf="!loading">
+    <div class="filter-row">
+      <ion-item lines="none" class="filter-item">
+        <ion-label>Tipo:</ion-label>
+        <ion-select [value]="filtroTipo" (ionChange)="filtroTipo = $event.detail.value; filtrarDocumentos()" placeholder="Todos" interface="popover">
+          <ion-select-option value="">Todos</ion-select-option>
+          <ion-select-option value="CONTRATO">Contrato</ion-select-option>
+          <ion-select-option value="FACTURA">Factura</ion-select-option>
+          <ion-select-option value="COMPROBANTE">Comprobante</ion-select-option>
+          <ion-select-option value="TRANSFERENCIA">Transferencia</ion-select-option>
+          <ion-select-option value="MAPA">Mapa</ion-select-option>
+        </ion-select>
+      </ion-item>
+      <ion-item lines="none" class="filter-item">
+        <ion-label>Estado:</ion-label>
+        <ion-select [value]="filtroEstado" (ionChange)="filtroEstado = $event.detail.value; filtrarDocumentos()" placeholder="Todos" interface="popover">
+          <ion-select-option value="">Todos</ion-select-option>
+          <ion-select-option value="PENDIENTE">Pendiente</ion-select-option>
+          <ion-select-option value="APROBADO">Aprobado</ion-select-option>
+          <ion-select-option value="VENCIDO">Vencido</ion-select-option>
+          <ion-select-option value="ARCHIVADO">Archivado</ion-select-option>
+        </ion-select>
+      </ion-item>
+    </div>
   </ion-toolbar>
 </ion-header>
 
@@ -23,10 +48,16 @@
     <div *ngIf="!loading && documentos.length === 0" class="empty">
       <ion-icon name="folder-outline"></ion-icon>
       <p>No hay documentos cargados</p>
+      <ion-button (click)="agregarDocumento()">Agregar Documento</ion-button>
     </div>
 
-    <div *ngIf="!loading && documentos.length > 0" class="docs-grid">
-      <div class="doc-card" *ngFor="let doc of documentos">
+    <div *ngIf="!loading && documentosFiltrados.length === 0 && documentos.length > 0" class="empty">
+      <ion-icon name="filter-outline"></ion-icon>
+      <p>No hay documentos que coincidan con los filtros</p>
+    </div>
+
+    <div *ngIf="!loading && documentosFiltrados.length > 0" class="docs-grid">
+      <div class="doc-card" *ngFor="let doc of documentosFiltrados">
         <div class="card-header" [class]="'header-' + doc.tipo.toLowerCase()">
           <ion-icon [name]="getTipoIcon(doc.tipo)"></ion-icon>
           <div class="header-info">
@@ -43,6 +74,14 @@
             <ion-icon name="leaf"></ion-icon>
             <span>{{doc.campo_nombre}}</span>
           </div>
+          <div class="info-row" *ngIf="doc.labor_id">
+            <ion-icon name="construct"></ion-icon>
+            <span>Vinculado a labor</span>
+          </div>
+          <div class="info-row" *ngIf="doc.flete_id">
+            <ion-icon name="truck"></ion-icon>
+            <span>Vinculado a flete</span>
+          </div>
           
           <div class="info-row" *ngIf="doc.titular_nombre">
             <ion-icon name="person"></ion-icon>
@@ -53,23 +92,26 @@
             <span class="monto-value">${{doc.monto | number:'1.0-2'}}</span>
           </div>
           
-          <div class="fechas-row" *ngIf="doc.fecha_documento">
-            <span>{{doc.fecha_documento | date:'dd/MM/yy'}}</span>
-          </div>
-          
-          <div class="obs-row" *ngIf="doc.observaciones">
-            <span>{{doc.observaciones}}</span>
+          <div class="fechas-row">
+            <span *ngIf="doc.fecha_documento">{{doc.fecha_documento | date:'dd/MM/yy'}}</span>
+            <span *ngIf="doc.fecha_vencimiento" class="vencimiento" [class.danger]="isVencido(doc)">
+              Vence: {{doc.fecha_vencimiento | date:'dd/MM/yy'}}
+            </span>
           </div>
         </div>
         
         <div class="card-footer">
-          <ion-button fill="clear" size="small">
+          <ion-button fill="clear" size="small" (click)="verDocumento(doc)" *ngIf="doc.archivo_url">
             <ion-icon slot="start" name="eye"></ion-icon>
             Ver
           </ion-button>
-          <ion-button fill="clear" size="small">
-            <ion-icon slot="start" name="download"></ion-icon>
-            PDF
+          <ion-button fill="clear" size="small" (click)="editarDocumento(doc)">
+            <ion-icon slot="start" name="create"></ion-icon>
+            Editar
+          </ion-button>
+          <ion-button fill="clear" size="small" *ngIf="doc.estado === 'PENDIENTE'" (click)="cambiarEstado(doc, 'APROBADO')">
+            <ion-icon slot="start" name="checkmark"></ion-icon>
+            Aprobar
           </ion-button>
         </div>
       </div>

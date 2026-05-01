@@ -1,14 +1,37 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
-    <ion-title>Ajustes</ion-title>
+    <ion-title>Ajustes / Parámetros</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="agregarParametro()">
+        <ion-icon slot="icon-only" name="add-circle"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+  <ion-toolbar *ngIf="!loading">
+    <div class="filter-row">
+      <ion-item lines="none" class="filter-item">
+        <ion-label>Categoría:</ion-label>
+        <ion-select [value]="categoriaSeleccionada" (ionChange)="categoriaSeleccionada = $event.detail.value; cargarParametros()" placeholder="Todas" interface="popover">
+          <ion-select-option value="">Todas</ion-select-option>
+          <ion-select-option *ngFor="let cat of categorias" [value]="cat">{{getCategoriaLabel(cat)}}</ion-select-option>
+        </ion-select>
+      </ion-item>
+      <ion-item lines="none" class="filter-item">
+        <ion-label>Campaña:</ion-label>
+        <ion-select [value]="filtroCampana" (ionChange)="filtroCampana = $event.detail.value; cargarParametros()" placeholder="Todas" interface="popover">
+          <ion-select-option value="">Todas</ion-select-option>
+          <ion-select-option *ngFor="let c of campanas" [value]="c.id.toString()">{{c.nombre}}</ion-select-option>
+        </ion-select>
+      </ion-item>
+    </div>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <div class="categoria-filters">
+  <div class="categoria-filters" *ngIf="!loading && parametros.length > 0">
     <ion-chip *ngFor="let cat of categorias" 
               [outline]="categoriaSeleccionada !== cat"
-              (click)="filtrarPorCategoria(cat === categoriaSeleccionada ? '' : cat)">
+              (click)="filtrarPorCategoria(cat)">
       {{getCategoriaLabel(cat)}}
     </ion-chip>
   </div>
@@ -17,19 +40,69 @@
     <ion-spinner name="crescent"></ion-spinner>
   </div>
 
-  <ion-list *ngIf="!loading && parametros.length > 0">
-    <ion-item *ngFor="let param of parametros">
+  <div *ngIf="error" class="error">
+    <ion-icon name="warning-outline"></ion-icon>
+    <p>{{error}}</p>
+  </div>
+
+  <ion-list *ngIf="!loading && parametrosFiltrados.length > 0">
+    <ion-item *ngFor="let param of parametrosFiltrados">
       <ion-label>
         <h2>{{param.nombre}}</h2>
         <p>{{param.categoria_display}} - {{param.campana_nombre}}</p>
+        <p><small>Actualizado: {{param.fecha_actualizacion | date:'dd/MM/yy'}}</small></p>
       </ion-label>
-      <ion-badge slot="end" color="success" *ngIf="param.vigente">
+      <ion-badge slot="end" [color]="param.vigente ? 'success' : 'medium'">
         {{param.valor | number:'1.0-2'}} {{param.unidad}}
       </ion-badge>
+      <ion-buttons slot="end">
+        <ion-button fill="clear" (click)="editarParametro(param)">
+          <ion-icon name="create"></ion-icon>
+        </ion-button>
+        <ion-button fill="clear" (click)="verHistorial(param)">
+          <ion-icon name="time"></ion-icon>
+        </ion-button>
+        <ion-button fill="clear" *ngIf="param.vigente" (click)="nuevaVersion(param)">
+          <ion-icon name="add-circle"></ion-icon>
+        </ion-button>
+      </ion-buttons>
     </ion-item>
   </ion-list>
 
+  <div *ngIf="!loading && parametrosFiltrados.length === 0 && parametros.length > 0" class="empty">
+    <ion-icon name="filter-outline"></ion-icon>
+    <p>No hay parámetros que coincidan con los filtros</p>
+  </div>
+
   <div *ngIf="!loading && parametros.length === 0" class="empty">
+    <ion-icon name="settings-outline"></ion-icon>
     <p>No hay parámetros configurados</p>
+    <ion-button (click)="agregarParametro()">Agregar Parámetro</ion-button>
+  </div>
+
+  <!-- Modal Historial -->
+  <div class="historial-modal" *ngIf="mostrarHistorial">
+    <ion-header>
+      <ion-toolbar>
+        <ion-title>Historial: {{parametroSeleccionado?.nombre}}</ion-title>
+        <ion-buttons slot="end">
+          <ion-button (click)="cerrarHistorial()">Cerrar</ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content>
+      <ion-list>
+        <ion-item *ngFor="let h of historial">
+          <ion-label>
+            <h2>{{h.valor | number:'1.0-2'}} {{h.unidad}}</h2>
+            <p>{{h.campana_nombre}}</p>
+            <p><small>{{h.fecha_actualizacion | date:'dd/MM/yyyy HH:mm'}}</small></p>
+          </ion-label>
+          <ion-badge [color]="h.vigente ? 'success' : 'medium'" slot="end">
+            {{h.vigente ? 'Vigente' : 'Histórico'}}
+          </ion-badge>
+        </ion-item>
+      </ion-list>
+    </ion-content>
   </div>
 </ion-content>

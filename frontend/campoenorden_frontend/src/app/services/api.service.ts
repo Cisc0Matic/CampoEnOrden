@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable, of, BehaviorSubject, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
@@ -101,16 +101,32 @@ export class ApiService {
     await this.savePendingRequests();
   }
 
-  get<T>(path: string): Observable<T> {
-    return this.http.get<T>(`${this.baseUrl}/${path}`, { headers: this.getHeaders() }).pipe(
+  get<T>(path: string, options?: { params?: HttpParams | { [param: string]: string | string[] } }): Observable<any> {
+    const httpOptions: any = { headers: this.getHeaders() };
+    if (options?.params) {
+      httpOptions.params = options.params;
+    }
+    return this.http.get<T>(`${this.baseUrl}/${path}`, httpOptions).pipe(
       catchError((error) => {
         console.warn('API error:', error);
-        return of(null as T);
+        return of(null as any);
       })
     );
   }
 
-  post<T>(path: string, body: object): Observable<T> {
+  post<T>(path: string, body: any): Observable<T> {
+    // Handle FormData for file uploads
+    if (body instanceof FormData) {
+      const headers = this.getHeaders();
+      headers.delete('Content-Type'); // Let browser set it for FormData
+      return this.http.post<T>(`${this.baseUrl}/${path}`, body, { headers }).pipe(
+        catchError((error) => {
+          this.queueRequest('POST', path, body);
+          return of({ success: true, offline: true } as T);
+        })
+      );
+    }
+    
     return this.http.post<T>(`${this.baseUrl}/${path}`, body, { headers: this.getHeaders() }).pipe(
       catchError((error) => {
         this.queueRequest('POST', path, body);
@@ -119,7 +135,19 @@ export class ApiService {
     );
   }
 
-  put<T>(path: string, body: object): Observable<T> {
+  put<T>(path: string, body: any): Observable<T> {
+    // Handle FormData for file uploads
+    if (body instanceof FormData) {
+      const headers = this.getHeaders();
+      headers.delete('Content-Type'); // Let browser set it for FormData
+      return this.http.put<T>(`${this.baseUrl}/${path}`, body, { headers }).pipe(
+        catchError((error) => {
+          this.queueRequest('PUT', path, body);
+          return of({ success: true, offline: true } as T);
+        })
+      );
+    }
+    
     return this.http.put<T>(`${this.baseUrl}/${path}`, body, { headers: this.getHeaders() }).pipe(
       catchError((error) => {
         this.queueRequest('PUT', path, body);

@@ -1,6 +1,34 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
-    <ion-title>Usuarios</ion-title>
+    <ion-title>Usuarios / Personas</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="agregarPersona()">
+        <ion-icon slot="icon-only" name="add-circle"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+  <ion-toolbar *ngIf="!loading && personas.length > 0">
+    <div class="filter-row">
+      <ion-item lines="none" class="filter-item">
+        <ion-label>Tipo:</ion-label>
+        <ion-select [value]="filtroTipo" (ionChange)="filtroTipo = $event.detail.value; filtrarPersonas()" placeholder="Todos" interface="popover">
+          <ion-select-option value="">Todos</ion-select-option>
+          <ion-select-option value="PERSONA">Persona</ion-select-option>
+          <ion-select-option value="EMPRESA">Empresa</ion-select-option>
+        </ion-select>
+      </ion-item>
+      <ion-item lines="none" class="filter-item">
+        <ion-label>Rol:</ion-label>
+        <ion-select [value]="filtroRol" (ionChange)="filtroRol = $event.detail.value; filtrarPersonas()" placeholder="Todos" interface="popover">
+          <ion-select-option value="">Todos</ion-select-option>
+          <ion-select-option value="DUENO">Dueño</ion-select-option>
+          <ion-select-option value="ARRENDATARIO">Arrendatario</ion-select-option>
+          <ion-select-option value="CONTRATISTA">Contratista</ion-select-option>
+          <ion-select-option value="CHOFER">Chofer</ion-select-option>
+          <ion-select-option value="ADMINISTRADOR">Administrador</ion-select-option>
+        </ion-select>
+      </ion-item>
+    </div>
   </ion-toolbar>
 </ion-header>
 
@@ -9,21 +37,41 @@
     <ion-spinner name="crescent"></ion-spinner>
   </div>
 
-  <ion-list *ngIf="!loading && personas.length > 0">
-    <ion-item *ngFor="let persona of personas">
+  <div *ngIf="error" class="error">
+    <ion-icon name="warning-outline"></ion-icon>
+    <p>{{error}}</p>
+  </div>
+
+  <div *ngIf="!loading && personas.length === 0" class="empty">
+    <ion-icon name="people-outline"></ion-icon>
+    <p>No hay personas cargadas</p>
+    <ion-button (click)="agregarPersona()">Agregar Persona</ion-button>
+  </div>
+
+  <div *ngIf="!loading && personasFiltradas.length === 0 && personas.length > 0" class="empty">
+    <ion-icon name="filter-outline"></ion-icon>
+    <p>No hay personas que coincidan con los filtros</p>
+  </div>
+
+  <ion-list *ngIf="!loading && personasFiltradas.length > 0">
+    <ion-item *ngFor="let persona of personasFiltradas" (click)="verDetallePersona(persona)">
       <ion-icon [name]="getRolIcon(persona.rol)" slot="start"></ion-icon>
       <ion-label>
         <h2>{{persona.nombre}}</h2>
-        <p>{{persona.nombre_rol}}</p>
-        <p>{{persona.documento || persona.cuil}}</p>
+        <p>{{persona.nombre_rol}} • {{persona.tipo === 'EMPRESA' ? 'Empresa' : 'Persona'}}</p>
+        <p>{{persona.documento || persona.cuil}} • {{persona.telefono}}</p>
       </ion-label>
       <ion-badge slot="end" [color]="persona.activo ? 'success' : 'medium'">
         {{persona.activo ? 'Activo' : 'Inactivo'}}
       </ion-badge>
+      <ion-buttons slot="end">
+        <ion-button fill="clear" (click)="editarPersona(persona)">
+          <ion-icon name="create"></ion-icon>
+        </ion-button>
+        <ion-button fill="clear" (click)="toggleActivo(persona)">
+          <ion-icon [name]="persona.activo ? 'close-circle' : 'checkmark-circle'"></ion-icon>
+        </ion-button>
+      </ion-buttons>
     </ion-item>
   </ion-list>
-
-  <div *ngIf="!loading && personas.length === 0" class="empty">
-    <p>No hay personas cargadas</p>
-  </div>
 </ion-content>

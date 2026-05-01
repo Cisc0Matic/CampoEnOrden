@@ -1,0 +1,67 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>{{isEdit ? 'Editar' : 'Nuevo'}} Parámetro</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="guardar()" [disabled]="loading">
+        <ion-icon slot="icon-only" name="checkmark"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <form [formGroup]="parametroForm" class="form-container">
+    <ion-list>
+      <ion-item>
+        <ion-label position="floating">Nombre *</ion-label>
+        <ion-input formControlName="nombre" placeholder="Ej: Soja, Herbicida X..."></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label>Categoría *</ion-label>
+        <ion-select formControlName="categoria">
+          <ion-select-option *ngFor="let c of categorias" [value]="c.value">{{c.label}}</ion-select-option>
+        </ion-select>
+      </ion-item>
+      <ion-item>
+        <ion-label position="floating">Valor *</ion-label>
+        <ion-input type="number" formControlName="valor"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label>Unidad *</ion-label>
+        <ion-select formControlName="unidad">
+          <ion-select-option *ngFor="let u of unidades" [value]="u">{{u}}</ion-select-option>
+        </ion-select>
+      </ion-item>
+      <ion-item>
+        <ion-label>Campaña (para histórico)</ion-label>
+        <ion-select formControlName="campana" [compareWith]="compararPorId">
+          <ion-select-option [value]="null">Ninguna (Vigente)</ion-select-option>
+          <ion-select-option *ngFor="let c of campanas" [value]="c.id">{{c.nombre}}</ion-select-option>
+        </ion-select>
+      </ion-item>
+      <ion-item>
+        <ion-label>Parámetro Vigente</ion-label>
+        <ion-toggle formControlName="vigente"></ion-toggle>
+      </ion-item>
+    </ion-list>
+
+    <div class="info">
+      <ion-icon name="information-circle"></ion-icon>
+      <p>Al crear una nueva versión de un parámetro con el mismo nombre, se mantendrá el histórico para campañas anteriores.</p>
+    </div>
+
+    <div class="error" *ngIf="error">
+      <p>{{error}}</p>
+    </div>
+
+    <div class="form-actions">
+      <ion-button expand="block" (click)="guardar()" [disabled]="loading">
+        <ion-spinner *ngIf="loading" name="crescent"></ion-spinner>
+        {{isEdit ? 'Actualizar' : 'Crear'}} Parámetro
+      </ion-button>
+      <ion-button expand="block" fill="clear" (click)="router.navigate(['/ajustes'])">
+        Cancelar
+      </ion-button>
+    </div>
+  </form>
+</ion-content>

@@ -16,7 +16,7 @@ export class AuthInterceptor implements HttpInterceptor {
   constructor(private router: Router) {}
 
   intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
-    const token = localStorage.getItem('token'); // O sessionStorage, dependiendo de dónde se guarde
+    const token = localStorage.getItem('jwt_token');
     if (token) {
       request = request.clone({
         setHeaders: {
@@ -28,9 +28,8 @@ export class AuthInterceptor implements HttpInterceptor {
     return next.handle(request).pipe(
       catchError((error: HttpErrorResponse) => {
         if (error.status === 401 || error.status === 403) {
-          // Token expirado o inválido, desloguear al usuario
-          localStorage.removeItem('token'); // Eliminar el token
-          this.router.navigate(['/login']); // Redirigir a la página de login
+          localStorage.removeItem('jwt_token');
+          this.router.navigate(['/login']);
         }
         return throwError(() => error);
       })

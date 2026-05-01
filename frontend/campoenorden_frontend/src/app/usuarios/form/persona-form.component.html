@@ -1,0 +1,71 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>{{isEdit ? 'Editar' : 'Nueva'}} Persona</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="guardar()" [disabled]="loading">
+        <ion-icon slot="icon-only" name="checkmark"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <form [formGroup]="personaForm" class="form-container">
+    <ion-list>
+      <ion-item>
+        <ion-label position="floating">Nombre *</ion-label>
+        <ion-input formControlName="nombre" placeholder="Ej: Juan Pérez"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label>Tipo *</ion-label>
+        <ion-select formControlName="tipo">
+          <ion-select-option *ngFor="let t of tipos" [value]="t.value">{{t.label}}</ion-select-option>
+        </ion-select>
+      </ion-item>
+      <ion-item>
+        <ion-label>Rol *</ion-label>
+        <ion-select formControlName="rol">
+          <ion-select-option *ngFor="let r of roles" [value]="r.value">{{r.label}}</ion-select-option>
+        </ion-select>
+      </ion-item>
+      <ion-item>
+        <ion-label position="floating">Documento (DNI/CUIT)</ion-label>
+        <ion-input formControlName="documento" placeholder="Ej: 12345678"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label position="floating">CUIL</ion-label>
+        <ion-input formControlName="cuil" placeholder="Ej: 20-12345678-9"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label position="floating">Dirección</ion-label>
+        <ion-input formControlName="direccion" placeholder="Ej: Calle 123"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label position="floating">Teléfono</ion-label>
+        <ion-input formControlName="telefono" placeholder="Ej: 351 1234567"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label position="floating">Email</ion-label>
+        <ion-input type="email" formControlName="email" placeholder="Ej: juan@email.com"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label>Activo</ion-label>
+        <ion-toggle formControlName="activo"></ion-toggle>
+      </ion-item>
+    </ion-list>
+
+    <div class="error" *ngIf="error">
+      <p>{{error}}</p>
+    </div>
+
+    <div class="form-actions">
+      <ion-button expand="block" (click)="guardar()" [disabled]="loading">
+        <ion-spinner *ngIf="loading" name="crescent"></ion-spinner>
+        {{isEdit ? 'Actualizar' : 'Crear'}} Persona
+      </ion-button>
+      <ion-button expand="block" fill="clear" (click)="router.navigate(['/usuarios'])">
+        Cancelar
+      </ion-button>
+    </div>
+  </form>
+</ion-content>

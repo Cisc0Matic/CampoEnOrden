@@ -1,0 +1,125 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>{{isEdit ? 'Editar' : 'Nueva'}} Labor</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="guardar()" [disabled]="loading">
+        <ion-icon slot="icon-only" name="checkmark"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <form [formGroup]="laborForm" class="form-container">
+    <ion-list>
+      <ion-item>
+        <ion-label>Lote *</ion-label>
+        <ion-select formControlName="lote" [compareWith]="compararPorId">
+          <ion-select-option *ngFor="let l of lotes" [value]="l.id">{{l.campo_nombre}} - {{l.cultivo_nombre}}</ion-select-option>
+        </ion-select>
+      </ion-item>
+      <ion-item>
+        <ion-label>Tipo *</ion-label>
+        <ion-select formControlName="tipo">
+          <ion-select-option *ngFor="let t of tipos" [value]="t.value">{{t.label}}</ion-select-option>
+        </ion-select>
+      </ion-item>
+      <ion-item>
+        <ion-label position="floating">Fecha *</ion-label>
+        <ion-datetime formControlName="fecha" presentation="date"></ion-datetime>
+      </ion-item>
+      <ion-item>
+        <ion-label>Contratista</ion-label>
+        <ion-select formControlName="contratista" [compareWith]="compararPorId">
+          <ion-select-option [value]="null">Ninguno</ion-select-option>
+          <ion-select-option *ngFor="let p of personas" [value]="p.id">{{p.nombre}}</ion-select-option>
+        </ion-select>
+      </ion-item>
+      <ion-item>
+        <ion-label position="floating">Hectáreas *</ion-label>
+        <ion-input type="number" formControlName="hectareas"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label position="floating">Costo Total ($)</ion-label>
+        <ion-input type="number" formControlName="costo_total"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label position="floating">Costo $/ha</ion-label>
+        <ion-input type="number" formControlName="costo_pesos_ha"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label position="floating">Costo U$S/ha</ion-label>
+        <ion-input type="number" formControlName="costo_dolares_ha"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label position="floating">qq/ha</ion-label>
+        <ion-input type="number" formControlName="qq_ha"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label position="floating">Observaciones</ion-label>
+        <ion-textarea formControlName="observaciones" placeholder="Detalles de la labor..."></ion-textarea>
+      </ion-item>
+    </ion-list>
+
+    <!-- Insumos Section -->
+    <div class="section-header">
+      <h3>Insumos Aplicados</h3>
+      <ion-button size="small" (click)="agregarInsumo()">
+        <ion-icon slot="start" name="add"></ion-icon>
+        Agregar
+      </ion-button>
+    </div>
+
+    <div formArrayName="insumos" *ngFor="let insumo of insumosArray.controls; let i = index">
+      <div [formGroupName]="i" class="insumo-form">
+        <ion-item>
+          <ion-label>Insumo *</ion-label>
+          <ion-select formControlName="insumo" [compareWith]="compararPorId">
+            <ion-select-option *ngFor="let i of insumos" [value]="i.id">{{i.nombre}} ({{i.tipo_display}})</ion-select-option>
+          </ion-select>
+        </ion-item>
+        <div class="insumo-row">
+          <ion-item>
+            <ion-label position="floating">Dosis</ion-label>
+            <ion-input type="number" formControlName="dosis"></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label>Unidad</ion-label>
+            <ion-select formControlName="unidad_dosis">
+              <ion-select-option value="l/ha">l/ha</ion-select-option>
+              <ion-select-option value="kg/ha">kg/ha</ion-select-option>
+              <ion-select-option value="g/ha">g/ha</ion-select-option>
+              <ion-select-option value="unidades/ha">unidades/ha</ion-select-option>
+            </ion-select>
+          </ion-item>
+        </div>
+        <ion-item>
+          <ion-label position="floating">Total Aplicado</ion-label>
+          <ion-input type="number" formControlName="total_aplicado"></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label position="floating">Precio Unitario</ion-label>
+          <ion-input type="number" formControlName="precio_unitario"></ion-input>
+        </ion-item>
+        <ion-button fill="clear" color="danger" (click)="eliminarInsumo(i)">
+          <ion-icon slot="start" name="trash"></ion-icon>
+          Eliminar
+        </ion-button>
+      </div>
+    </div>
+
+    <div class="error" *ngIf="error">
+      <p>{{error}}</p>
+    </div>
+
+    <div class="form-actions">
+      <ion-button expand="block" (click)="guardar()" [disabled]="loading">
+        <ion-spinner *ngIf="loading" name="crescent"></ion-spinner>
+        {{isEdit ? 'Actualizar' : 'Crear'}} Labor
+      </ion-button>
+      <ion-button expand="block" fill="clear" (click)="router.navigate(['/labores'])">
+        Cancelar
+      </ion-button>
+    </div>
+  </form>
+</ion-content>

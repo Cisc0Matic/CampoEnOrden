@@ -37,7 +37,7 @@ export class LoginComponent implements OnInit {
   async ngOnInit() {
     await this.storage.create();
     
-    const token = await this.storage.get('jwt_token');
+    const token = localStorage.getItem('jwt_token') || await this.storage.get('jwt_token');
     if (token) {
       console.log('Ya hay token, redirigiendo...');
       this.goToTabs();
@@ -68,29 +68,31 @@ export class LoginComponent implements OnInit {
         const response: any = await firstValueFrom(
           this.apiService.post('token/', { username: 'demo', password: 'demo123' })
         );
-        if (response && response.access) {
-          await this.storage.set('jwt_token', response.access);
-          await this.storage.set('username', username);
-          this.goToTabs();
-        }
-      } catch (error) {
-        this.errorMessage = 'Demo no disponible. ¿Backend corriendo?';
-      }
-      this.loading = false;
-      return;
-    }
-
-    try {
-      const response: any = await firstValueFrom(
-        this.apiService.post('token/', { username, password })
-      );
-
-      console.log('Login response:', response);
-
       if (response && response.access) {
+        localStorage.setItem('jwt_token', response.access);
         await this.storage.set('jwt_token', response.access);
         await this.storage.set('username', username);
         this.goToTabs();
+      }
+    } catch (error) {
+      this.errorMessage = 'Demo no disponible. ¿Backend corriendo?';
+    }
+    this.loading = false;
+    return;
+  }
+
+  try {
+    const response: any = await firstValueFrom(
+      this.apiService.post('token/', { username, password })
+    );
+
+    console.log('Login response:', response);
+
+    if (response && response.access) {
+      localStorage.setItem('jwt_token', response.access);
+      await this.storage.set('jwt_token', response.access);
+      await this.storage.set('username', username);
+      this.goToTabs();
       } else if (response && response.detail) {
         this.errorMessage = response.detail;
       } else {

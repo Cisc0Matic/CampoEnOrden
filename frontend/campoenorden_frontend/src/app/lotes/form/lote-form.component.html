@@ -1,0 +1,77 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>{{isEdit ? 'Editar' : 'Nuevo'}} Lote / Campaña</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="guardar()" [disabled]="loading">
+        <ion-icon slot="icon-only" name="checkmark"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <form [formGroup]="loteForm" class="form-container">
+    <ion-list>
+      <ion-item>
+        <ion-label>Campo *</ion-label>
+        <ion-select formControlName="campo" [compareWith]="compararPorId">
+          <ion-select-option *ngFor="let c of campos" [value]="c.id">{{c.nombre}}</ion-select-option>
+        </ion-select>
+      </ion-item>
+      <ion-item>
+        <ion-label>Campaña *</ion-label>
+        <ion-select formControlName="campana" [compareWith]="compararPorId">
+          <ion-select-option *ngFor="let c of campanas" [value]="c.id">{{c.nombre}}</ion-select-option>
+        </ion-select>
+      </ion-item>
+      <ion-item>
+        <ion-label>Cultivo *</ion-label>
+        <ion-select formControlName="cultivo" [compareWith]="compararPorId">
+          <ion-select-option *ngFor="let c of cultivos" [value]="c.id">{{c.nombre}}</ion-select-option>
+        </ion-select>
+      </ion-item>
+      <ion-item>
+        <ion-label position="floating">Superficie (ha) *</ion-label>
+        <ion-input type="number" formControlName="superficie"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label position="floating">Rendimiento Estimado (qq/ha)</ion-label>
+        <ion-input type="number" formControlName="rendimiento_estimado"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label position="floating">Precio Tonelada ($)</ion-label>
+        <ion-input type="number" formControlName="precio_tn"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label position="floating">Tipo de Cambio ($)</ion-label>
+        <ion-input type="number" formControlName="tipo_cambio"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label position="floating">Ubicación</ion-label>
+        <ion-input formControlName="ubicacion" placeholder="Ej: Lote Norte"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label>Activo</ion-label>
+        <ion-toggle formControlName="activo"></ion-toggle>
+      </ion-item>
+      <ion-item>
+        <ion-label position="floating">Observaciones</ion-label>
+        <ion-textarea formControlName="observaciones" placeholder="Notas adicionales..."></ion-textarea>
+      </ion-item>
+    </ion-list>
+
+    <div class="error" *ngIf="error">
+      <p>{{error}}</p>
+    </div>
+
+    <div class="form-actions">
+      <ion-button expand="block" (click)="guardar()" [disabled]="loading">
+        <ion-spinner *ngIf="loading" name="crescent"></ion-spinner>
+        {{isEdit ? 'Actualizar' : 'Crear'}} Lote
+      </ion-button>
+      <ion-button expand="block" fill="clear" (click)="router.navigate(['/lotes'])">
+        Cancelar
+      </ion-button>
+    </div>
+  </form>
+</ion-content>

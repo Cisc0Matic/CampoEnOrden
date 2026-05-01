@@ -1,0 +1,118 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>{{isEdit ? 'Editar' : 'Nuevo'}} Flete</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="guardar()" [disabled]="loading">
+        <ion-icon slot="icon-only" name="checkmark"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <form [formGroup]="fleteForm" class="form-container">
+    <ion-list>
+      <ion-item>
+        <ion-label position="floating">Nro CPE *</ion-label>
+        <ion-input formControlName="nro_cpe" placeholder="Ej: CPE-00123"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label position="floating">CTG</ion-label>
+        <ion-input formControlName="ctg" placeholder="Ej: 12345678"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label>Lote *</ion-label>
+        <ion-select formControlName="lote" [compareWith]="compararPorId">
+          <ion-select-option *ngFor="let l of lotes" [value]="l.id">{{l.campo_nombre}} - {{l.cultivo_nombre}}</ion-select-option>
+        </ion-select>
+      </ion-item>
+      <ion-item>
+        <ion-label>Chofer</ion-label>
+        <ion-select formControlName="chofer" [compareWith]="compararPorId">
+          <ion-select-option [value]="null">Ninguno</ion-select-option>
+          <ion-select-option *ngFor="let p of personas" [value]="p.id">{{p.nombre}}</ion-select-option>
+        </ion-select>
+      </ion-item>
+      <ion-item>
+        <ion-label position="floating">Patente Camión *</ion-label>
+        <ion-input formControlName="patente_camion" placeholder="Ej: ABC123"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label position="floating">Patente Acoplado</ion-label>
+        <ion-input formControlName="patente_acoplado" placeholder="Ej: XYZ789"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label position="floating">Fecha/Hora Salida</ion-label>
+        <ion-datetime formControlName="fecha_hora_salida" presentation="date-time"></ion-datetime>
+      </ion-item>
+      <ion-item>
+        <ion-label position="floating">Fecha/Hora Llegada</ion-label>
+        <ion-datetime formControlName="fecha_hora_llegada" presentation="date-time"></ion-datetime>
+      </ion-item>
+      <ion-item>
+        <ion-label position="floating">Peso Origen (kg)</ion-label>
+        <ion-input type="number" formControlName="peso_origen"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label position="floating">Peso Destino (kg)</ion-label>
+        <ion-input type="number" formControlName="peso_destino"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label position="floating">Flete Corto ($)</ion-label>
+        <ion-input type="number" formControlName="flete_corto"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label position="floating">Flete Largo ($)</ion-label>
+        <ion-input type="number" formControlName="flete_largo"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label position="floating">Comisión ($)</ion-label>
+        <ion-input type="number" formControlName="comision"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label position="floating">Secada ($)</ion-label>
+        <ion-input type="number" formControlName="secada"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label position="floating">Cosecha ($)</ion-label>
+        <ion-input type="number" formControlName="cosecha"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label position="floating">Costo Comercial ($)</ion-label>
+        <ion-input type="number" formControlName="costo_comercial"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label position="floating">Destino</ion-label>
+        <ion-input formControlName="destino" placeholder="Ej: Acopio Central"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label>Estado</ion-label>
+        <ion-select formControlName="estado">
+          <ion-select-option *ngFor="let e of estados" [value]="e.value">{{e.label}}</ion-select-option>
+        </ion-select>
+      </ion-item>
+      <ion-item>
+        <ion-label position="floating">Observaciones</ion-label>
+        <ion-textarea formControlName="observaciones" placeholder="Notas adicionales..."></ion-textarea>
+      </ion-item>
+    </ion-list>
+
+    <div class="costo-total">
+      <h3>Costo Total Estimado: ${{getCostoTotal() | number:'1.0-0'}}</h3>
+    </div>
+
+    <div class="error" *ngIf="error">
+      <p>{{error}}</p>
+    </div>
+
+    <div class="form-actions">
+      <ion-button expand="block" (click)="guardar()" [disabled]="loading">
+        <ion-spinner *ngIf="loading" name="crescent"></ion-spinner>
+        {{isEdit ? 'Actualizar' : 'Crear'}} Flete
+      </ion-button>
+      <ion-button expand="block" fill="clear" (click)="router.navigate(['/logistica'])">
+        Cancelar
+      </ion-button>
+    </div>
+  </form>
+</ion-content>

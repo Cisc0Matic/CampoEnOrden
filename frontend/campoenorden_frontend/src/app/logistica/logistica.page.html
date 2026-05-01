@@ -2,10 +2,29 @@
   <ion-toolbar>
     <ion-title>Logística</ion-title>
     <ion-buttons slot="end">
-      <ion-button>
+      <ion-button (click)="agregarFlete()">
         <ion-icon slot="icon-only" name="add-circle"></ion-icon>
       </ion-button>
     </ion-buttons>
+  </ion-toolbar>
+  <ion-toolbar *ngIf="!loading && fletes.length > 0">
+    <div class="chip-scroll">
+      <ion-chip [outline]="filtroEstado === ''" (click)="filtrarPorEstado('')">
+        <ion-label>Todos</ion-label>
+      </ion-chip>
+      <ion-chip [outline]="filtroEstado !== 'PENDIENTE'" (click)="filtrarPorEstado('PENDIENTE')">
+        <ion-label>Pendientes</ion-label>
+      </ion-chip>
+      <ion-chip [outline]="filtroEstado !== 'EN_TRASLADO'" (click)="filtrarPorEstado('EN_TRASLADO')">
+        <ion-label>En Traslado</ion-label>
+      </ion-chip>
+      <ion-chip [outline]="filtroEstado !== 'ENTREGADO'" (click)="filtrarPorEstado('ENTREGADO')">
+        <ion-label>Entregados</ion-label>
+      </ion-chip>
+      <ion-chip [outline]="filtroEstado !== 'FACTURADO'" (click)="filtrarPorEstado('FACTURADO')">
+        <ion-label>Facturados</ion-label>
+      </ion-chip>
+    </div>
   </ion-toolbar>
 </ion-header>
 
@@ -25,7 +44,7 @@
     <div *ngIf="!loading && fletes.length === 0" class="empty">
       <ion-icon name="truck-outline"></ion-icon>
       <p>No hay fletes cargados</p>
-      <ion-button>
+      <ion-button (click)="agregarFlete()">
         <ion-icon name="add"></ion-icon>
         Agregar Flete
       </ion-button>
@@ -44,6 +63,11 @@
         </div>
         
         <div class="card-body">
+          <div class="lote-row" *ngIf="flete.lote_info">
+            <ion-icon name="leaf"></ion-icon>
+            <span>{{flete.lote_info}}</span>
+          </div>
+          
           <div class="chofer-row" *ngIf="flete.chofer_nombre">
             <ion-icon name="person"></ion-icon>
             <span>{{flete.chofer_nombre}}</span>
@@ -55,6 +79,17 @@
             <span *ngIf="flete.patente_acoplado" class="acoplado">/ {{flete.patente_acoplado}}</span>
           </div>
           
+          <div class="fechas-row" *ngIf="flete.fecha_hora_salida">
+            <div class="fecha-item">
+              <ion-icon name="time"></ion-icon>
+              <span>Salida: {{flete.fecha_hora_salida | date:'dd/MM HH:mm'}}</span>
+            </div>
+            <div class="fecha-item" *ngIf="flete.fecha_hora_llegada">
+              <ion-icon name="checkmark-circle"></ion-icon>
+              <span>Llegada: {{flete.fecha_hora_llegada | date:'dd/MM HH:mm'}}</span>
+            </div>
+          </div>
+          
           <div class="peso-row" *ngIf="flete.peso_origen || flete.peso_destino">
             <div class="peso-box origen">
               <span class="peso-label">Origen</span>
@@ -64,6 +99,10 @@
             <div class="peso-box destino">
               <span class="peso-label">Destino</span>
               <span class="peso-value">{{flete.peso_destino | number:'1.0-0'}} kg</span>
+            </div>
+            <div class="peso-box diferencia" *ngIf="flete.peso_origen && flete.peso_destino">
+              <span class="peso-label">Diferencia</span>
+              <span class="peso-value">{{flete.peso_origen - flete.peso_destino | number:'1.0-0'}} kg</span>
             </div>
           </div>
           
@@ -93,8 +132,12 @@
               <span class="costo-label">Cosecha</span>
               <span class="costo-value">${{flete.cosecha | number:'1.0-0'}}</span>
             </div>
+            <div class="costo-item" *ngIf="flete.costo_comercial">
+              <span class="costo-label">Comercial</span>
+              <span class="costo-value">${{flete.costo_comercial | number:'1.0-0'}}</span>
+            </div>
             <div class="costo-item total">
-              <span class="costo-label">Total</span>
+              <span class="costo-label">Total flete</span>
               <span class="costo-value">${{getCostoTotal(flete) | number:'1.0-0'}}</span>
             </div>
           </div>
@@ -106,13 +149,17 @@
         </div>
         
         <div class="card-footer">
-          <ion-button fill="clear" size="small">
+          <ion-button fill="clear" size="small" (click)="editarFlete(flete)">
             <ion-icon slot="start" name="create"></ion-icon>
             Editar
           </ion-button>
-          <ion-button fill="clear" size="small">
+          <ion-button fill="clear" size="small" (click)="verCPE(flete)">
             <ion-icon slot="start" name="document-text"></ion-icon>
             Ver CPE
+          </ion-button>
+          <ion-button fill="clear" size="small" *ngIf="flete.estado === 'EN_TRASLADO'" (click)="actualizarEstado(flete, 'ENTREGADO')">
+            <ion-icon slot="start" name="checkmark"></ion-icon>
+            Marcar Entregado
           </ion-button>
         </div>
       </div>

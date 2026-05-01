@@ -36,6 +36,11 @@ class InsumoSerializer(serializers.ModelSerializer):
 class CampoSerializer(serializers.ModelSerializer):
     estado_contrato_display = serializers.CharField(source='get_estado_contrato_display', read_only=True)
     costo_total_display = serializers.SerializerMethodField()
+    locadores_nombres = serializers.SerializerMethodField()
+    locatarios_nombres = serializers.SerializerMethodField()
+    documentos_count = serializers.IntegerField(read_only=True, default=0)
+    locadores = serializers.PrimaryKeyRelatedField(many=True, read_only=False, queryset=Persona.objects.all(), required=False)
+    locatarios = serializers.PrimaryKeyRelatedField(many=True, read_only=False, queryset=Persona.objects.all(), required=False)
     
     class Meta:
         model = Campo
@@ -43,12 +48,21 @@ class CampoSerializer(serializers.ModelSerializer):
     
     def get_costo_total_display(self, obj):
         return float(obj.costo_total or 0)
+    
+    def get_locadores_nombres(self, obj):
+        return ', '.join(obj.locadores.values_list('nombre', flat=True)[:3])
+    
+    def get_locatarios_nombres(self, obj):
+        return ', '.join(obj.locatarios.values_list('nombre', flat=True)[:3])
 
 
 class LoteSerializer(serializers.ModelSerializer):
     cultivo_nombre = serializers.CharField(source='cultivo.nombre', read_only=True)
     campo_nombre = serializers.CharField(source='campo.nombre', read_only=True)
     campana_nombre = serializers.CharField(source='campana.nombre', read_only=True)
+    campo = serializers.PrimaryKeyRelatedField(queryset=Campo.objects.all())
+    campana = serializers.PrimaryKeyRelatedField(queryset=Campana.objects.all())
+    cultivo = serializers.PrimaryKeyRelatedField(queryset=Cultivo.objects.all())
     
     class Meta:
         model = Lote
@@ -68,10 +82,33 @@ class LaborSerializer(serializers.ModelSerializer):
     lote_nombre = serializers.CharField(source='lote.campo.nombre', read_only=True)
     contratista_nombre = serializers.CharField(source='contratista.nombre', read_only=True)
     insumos = LaborInsumoSerializer(many=True, read_only=True)
+    lote = serializers.PrimaryKeyRelatedField(queryset=Lote.objects.all())
+    contratista = serializers.PrimaryKeyRelatedField(queryset=Persona.objects.all(), required=False, allow_null=True)
     
     class Meta:
         model = Labor
         fields = '__all__'
+    
+    def create(self, validated_data):
+        insumos_data = self.context.get('insumos', [])
+        labor = Labor.objects.create(**validated_data)
+        for insumo_data in insumos_data:
+            LaborInsumo.objects.create(labor=labor, **insumo_data)
+        return labor
+    
+    def update(self, instance, validated_data):
+        insumos_data = self.context.get('insumos', [])
+        # Update labor fields
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        
+        # Update insumos if provided
+        if insumos_data:
+            instance.insumos.all().delete()
+            for insumo_data in insumos_data:
+                LaborInsumo.objects.create(labor=instance, **insumo_data)
+        return instance
 
 
 class FleteSerializer(serializers.ModelSerializer):
@@ -94,10 +131,20 @@ class DocumentoSerializer(serializers.ModelSerializer):
     estado_display = serializers.CharField(source='get_estado_display', read_only=True)
     campo_nombre = serializers.CharField(source='campo.nombre', read_only=True)
     titular_nombre = serializers.CharField(source='titular.nombre', read_only=True)
+    lote_info = serializers.CharField(source='lote.__str__', read_only=True)
     
     class Meta:
         model = Documento
         fields = '__all__'
+        extra_kwargs = {
+            'archivo': {'required': False, 'allow_null': True}
+        }
+    
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        if instance.archivo:
+            data['archivo_url'] = instance.archivo.url
+        return data
 
 
 class ParametroSerializer(serializers.ModelSerializer):

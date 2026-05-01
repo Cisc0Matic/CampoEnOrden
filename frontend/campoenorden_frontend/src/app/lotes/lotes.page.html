@@ -2,7 +2,7 @@
   <ion-toolbar>
     <ion-title>Lotes / Campañas</ion-title>
     <ion-buttons slot="end">
-      <ion-button>
+      <ion-button (click)="agregarLote()">
         <ion-icon slot="icon-only" name="add-circle"></ion-icon>
       </ion-button>
     </ion-buttons>
@@ -11,6 +11,34 @@
 
 <ion-content [fullscreen]="true">
   <div class="lotes-container">
+    <div class="filtros-container" *ngIf="!loading && lotes.length > 0">
+      <ion-item lines="none">
+        <ion-label>Campaña:</ion-label>
+        <ion-select [value]="filtroCampana" (ionChange)="filtroCampana = $event.detail.value; filtrarLotes()" placeholder="Todas" interface="popover">
+          <ion-select-option value="">Todas</ion-select-option>
+          <ion-select-option *ngFor="let c of campanas" [value]="c.id.toString()">{{c.nombre}}</ion-select-option>
+        </ion-select>
+      </ion-item>
+      <ion-item lines="none">
+        <ion-label>Cultivo:</ion-label>
+        <ion-select [value]="filtroCultivo" (ionChange)="filtroCultivo = $event.detail.value; filtrarLotes()" placeholder="Todos" interface="popover">
+          <ion-select-option value="">Todos</ion-select-option>
+          <ion-select-option *ngFor="let c of cultivos" [value]="c.id.toString()">{{c.nombre}}</ion-select-option>
+        </ion-select>
+      </ion-item>
+      <ion-segment value="filtroActivo" (ionChange)="filtroActivo = $event.detail.value; filtrarLotes()">
+        <ion-segment-button value="todos">
+          <ion-label>Todos</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="activos">
+          <ion-label>Activos</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="inactivos">
+          <ion-label>Inactivos</ion-label>
+        </ion-segment-button>
+      </ion-segment>
+    </div>
+
     <div *ngIf="loading" class="loading">
       <ion-spinner name="crescent"></ion-spinner>
       <p>Cargando lotes...</p>
@@ -25,14 +53,19 @@
     <div *ngIf="!loading && lotes.length === 0" class="empty">
       <ion-icon name="grid-outline"></ion-icon>
       <p>No hay lotes cargados</p>
-      <ion-button>
+      <ion-button (click)="agregarLote()">
         <ion-icon name="add"></ion-icon>
         Agregar Lote
       </ion-button>
     </div>
 
-    <div *ngIf="!loading && lotes.length > 0" class="lotes-grid">
-      <div class="lote-card" *ngFor="let lote of lotes">
+    <div *ngIf="!loading && lotesFiltrados.length === 0 && lotes.length > 0" class="empty">
+      <ion-icon name="filter-outline"></ion-icon>
+      <p>No hay lotes que coincidan con los filtros</p>
+    </div>
+
+    <div *ngIf="!loading && lotesFiltrados.length > 0" class="lotes-grid">
+      <div class="lote-card" *ngFor="let lote of lotesFiltrados">
         <div class="card-header">
           <div class="header-left">
             <ion-icon [name]="getCultivoIcon(lote.cultivo_nombre)"></ion-icon>
@@ -75,28 +108,20 @@
               <span class="precio-value">${{lote.tipo_cambio | number:'1.0-0'}}</span>
             </div>
           </div>
-          
-          <div class="ubicacion-row" *ngIf="lote.ubicacion">
-            <ion-icon name="location"></ion-icon>
-            <span>{{lote.ubicacion}}</span>
-          </div>
-          
-          <div class="observaciones-row" *ngIf="lote.observaciones">
-            <span class="obs-text">{{lote.observaciones}}</span>
-          </div>
         </div>
         
         <div class="card-footer">
-          <ion-button fill="clear" size="small">
+          <ion-button fill="clear" size="small" (click)="editarLote(lote)">
             <ion-icon slot="start" name="create"></ion-icon>
             Editar
           </ion-button>
-          <ion-button fill="clear" size="small">
+          <ion-button fill="clear" size="small" (click)="verDetalleLote(lote)">
             <ion-icon slot="start" name="eye"></ion-icon>
             Ver
           </ion-button>
         </div>
       </div>
-    </div>
+      </div>
   </div>
+  <router-outlet></router-outlet>
 </ion-content>
