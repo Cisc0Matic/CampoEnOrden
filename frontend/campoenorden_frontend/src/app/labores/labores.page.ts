@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { ApiService } from '../services/api.service';
@@ -30,16 +30,29 @@ interface Labor {
   standalone: true,
   imports: [CommonModule, IonicModule, RouterModule]
 })
-export class LaboresPage implements OnInit {
+export class LaboresPage implements OnInit, OnDestroy {
   labores: Labor[] = [];
   loading = true;
   error: string | null = null;
   filterTipo = '';
+  private routerListener: any;
 
-  constructor(private api: ApiService, private router: Router) {}
+  constructor(private api: ApiService, private router: Router) {
+    this.routerListener = this.router.events.subscribe(() => {
+      if (this.router.url.includes('/tabs/labores')) {
+        this.cargarLabores();
+      }
+    });
+  }
 
   ngOnInit() {
     this.cargarLabores();
+  }
+
+  ngOnDestroy() {
+    if (this.routerListener) {
+      this.routerListener.unsubscribe();
+    }
   }
 
   cargarLabores() {

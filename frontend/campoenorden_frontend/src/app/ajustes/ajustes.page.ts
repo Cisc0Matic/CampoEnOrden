@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { ApiService } from '../services/api.service';
@@ -30,7 +30,7 @@ interface Campana {
   standalone: true,
   imports: [CommonModule, IonicModule]
 })
-export class AjustesPage implements OnInit {
+export class AjustesPage implements OnInit, OnDestroy {
   parametros: Parametro[] = [];
   parametrosFiltrados: Parametro[] = [];
   campanas: Campana[] = [];
@@ -42,11 +42,24 @@ export class AjustesPage implements OnInit {
   mostrarHistorial = false;
   parametroSeleccionado: Parametro | null = null;
   historial: Parametro[] = [];
+  private routerListener: any;
 
-  constructor(private api: ApiService, private router: Router) {}
+  constructor(private api: ApiService, private router: Router) {
+    this.routerListener = this.router.events.subscribe(() => {
+      if (this.router.url.includes('/tabs/ajustes')) {
+        this.cargarParametros();
+      }
+    });
+  }
 
   ngOnInit() {
     this.cargarCampanas();
+  }
+
+  ngOnDestroy() {
+    if (this.routerListener) {
+      this.routerListener.unsubscribe();
+    }
   }
 
   cargarCampanas() {

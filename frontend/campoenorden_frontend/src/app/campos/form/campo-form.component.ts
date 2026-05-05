@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonicModule } from '@ionic/angular';
+import { IonicModule, ToastController } from '@ionic/angular';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -30,7 +30,8 @@ export class CampoFormComponent implements OnInit {
     private fb: FormBuilder,
     private api: ApiService,
     private route: ActivatedRoute,
-    public router: Router
+    public router: Router,
+    private toastCtrl: ToastController
   ) {
     this.campoForm = this.fb.group({
       nombre: ['', Validators.required],
@@ -109,9 +110,22 @@ export class CampoFormComponent implements OnInit {
       : this.api.post('core/campos/', data);
 
     request.subscribe({
-      next: () => this.router.navigate(['/tabs/campos']),
-      error: () => {
-        this.error = 'Error guardando campo';
+      next: async () => {
+        const toast = await this.toastCtrl.create({
+          message: 'Campo cargado correctamente',
+          duration: 2000,
+          color: 'success'
+        });
+        await toast.present();
+        this.router.navigate(['/tabs/campos']);
+      },
+      error: async () => {
+        const toast = await this.toastCtrl.create({
+          message: 'Error al cargar campo',
+          duration: 2000,
+          color: 'danger'
+        });
+        await toast.present();
         this.loading = false;
       }
     });

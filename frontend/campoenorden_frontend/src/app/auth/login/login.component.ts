@@ -37,10 +37,18 @@ export class LoginComponent implements OnInit {
   async ngOnInit() {
     await this.storage.create();
     
+    // Si ya estamos en /login, no redirigir a tabs aunque haya token
+    if (this.router.url.includes('/login')) {
+      console.log('Ya estamos en login, mostrando login...');
+      return;
+    }
+    
     const token = localStorage.getItem('jwt_token') || await this.storage.get('jwt_token');
     if (token) {
-      console.log('Ya hay token, redirigiendo...');
+      console.log('Token encontrado, redirigiendo a tabs...');
       this.goToTabs();
+    } else {
+      console.log('No hay token, mostrando login...');
     }
   }
 
@@ -66,7 +74,7 @@ export class LoginComponent implements OnInit {
     if (username === 'demo' && password === 'demo') {
       try {
         const response: any = await firstValueFrom(
-          this.apiService.post('token/', { username: 'demo', password: 'demo123' })
+          this.apiService.post('token/', { username: 'admin', password: 'admin123' })
         );
       if (response && response.access) {
         localStorage.setItem('jwt_token', response.access);
@@ -111,7 +119,11 @@ export class LoginComponent implements OnInit {
   }
   
   async clearToken() {
+    console.log('Limpiando tokens...');
+    localStorage.removeItem('jwt_token');
+    localStorage.removeItem('username');
     await this.storage.remove('jwt_token');
-    window.location.reload();
+    await this.storage.remove('username');
+    this.router.navigate(['/login']);
   }
 }

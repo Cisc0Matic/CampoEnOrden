@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { ApiService } from '../services/api.service';
@@ -36,16 +36,29 @@ interface Flete {
   standalone: true,
   imports: [CommonModule, IonicModule]
 })
-export class LogisticaPage implements OnInit {
+export class LogisticaPage implements OnInit, OnDestroy {
   fletes: Flete[] = [];
   loading = true;
   error: string | null = null;
   filtroEstado = '';
+  private routerListener: any;
 
-  constructor(private api: ApiService, private router: Router) {}
+  constructor(private api: ApiService, private router: Router) {
+    this.routerListener = this.router.events.subscribe(() => {
+      if (this.router.url.includes('/tabs/logistica')) {
+        this.cargarFletes();
+      }
+    });
+  }
 
   ngOnInit() {
     this.cargarFletes();
+  }
+
+  ngOnDestroy() {
+    if (this.routerListener) {
+      this.routerListener.unsubscribe();
+    }
   }
 
   cargarFletes() {

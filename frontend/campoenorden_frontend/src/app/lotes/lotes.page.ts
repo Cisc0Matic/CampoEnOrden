@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { ApiService } from '../services/api.service';
@@ -39,7 +39,7 @@ interface Cultivo {
   standalone: true,
   imports: [CommonModule, IonicModule, RouterModule]
 })
-export class LotesPage implements OnInit {
+export class LotesPage implements OnInit, OnDestroy {
   lotes: Lote[] = [];
   lotesFiltrados: Lote[] = [];
   campanas: Campana[] = [];
@@ -50,11 +50,24 @@ export class LotesPage implements OnInit {
   filtroCampana = '';
   filtroCultivo = '';
   filtroActivo: any = 'todos';
+  private routerListener: any;
 
-  constructor(private api: ApiService, private router: Router) {}
+  constructor(private api: ApiService, private router: Router) {
+    this.routerListener = this.router.events.subscribe(() => {
+      if (this.router.url.includes('/tabs/lotes')) {
+        this.cargarDatos();
+      }
+    });
+  }
 
   ngOnInit() {
     this.cargarDatos();
+  }
+
+  ngOnDestroy() {
+    if (this.routerListener) {
+      this.routerListener.unsubscribe();
+    }
   }
 
   cargarDatos() {

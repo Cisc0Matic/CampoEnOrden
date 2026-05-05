@@ -51,7 +51,8 @@ ion-list {
 }
 
 ion-item {
-  --background: var(--ion-color-light);
+  --background: #2a2a2a;
+  --color: #ffffff;
   --border-radius: 8px;
   --padding-start: 12px;
   --padding-end: 12px;
@@ -62,6 +63,7 @@ ion-item {
     font-size: 13px;
     font-weight: 500;
     margin: 0;
+    color: #cccccc;
   }
 }
 

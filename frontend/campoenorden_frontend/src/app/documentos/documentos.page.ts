@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { ApiService } from '../services/api.service';
@@ -31,7 +31,7 @@ interface Documento {
   standalone: true,
   imports: [CommonModule, IonicModule]
 })
-export class DocumentosPage implements OnInit {
+export class DocumentosPage implements OnInit, OnDestroy {
   documentos: Documento[] = [];
   documentosFiltrados: Documento[] = [];
   loading = true;
@@ -39,14 +39,27 @@ export class DocumentosPage implements OnInit {
   filtroTipo = '';
   filtroEstado = '';
   campoId: string | null = null;
+  private routerListener: any;
 
-  constructor(private api: ApiService, private router: Router, private route: ActivatedRoute) {}
+  constructor(private api: ApiService, private router: Router, private route: ActivatedRoute) {
+    this.routerListener = this.router.events.subscribe(() => {
+      if (this.router.url.includes('/tabs/documentos')) {
+        this.cargarDocumentos();
+      }
+    });
+  }
 
   ngOnInit() {
     this.route.queryParams.subscribe(params => {
       this.campoId = params['campo_id'] || null;
       this.cargarDocumentos();
     });
+  }
+
+  ngOnDestroy() {
+    if (this.routerListener) {
+      this.routerListener.unsubscribe();
+    }
   }
 
   cargarDocumentos() {
