@@ -1,15 +1,12 @@
 [build]
   base = "frontend/campoenorden_frontend"
-  command = "npm install && npm run build"
-  publish = "frontend/campoenorden_frontend/www"
+  command = "npm install --include=dev && npm run build"
+  publish = "www"
 
 [build.environment]
-  NODE_VERSION = "18"
+  NODE_VERSION = "20"
 
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
-
-[context.production.environment]
-  NODE_ENV = "production"
