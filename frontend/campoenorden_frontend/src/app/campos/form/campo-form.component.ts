@@ -36,6 +36,9 @@ export class CampoFormComponent implements OnInit {
     this.campoForm = this.fb.group({
       nombre: ['', Validators.required],
       ubicacion: [''],
+      localidad: [''],
+      provincia: [''],
+      productor: [null],
       superficie_total: [0, [Validators.required, Validators.min(0)]],
       superficie_trabajada: [0, Validators.min(0)],
       estado_contrato: ['ACTIVO'],
@@ -75,6 +78,9 @@ export class CampoFormComponent implements OnInit {
         this.campoForm.patchValue({
           nombre: campo.nombre,
           ubicacion: campo.ubicacion,
+          localidad: campo.localidad,
+          provincia: campo.provincia,
+          productor: campo.productor,
           superficie_total: campo.superficie_total,
           superficie_trabajada: campo.superficie_trabajada,
           estado_contrato: campo.estado_contrato,

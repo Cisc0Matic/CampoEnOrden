@@ -21,6 +21,20 @@
         <ion-input formControlName="ubicacion" placeholder="Ej: Ruta 8, Km 120"></ion-input>
       </ion-item>
       <ion-item>
+        <ion-label position="floating">Localidad</ion-label>
+        <ion-input formControlName="localidad" placeholder="Ej: Bell Ville"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label position="floating">Provincia</ion-label>
+        <ion-input formControlName="provincia" placeholder="Ej: Córdoba"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label>Productor</ion-label>
+        <ion-select formControlName="productor" interface="action-sheet">
+          <ion-select-option *ngFor="let p of personas" [value]="p.id">{{p.nombre}}</ion-select-option>
+        </ion-select>
+      </ion-item>
+      <ion-item>
         <ion-label position="floating">Superficie Total (ha) *</ion-label>
         <ion-input type="number" formControlName="superficie_total"></ion-input>
       </ion-item>
@@ -81,7 +95,7 @@
         <ion-spinner *ngIf="loading" name="crescent"></ion-spinner>
         {{isEdit ? 'Actualizar' : 'Crear'}} Campo
       </ion-button>
-      <ion-button expand="block" fill="clear" (click)="router.navigate(['/campos'])">
+      <ion-button expand="block" fill="clear" (click)="router.navigate(['/tabs/campos'])">
         Cancelar
       </ion-button>
     </div>

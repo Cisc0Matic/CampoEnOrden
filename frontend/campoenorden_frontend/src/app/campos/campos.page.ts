@@ -8,6 +8,9 @@ interface Campo {
   id: number;
   nombre: string;
   ubicacion: string;
+  localidad: string;
+  provincia: string;
+  productor_nombre: string;
   superficie_total: number;
   superficie_trabajada: number;
   estado_contrato: string;

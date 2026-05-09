@@ -1,41 +1,9 @@
 from django.db import models
 
 
-class Campo(models.Model):
-    class EstadoContrato(models.TextChoices):
-        ACTIVO = "ACTIVO", "Activo"
-        VENCIDO = "VENCIDO", "Vencido"
-        PENDIENTE = "PENDIENTE", "Pendiente"
-        RENOVADO = "RENOVADO", "Renovado"
-
-    nombre = models.CharField(max_length=100, unique=True)
-    ubicacion = models.CharField(max_length=255, blank=True, null=True)
-    superficie_total = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
-    superficie_trabajada = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
-    contrato_asociado = models.ForeignKey('Documento', on_delete=models.SET_NULL, null=True, blank=True, related_name='campos_contrato')
-    locatarios = models.ManyToManyField('Persona', blank=True, related_name='campos_arrendatario')
-    locadores = models.ManyToManyField('Persona', blank=True, related_name='campos_dueño')
-    condiciones_alquiler = models.TextField(blank=True, null=True)
-    estado_contrato = models.CharField(max_length=20, choices=EstadoContrato.choices, default=EstadoContrato.ACTIVO)
-    observaciones = models.TextField(blank=True, null=True)
-    costo_total = models.DecimalField(max_digits=14, decimal_places=2, blank=True, null=True)
-    costo_por_ha = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
-    margen = models.DecimalField(max_digits=14, decimal_places=2, blank=True, null=True)
-    alquiler_pendiente = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
-    fecha_creacion = models.DateTimeField(auto_now_add=True)
-    fecha_modificacion = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        verbose_name = "Campo"
-        verbose_name_plural = "Campos"
-
-    def __str__(self):
-        return self.nombre
-
-
 class Persona(models.Model):
     class TipoPersona(models.TextChoices):
-        PERSONA = "PERSONA", "Persona Fí­sica"
+        PERSONA = "PERSONA", "Persona Física"
         EMPRESA = "EMPRESA", "Empresa"
 
     class Rol(models.TextChoices):
@@ -46,6 +14,7 @@ class Persona(models.Model):
         ADMINISTRADOR = "ADMINISTRADOR", "Administrador"
         RESPONSABLE_CARGA = "RESPONSABLE_CARGA", "Responsable de Carga"
         BENEFICIARIO = "BENEFICIARIO", "Beneficiario de Pagos"
+        PRODUCTOR = "PRODUCTOR", "Productor"
 
     nombre = models.CharField(max_length=255)
     tipo = models.CharField(max_length=20, choices=TipoPersona.choices, default=TipoPersona.PERSONA)
@@ -69,6 +38,44 @@ class Persona(models.Model):
         return f"{self.nombre} ({self.get_rol_display()})" if self.rol else self.nombre
 
 
+class Campo(models.Model):
+    class EstadoContrato(models.TextChoices):
+        ACTIVO = "ACTIVO", "Activo"
+        VENCIDO = "VENCIDO", "Vencido"
+        PENDIENTE = "PENDIENTE", "Pendiente"
+        RENOVADO = "RENOVADO", "Renovado"
+
+    nombre = models.CharField(max_length=100, unique=True)
+    ubicacion = models.CharField(max_length=255, blank=True, null=True)
+    localidad = models.CharField(max_length=100, blank=True, null=True)
+    provincia = models.CharField(max_length=100, blank=True, null=True)
+    productor = models.ForeignKey(
+        Persona, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='campos_productor'
+    )
+    superficie_total = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    superficie_trabajada = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    contrato_asociado = models.ForeignKey('Documento', on_delete=models.SET_NULL, null=True, blank=True, related_name='campos_contrato')
+    locatarios = models.ManyToManyField(Persona, blank=True, related_name='campos_arrendatario')
+    locadores = models.ManyToManyField(Persona, blank=True, related_name='campos_dueño')
+    condiciones_alquiler = models.TextField(blank=True, null=True)
+    estado_contrato = models.CharField(max_length=20, choices=EstadoContrato.choices, default=EstadoContrato.ACTIVO)
+    observaciones = models.TextField(blank=True, null=True)
+    costo_total = models.DecimalField(max_digits=14, decimal_places=2, blank=True, null=True)
+    costo_por_ha = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    margen = models.DecimalField(max_digits=14, decimal_places=2, blank=True, null=True)
+    alquiler_pendiente = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    fecha_modificacion = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Campo"
+        verbose_name_plural = "Campos"
+
+    def __str__(self):
+        return self.nombre
+
+
 class Campana(models.Model):
     nombre = models.CharField(max_length=50)
     inicio = models.DateField()
@@ -82,31 +89,6 @@ class Campana(models.Model):
 
     def __str__(self):
         return self.nombre
-
-
-class Lote(models.Model):
-    campo = models.ForeignKey(Campo, on_delete=models.CASCADE, related_name='lotes')
-    campana = models.ForeignKey(Campana, on_delete=models.CASCADE, related_name='lotes')
-    nombre = models.CharField(max_length=100)
-    cultivo = models.ForeignKey('Cultivo', on_delete=models.SET_NULL, null=True, blank=True, related_name='lotes')
-    superficie = models.DecimalField(max_digits=10, decimal_places=2)
-    rendimiento_estimado = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
-    precio_tn = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
-    tipo_cambio = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
-    ubicacion = models.CharField(max_length=255, blank=True, null=True)
-    activo = models.BooleanField(default=True)
-    observaciones = models.TextField(blank=True, null=True)
-    fecha_creacion = models.DateTimeField(auto_now_add=True)
-    fecha_modificacion = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        verbose_name = "Lote"
-        verbose_name_plural = "Lotes"
-        unique_together = ('campo', 'campana', 'nombre')
-        ordering = ['-campana__inicio', 'campo__nombre']
-
-    def __str__(self):
-        return f"{self.campo.nombre} - {self.campana.nombre} - {self.cultivo.nombre if self.cultivo else self.nombre}"
 
 
 class Cultivo(models.Model):
@@ -131,6 +113,9 @@ class Insumo(models.Model):
         FUNGICIDA = "FUNGICIDA", "Fungicida"
         INSECTICIDA = "INSECTICIDA", "Insecticida"
         SEMILLA = "SEMILLA", "Semilla"
+        COADYUVANTE = "COADYUVANTE", "Coadyuvante / Aceite"
+        INOCULANTE = "INOCULANTE", "Inoculante"
+        SERVICIO = "SERVICIO", "Servicio"
         OTRO = "OTRO", "Otro"
 
     nombre = models.CharField(max_length=200, unique=True)
@@ -147,24 +132,125 @@ class Insumo(models.Model):
         return f"{self.nombre} ({self.get_tipo_display()})"
 
 
+class ProductoPrecio(models.Model):
+    insumo = models.ForeignKey(Insumo, on_delete=models.CASCADE, related_name='precios')
+    precio_unitario = models.DecimalField(max_digits=12, decimal_places=2)
+    moneda = models.CharField(max_length=10, default="USD")
+    proveedor = models.ForeignKey(
+        Persona, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='productos_proveedor'
+    )
+    fecha_precio = models.DateField()
+    vigencia_desde = models.DateField(blank=True, null=True)
+    vigencia_hasta = models.DateField(blank=True, null=True)
+    observaciones = models.TextField(blank=True, null=True)
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Precio de Producto"
+        verbose_name_plural = "Precios de Productos"
+        ordering = ['-fecha_precio']
+
+    def __str__(self):
+        return f"{self.insumo.nombre} - {self.precio_unitario} {self.moneda} ({self.fecha_precio})"
+
+
+class Lote(models.Model):
+    campo = models.ForeignKey(Campo, on_delete=models.CASCADE, related_name='lotes')
+    campana = models.ForeignKey(Campana, on_delete=models.CASCADE, related_name='lotes')
+    nombre = models.CharField(max_length=100)
+    cultivo = models.ForeignKey(Cultivo, on_delete=models.SET_NULL, null=True, blank=True, related_name='lotes')
+    superficie = models.DecimalField(max_digits=10, decimal_places=2)
+    rendimiento_estimado = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    precio_tn = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
+    tipo_cambio = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    ubicacion = models.CharField(max_length=255, blank=True, null=True)
+    activo = models.BooleanField(default=True)
+    observaciones = models.TextField(blank=True, null=True)
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    fecha_modificacion = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Lote"
+        verbose_name_plural = "Lotes"
+        unique_together = ('campo', 'campana', 'nombre')
+        ordering = ['-campana__inicio', 'campo__nombre']
+
+    def __str__(self):
+        return f"{self.campo.nombre} - {self.campana.nombre} - {self.cultivo.nombre if self.cultivo else self.nombre}"
+
+
+class TipoLaborPersonalizado(models.Model):
+    nombre = models.CharField(max_length=100, unique=True)
+    activo = models.BooleanField(default=True)
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Tipo de labor personalizado"
+        verbose_name_plural = "Tipos de labor personalizados"
+        ordering = ['nombre']
+
+    def __str__(self):
+        return self.nombre
+
+
 class Labor(models.Model):
     class TipoLabor(models.TextChoices):
-        PULVERIZACION = "PULVERIZACION", "Pulverización"
         SIEMBRA = "SIEMBRA", "Siembra"
-        FERTILIZACION = "FERTILIZACION", "Fertilización"
+        PULVERIZACION_TERRESTRE = "PULVERIZACION_TERRESTRE", "Pulverización terrestre"
+        PULVERIZACION_DRONES = "PULVERIZACION_DRONES", "Pulverización con drones"
+        PULVERIZACION_AEREA = "PULVERIZACION_AEREA", "Pulverización aérea"
+        FERTILIZACION_TERRESTRE = "FERTILIZACION_TERRESTRE", "Fertilización terrestre"
+        FERTILIZACION_DRONES = "FERTILIZACION_DRONES", "Fertilización con drones"
         COSECHA = "COSECHA", "Cosecha"
-        OTRA = "OTRA", "Otra Labor"
+        OTRA = "OTRA", "Otra"
+
+    class EstadoLabor(models.TextChoices):
+        CARGADA = "CARGADA", "Cargada"
+        PENDIENTE_REVISION = "PENDIENTE_REVISION", "Pendiente de revisión"
+        REVISADA = "REVISADA", "Revisada"
+        APROBADA = "APROBADA", "Aprobada"
+        PENDIENTE_FACTURA = "PENDIENTE_FACTURA", "Pendiente de facturar"
+        FACTURADA = "FACTURADA", "Facturada"
+        COBRADA = "COBRADA", "Cobrada"
 
     lote = models.ForeignKey(Lote, on_delete=models.CASCADE, related_name='labores')
-    tipo = models.CharField(max_length=20, choices=TipoLabor.choices)
+    tipo = models.CharField(max_length=30, choices=TipoLabor.choices)
+    sub_tipo_otra = models.ForeignKey(
+        TipoLaborPersonalizado, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='labores'
+    )
+    estado = models.CharField(
+        max_length=30, choices=EstadoLabor.choices, default=EstadoLabor.CARGADA
+    )
     fecha = models.DateField()
-    contratista = models.ForeignKey(Persona, on_delete=models.SET_NULL, null=True, blank=True, related_name='labores_realizadas')
     hectareas = models.DecimalField(max_digits=10, decimal_places=2)
-    observaciones = models.TextField(blank=True, null=True)
+    precio_por_ha = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
+    moneda = models.CharField(max_length=10, blank=True, null=True, default="USD")
+    contratista = models.ForeignKey(
+        Persona, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='labores_realizadas'
+    )
+    responsable = models.ForeignKey(
+        Persona, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='labores_responsable'
+    )
+    foto_receta = models.ImageField(upload_to='recetas/', blank=True, null=True)
+    costo_total = models.DecimalField(max_digits=14, decimal_places=2, blank=True, null=True)
     costo_dolares_ha = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
     costo_pesos_ha = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
     qq_ha = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
-    costo_total = models.DecimalField(max_digits=14, decimal_places=2, blank=True, null=True)
+    observaciones = models.TextField(blank=True, null=True)
+    cargada_por = models.ForeignKey(
+        'users.User', on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='labores_cargadas'
+    )
+    fecha_hora_carga = models.DateTimeField(blank=True, null=True)
+    revisada_por = models.ForeignKey(
+        'users.User', on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='labores_revisadas'
+    )
+    fecha_revision = models.DateTimeField(blank=True, null=True)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     fecha_modificacion = models.DateTimeField(auto_now=True)
 
@@ -176,13 +262,29 @@ class Labor(models.Model):
     def __str__(self):
         return f"{self.get_tipo_display()} - {self.lote.campo.nombre} - {self.fecha}"
 
+    def save(self, *args, **kwargs):
+        if self.precio_por_ha and self.hectareas:
+            self.costo_total = self.precio_por_ha * self.hectareas
+        if self.pk is None:
+            if not self.estado:
+                self.estado = self.EstadoLabor.CARGADA
+            if not self.fecha_hora_carga:
+                from django.utils import timezone
+                self.fecha_hora_carga = timezone.now()
+        super().save(*args, **kwargs)
+
 
 class LaborInsumo(models.Model):
     labor = models.ForeignKey(Labor, on_delete=models.CASCADE, related_name='insumos')
     insumo = models.ForeignKey(Insumo, on_delete=models.CASCADE, related_name='labores')
-    dosis = models.DecimalField(max_digits=10, decimal_places=4, blank=True, null=True)
-    unidad_dosis = models.CharField(max_length=20, blank=True, null=True)
+    precio_referencia = models.ForeignKey(
+        ProductoPrecio, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='labores_insumo'
+    )
     total_aplicado = models.DecimalField(max_digits=10, decimal_places=4, blank=True, null=True)
+    dosis = models.DecimalField(max_digits=10, decimal_places=4, blank=True, null=True)
+    dosis_calculada = models.DecimalField(max_digits=10, decimal_places=4, blank=True, null=True)
+    unidad_dosis = models.CharField(max_length=20, blank=True, null=True)
     precio_unitario = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
     costo_total = models.DecimalField(max_digits=14, decimal_places=2, blank=True, null=True)
 
@@ -191,6 +293,13 @@ class LaborInsumo(models.Model):
 
     def __str__(self):
         return f"{self.labor} - {self.insumo.nombre}"
+
+    def save(self, *args, **kwargs):
+        if self.total_aplicado and self.labor and self.labor.hectareas:
+            self.dosis_calculada = self.total_aplicado / self.labor.hectareas
+        if self.total_aplicado and self.precio_unitario:
+            self.costo_total = self.total_aplicado * self.precio_unitario
+        super().save(*args, **kwargs)
 
 
 class Flete(models.Model):

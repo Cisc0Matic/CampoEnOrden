@@ -1,7 +1,10 @@
 from rest_framework import serializers
 from .models import User
 
+
 class UserSerializer(serializers.ModelSerializer):
+    role_display = serializers.CharField(source='get_role_display', read_only=True)
+
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'role'] # Expose relevant fields
+        fields = ['id', 'username', 'email', 'role', 'role_display', 'telefono', 'empresa', 'permisos_especiales', 'fecha_alta']

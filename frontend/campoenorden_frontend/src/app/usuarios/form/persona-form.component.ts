@@ -29,7 +29,8 @@ export class PersonaFormComponent implements OnInit {
     { value: 'CHOFER', label: 'Chofer' },
     { value: 'BENEFICIARIO', label: 'Beneficiario' },
     { value: 'ADMINISTRADOR', label: 'Administrador' },
-    { value: 'RESPONSABLE_CARGA', label: 'Responsable de Carga' }
+    { value: 'RESPONSABLE_CARGA', label: 'Responsable de Carga' },
+    { value: 'PRODUCTOR', label: 'Productor' }
   ];
 
   constructor(

@@ -3,25 +3,7 @@ import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { ApiService } from '../services/api.service';
 import { Router, RouterModule } from '@angular/router';
-
-interface Labor {
-  id: number;
-  tipo: string;
-  tipo_display: string;
-  fecha: string;
-  lote_nombre: string;
-  campo_nombre: string;
-  lote_id: number;
-  hectareas: number;
-  costo_total: number;
-  costo_dolares_ha: number;
-  costo_pesos_ha: number;
-  contratista_nombre: string;
-  contratista_id: number;
-  qq_ha: number;
-  observaciones: string;
-  insumos: any[];
-}
+import { Labor, getTipoIcon, getEstadoColor } from '../models/interfaces';
 
 @Component({
   selector: 'app-labores',
@@ -36,6 +18,9 @@ export class LaboresPage implements OnInit, OnDestroy {
   error: string | null = null;
   filterTipo = '';
   private routerListener: any;
+
+  getTipoIcon = getTipoIcon;
+  getEstadoColor = getEstadoColor;
 
   constructor(private api: ApiService, private router: Router) {
     this.routerListener = this.router.events.subscribe(() => {
@@ -57,7 +42,16 @@ export class LaboresPage implements OnInit, OnDestroy {
 
   cargarLabores() {
     this.loading = true;
-    const endpoint = this.filterTipo ? `core/labores/?tipo=${this.filterTipo}` : 'core/labores/';
+    let endpoint = 'core/labores/';
+    if (this.filterTipo) {
+      if (this.filterTipo === 'PULVERIZACION') {
+        endpoint = 'core/labores/?tipo__in=PULVERIZACION_TERRESTRE,PULVERIZACION_DRONES,PULVERIZACION_AEREA';
+      } else if (this.filterTipo === 'FERTILIZACION') {
+        endpoint = 'core/labores/?tipo__in=FERTILIZACION_TERRESTRE,FERTILIZACION_DRONES';
+      } else {
+        endpoint = `core/labores/?tipo=${this.filterTipo}`;
+      }
+    }
     this.api.get<Labor[]>(endpoint).subscribe({
       next: (data) => {
         this.labores = data || [];
@@ -72,28 +66,8 @@ export class LaboresPage implements OnInit, OnDestroy {
   }
 
   filtrarPorTipo(tipo: string) {
-    this.filterTipo = tipo;
+    this.filterTipo = this.filterTipo === tipo ? '' : tipo;
     this.cargarLabores();
-  }
-
-  getTipoIcon(tipo: string): string {
-    switch (tipo) {
-      case 'PULVERIZACION': return 'water';
-      case 'SIEMBRA': return 'leaf';
-      case 'FERTILIZACION': return 'flask';
-      case 'COSECHA': return 'grid';
-      default: return 'construct';
-    }
-  }
-
-  getTipoColor(tipo: string): string {
-    switch (tipo) {
-      case 'PULVERIZACION': return 'primary';
-      case 'SIEMBRA': return 'success';
-      case 'FERTILIZACION': return 'warning';
-      case 'COSECHA': return 'tertiary';
-      default: return 'medium';
-    }
   }
 
   hasInsumos(labor: Labor): boolean {
@@ -112,8 +86,9 @@ export class LaboresPage implements OnInit, OnDestroy {
     this.router.navigate(['/tabs/labores', labor.id]);
   }
 
-  getInsumoTotal(labor: Labor): number {
-    if (!labor.insumos) return 0;
-    return labor.insumos.reduce((sum, i) => sum + (i.costo_total || 0), 0);
+  verFoto(labor: Labor) {
+    if (labor.foto_receta_url) {
+      window.open(labor.foto_receta_url, '_blank');
+    }
   }
 }

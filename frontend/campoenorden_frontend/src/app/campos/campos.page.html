@@ -48,6 +48,13 @@
             <ion-icon name="location"></ion-icon>
             <span>{{campo.ubicacion}}</span>
           </div>
+          <div class="ubicacion-row" *ngIf="campo.localidad || campo.provincia">
+            <ion-icon name="map"></ion-icon>
+            <span>{{campo.localidad}}{{campo.localidad && campo.provincia ? ', ' : ''}}{{campo.provincia}}</span>
+          </div>
+          <div class="personas-row" *ngIf="campo.productor_nombre">
+            <small><strong>Productor:</strong> {{campo.productor_nombre}}</small>
+          </div>
           
           <div class="personas-row" *ngIf="campo.locadores_nombres">
             <small><strong>Locadores:</strong> {{campo.locadores_nombres}}</small>

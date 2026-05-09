@@ -124,27 +124,89 @@
         </div>
       </div>
 
-      <div class="acciones-section">
-        <h2>Accesos Rápidos</h2>
-        <div class="acciones-grid">
-          <ion-button fill="outline" routerLink="/tabs/campos">
-            <ion-icon slot="start" name="leaf"></ion-icon>
-            Campos
-          </ion-button>
-          <ion-button fill="outline" routerLink="/tabs/lotes">
-            <ion-icon slot="start" name="grid"></ion-icon>
-            Lotes
-          </ion-button>
-          <ion-button fill="outline" routerLink="/tabs/labores">
-            <ion-icon slot="start" name="construct"></ion-icon>
-            Labores
-          </ion-button>
-          <ion-button fill="outline" routerLink="/tabs/logistica">
-            <ion-icon slot="start" name="truck"></ion-icon>
-            Fletes
+      <div class="margen-section">
+        <h2>
+          <ion-icon name="analytics"></ion-icon>
+          Resultado Económico
+        </h2>
+        <div class="margen-filtro">
+          <ion-item>
+            <ion-select label="Campo" interface="action-sheet" [(ngModel)]="campoFiltro" (ionChange)="filtrarPorCampo()">
+              <ion-select-option [value]="null">Todos los campos</ion-select-option>
+              <ion-select-option *ngFor="let c of campos" [value]="c.id">{{ c.nombre }}</ion-select-option>
+            </ion-select>
+          </ion-item>
+          <ion-button fill="outline" size="small" (click)="cargarMargen()">
+            <ion-icon name="refresh"></ion-icon>
+            Calcular
           </ion-button>
         </div>
+
+        <div *ngIf="margen" class="margen-charts">
+          <div class="chart-row">
+            <div class="chart-card donut-card">
+              <h3>Distribución de Costos</h3>
+              <div class="donut-wrapper">
+                <svg [attr.viewBox]="'0 0 ' + svgSize + ' ' + svgSize" class="donut-svg">
+                  <path *ngFor="let seg of getDonutSegments()"
+                        [attr.d]="seg.path"
+                        [attr.fill]="seg.color" />
+                  <text [attr.x]="centerX" [attr.y]="centerY - 4"
+                        text-anchor="middle" class="donut-center-value">
+                    {{ totalCostsDisplay }}
+                  </text>
+                  <text [attr.x]="centerX" [attr.y]="centerY + 14"
+                        text-anchor="middle" class="donut-center-label">
+                    total costos
+                  </text>
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <div class="chart-card">
+            <h3>Composición de Costos</h3>
+            <div class="cost-bars">
+              <div class="cost-bar-item" *ngFor="let seg of getDonutSegments(); let i = index">
+                <div class="cost-bar-header">
+                  <span class="cost-bar-dot" [style.background]="seg.color"></span>
+                  <span class="cost-bar-label">{{ seg.label }}</span>
+                  <span class="cost-bar-percent">{{ seg.percent }}%</span>
+                  <span class="cost-bar-value">${{ seg.value | number:'1.0-0' }}</span>
+                </div>
+                <div class="cost-bar-track">
+                  <div class="cost-bar-fill" [style.width.%]="seg.percent" [style.background]="seg.color"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="chart-card">
+            <h3>Resumen</h3>
+            <div class="resumen-grid">
+              <div class="resumen-item ingreso">
+                <span class="resumen-label">Ingreso Bruto</span>
+                <span class="resumen-value">${{ margen.ingreso_bruto | number:'1.0-0' }}</span>
+              </div>
+              <div class="resumen-item costos">
+                <span class="resumen-label">Costos Variables</span>
+                <span class="resumen-value">${{ margen.total_costos_variables | number:'1.0-0' }}</span>
+              </div>
+              <div class="resumen-divider"></div>
+              <div class="resumen-item" [class.positivo]="margen.margen_bruto >= 0" [class.negativo]="margen.margen_bruto < 0">
+                <span class="resumen-label">Margen Bruto</span>
+                <span class="resumen-value">${{ margenBrutoDisplay }}</span>
+              </div>
+              <div class="resumen-item roi" [class.positivo]="margen.rentabilidad_roi >= 0" [class.negativo]="margen.rentabilidad_roi < 0">
+                <span class="resumen-label">Rentabilidad (ROI)</span>
+                <span class="resumen-value">{{ roiDisplay }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
+
+
     </div>
   </div>
 </ion-content>
