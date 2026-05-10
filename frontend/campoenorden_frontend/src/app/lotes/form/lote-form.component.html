@@ -13,50 +13,40 @@
   <form [formGroup]="loteForm" class="form-container">
     <ion-list>
       <ion-item>
-        <ion-label>Campo *</ion-label>
-        <ion-select formControlName="campo" [compareWith]="compararPorId">
+        <ion-select label="Campo" labelPlacement="stacked" formControlName="campo" [compareWith]="compararPorId" placeholder="Seleccionar campo">
           <ion-select-option *ngFor="let c of campos" [value]="c.id">{{c.nombre}}</ion-select-option>
         </ion-select>
       </ion-item>
       <ion-item>
-        <ion-label>Campaña *</ion-label>
-        <ion-select formControlName="campana" [compareWith]="compararPorId">
+        <ion-select label="Campaña" labelPlacement="stacked" formControlName="campana" [compareWith]="compararPorId" placeholder="Seleccionar campaña">
           <ion-select-option *ngFor="let c of campanas" [value]="c.id">{{c.nombre}}</ion-select-option>
         </ion-select>
       </ion-item>
       <ion-item>
-        <ion-label>Cultivo *</ion-label>
-        <ion-select formControlName="cultivo" [compareWith]="compararPorId">
+        <ion-select label="Cultivo" labelPlacement="stacked" formControlName="cultivo" [compareWith]="compararPorId" placeholder="Seleccionar cultivo">
           <ion-select-option *ngFor="let c of cultivos" [value]="c.id">{{c.nombre}}</ion-select-option>
         </ion-select>
       </ion-item>
       <ion-item>
-        <ion-label position="floating">Superficie (ha) *</ion-label>
-        <ion-input type="number" formControlName="superficie"></ion-input>
+        <ion-input label="Superficie (ha)" labelPlacement="stacked" type="number" formControlName="superficie" placeholder="Ej: 50"></ion-input>
       </ion-item>
       <ion-item>
-        <ion-label position="floating">Rendimiento Estimado (qq/ha)</ion-label>
-        <ion-input type="number" formControlName="rendimiento_estimado"></ion-input>
+        <ion-input label="Rendimiento Estimado (qq/ha)" labelPlacement="stacked" type="number" formControlName="rendimiento_estimado" placeholder="Ej: 35"></ion-input>
       </ion-item>
       <ion-item>
-        <ion-label position="floating">Precio Tonelada ($)</ion-label>
-        <ion-input type="number" formControlName="precio_tn"></ion-input>
+        <ion-input label="Precio Tonelada ($)" labelPlacement="stacked" type="number" formControlName="precio_tn" placeholder="Ej: 250000"></ion-input>
       </ion-item>
       <ion-item>
-        <ion-label position="floating">Tipo de Cambio ($)</ion-label>
-        <ion-input type="number" formControlName="tipo_cambio"></ion-input>
+        <ion-input label="Tipo de Cambio ($)" labelPlacement="stacked" type="number" formControlName="tipo_cambio" placeholder="Ej: 1200"></ion-input>
       </ion-item>
       <ion-item>
-        <ion-label position="floating">Ubicación</ion-label>
-        <ion-input formControlName="ubicacion" placeholder="Ej: Lote Norte"></ion-input>
+        <ion-input label="Ubicación" labelPlacement="stacked" formControlName="ubicacion" placeholder="Ej: Lote Norte"></ion-input>
       </ion-item>
       <ion-item>
-        <ion-label>Activo</ion-label>
-        <ion-toggle formControlName="activo"></ion-toggle>
+        <ion-toggle labelPlacement="start" formControlName="activo">Activo</ion-toggle>
       </ion-item>
       <ion-item>
-        <ion-label position="floating">Observaciones</ion-label>
-        <ion-textarea formControlName="observaciones" placeholder="Notas adicionales..."></ion-textarea>
+        <ion-textarea label="Observaciones" labelPlacement="stacked" formControlName="observaciones" placeholder="Notas adicionales..." rows="4"></ion-textarea>
       </ion-item>
     </ion-list>
 

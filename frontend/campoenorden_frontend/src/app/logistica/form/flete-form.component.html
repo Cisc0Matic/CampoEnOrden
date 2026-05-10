@@ -13,87 +13,68 @@
   <form [formGroup]="fleteForm" class="form-container">
     <ion-list>
       <ion-item>
-        <ion-label position="floating">Nro CPE *</ion-label>
-        <ion-input formControlName="nro_cpe" placeholder="Ej: CPE-00123"></ion-input>
+        <ion-input label="Nro CPE" labelPlacement="stacked" formControlName="nro_cpe" placeholder="Ej: CPE-00123"></ion-input>
       </ion-item>
       <ion-item>
-        <ion-label position="floating">CTG</ion-label>
-        <ion-input formControlName="ctg" placeholder="Ej: 12345678"></ion-input>
+        <ion-input label="CTG" labelPlacement="stacked" formControlName="ctg" placeholder="Ej: 12345678"></ion-input>
       </ion-item>
       <ion-item>
-        <ion-label>Lote *</ion-label>
-        <ion-select formControlName="lote" [compareWith]="compararPorId">
+        <ion-select label="Lote" labelPlacement="stacked" formControlName="lote" [compareWith]="compararPorId" placeholder="Seleccionar lote">
           <ion-select-option *ngFor="let l of lotes" [value]="l.id">{{l.campo_nombre}} - {{l.cultivo_nombre}}</ion-select-option>
         </ion-select>
       </ion-item>
       <ion-item>
-        <ion-label>Chofer</ion-label>
-        <ion-select formControlName="chofer" [compareWith]="compararPorId">
+        <ion-select label="Chofer" labelPlacement="stacked" formControlName="chofer" [compareWith]="compararPorId" placeholder="Seleccionar chofer">
           <ion-select-option [value]="null">Ninguno</ion-select-option>
           <ion-select-option *ngFor="let p of personas" [value]="p.id">{{p.nombre}}</ion-select-option>
         </ion-select>
       </ion-item>
       <ion-item>
-        <ion-label position="floating">Patente Camión *</ion-label>
-        <ion-input formControlName="patente_camion" placeholder="Ej: ABC123"></ion-input>
+        <ion-input label="Patente Camión" labelPlacement="stacked" formControlName="patente_camion" placeholder="Ej: ABC123"></ion-input>
       </ion-item>
       <ion-item>
-        <ion-label position="floating">Patente Acoplado</ion-label>
-        <ion-input formControlName="patente_acoplado" placeholder="Ej: XYZ789"></ion-input>
+        <ion-input label="Patente Acoplado" labelPlacement="stacked" formControlName="patente_acoplado" placeholder="Ej: XYZ789"></ion-input>
       </ion-item>
       <ion-item>
-        <ion-label position="floating">Fecha/Hora Salida</ion-label>
-        <ion-datetime formControlName="fecha_hora_salida" presentation="date-time"></ion-datetime>
+        <ion-datetime label="Fecha/Hora Salida" labelPlacement="stacked" formControlName="fecha_hora_salida" presentation="date-time"></ion-datetime>
       </ion-item>
       <ion-item>
-        <ion-label position="floating">Fecha/Hora Llegada</ion-label>
-        <ion-datetime formControlName="fecha_hora_llegada" presentation="date-time"></ion-datetime>
+        <ion-datetime label="Fecha/Hora Llegada" labelPlacement="stacked" formControlName="fecha_hora_llegada" presentation="date-time"></ion-datetime>
       </ion-item>
       <ion-item>
-        <ion-label position="floating">Peso Origen (kg)</ion-label>
-        <ion-input type="number" formControlName="peso_origen"></ion-input>
+        <ion-input label="Peso Origen (kg)" labelPlacement="stacked" type="number" formControlName="peso_origen"></ion-input>
       </ion-item>
       <ion-item>
-        <ion-label position="floating">Peso Destino (kg)</ion-label>
-        <ion-input type="number" formControlName="peso_destino"></ion-input>
+        <ion-input label="Peso Destino (kg)" labelPlacement="stacked" type="number" formControlName="peso_destino"></ion-input>
       </ion-item>
       <ion-item>
-        <ion-label position="floating">Flete Corto ($)</ion-label>
-        <ion-input type="number" formControlName="flete_corto"></ion-input>
+        <ion-input label="Flete Corto ($)" labelPlacement="stacked" type="number" formControlName="flete_corto"></ion-input>
       </ion-item>
       <ion-item>
-        <ion-label position="floating">Flete Largo ($)</ion-label>
-        <ion-input type="number" formControlName="flete_largo"></ion-input>
+        <ion-input label="Flete Largo ($)" labelPlacement="stacked" type="number" formControlName="flete_largo"></ion-input>
       </ion-item>
       <ion-item>
-        <ion-label position="floating">Comisión ($)</ion-label>
-        <ion-input type="number" formControlName="comision"></ion-input>
+        <ion-input label="Comisión ($)" labelPlacement="stacked" type="number" formControlName="comision"></ion-input>
       </ion-item>
       <ion-item>
-        <ion-label position="floating">Secada ($)</ion-label>
-        <ion-input type="number" formControlName="secada"></ion-input>
+        <ion-input label="Secada ($)" labelPlacement="stacked" type="number" formControlName="secada"></ion-input>
       </ion-item>
       <ion-item>
-        <ion-label position="floating">Cosecha ($)</ion-label>
-        <ion-input type="number" formControlName="cosecha"></ion-input>
+        <ion-input label="Cosecha ($)" labelPlacement="stacked" type="number" formControlName="cosecha"></ion-input>
       </ion-item>
       <ion-item>
-        <ion-label position="floating">Costo Comercial ($)</ion-label>
-        <ion-input type="number" formControlName="costo_comercial"></ion-input>
+        <ion-input label="Costo Comercial ($)" labelPlacement="stacked" type="number" formControlName="costo_comercial"></ion-input>
       </ion-item>
       <ion-item>
-        <ion-label position="floating">Destino</ion-label>
-        <ion-input formControlName="destino" placeholder="Ej: Acopio Central"></ion-input>
+        <ion-input label="Destino" labelPlacement="stacked" formControlName="destino" placeholder="Ej: Acopio Central"></ion-input>
       </ion-item>
       <ion-item>
-        <ion-label>Estado</ion-label>
-        <ion-select formControlName="estado">
+        <ion-select label="Estado" labelPlacement="stacked" formControlName="estado">
           <ion-select-option *ngFor="let e of estados" [value]="e.value">{{e.label}}</ion-select-option>
         </ion-select>
       </ion-item>
       <ion-item>
-        <ion-label position="floating">Observaciones</ion-label>
-        <ion-textarea formControlName="observaciones" placeholder="Notas adicionales..."></ion-textarea>
+        <ion-textarea label="Observaciones" labelPlacement="stacked" formControlName="observaciones" placeholder="Notas adicionales..." rows="4"></ion-textarea>
       </ion-item>
     </ion-list>
 

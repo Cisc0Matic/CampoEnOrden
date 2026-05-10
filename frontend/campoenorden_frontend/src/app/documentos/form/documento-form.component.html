@@ -13,68 +13,57 @@
   <form [formGroup]="documentoForm" class="form-container">
     <ion-list>
       <ion-item>
-        <ion-label>Tipo *</ion-label>
-        <ion-select formControlName="tipo">
+        <ion-select label="Tipo" labelPlacement="stacked" formControlName="tipo" placeholder="Seleccionar tipo">
           <ion-select-option *ngFor="let t of tipos" [value]="t.value">{{t.label}}</ion-select-option>
         </ion-select>
       </ion-item>
       <ion-item>
-        <ion-label position="floating">Número *</ion-label>
-        <ion-input formControlName="numero" placeholder="Ej: FACT-00123"></ion-input>
+        <ion-input label="Número" labelPlacement="stacked" formControlName="numero" placeholder="Ej: FACT-00123"></ion-input>
       </ion-item>
       <ion-item>
-        <ion-label>Campo</ion-label>
-        <ion-select formControlName="campo" [compareWith]="compararPorId">
+        <ion-select label="Campo" labelPlacement="stacked" formControlName="campo" [compareWith]="compararPorId" placeholder="Seleccionar campo">
           <ion-select-option [value]="null">Ninguno</ion-select-option>
           <ion-select-option *ngFor="let c of campos" [value]="c.id">{{c.nombre}}</ion-select-option>
         </ion-select>
       </ion-item>
       <ion-item>
-        <ion-label>Labor Vinculada</ion-label>
-        <ion-select formControlName="labor" [compareWith]="compararPorId">
+        <ion-select label="Labor Vinculada" labelPlacement="stacked" formControlName="labor" [compareWith]="compararPorId" placeholder="Seleccionar labor">
           <ion-select-option [value]="null">Ninguna</ion-select-option>
           <ion-select-option *ngFor="let l of lotes" [value]="l.id">Labor en {{l.campo_nombre}}</ion-select-option>
         </ion-select>
       </ion-item>
       <ion-item>
-        <ion-label>Flete Vinculado</ion-label>
-        <ion-select formControlName="flete" [compareWith]="compararPorId">
+        <ion-select label="Flete Vinculado" labelPlacement="stacked" formControlName="flete" [compareWith]="compararPorId" placeholder="Seleccionar flete">
           <ion-select-option [value]="null">Ninguno</ion-select-option>
           <ion-select-option *ngFor="let f of fletes" [value]="f.id">CPE: {{f.nro_cpe}}</ion-select-option>
         </ion-select>
       </ion-item>
       <ion-item>
-        <ion-label>Titular</ion-label>
-        <ion-select formControlName="titular" [compareWith]="compararPorId">
+        <ion-select label="Titular" labelPlacement="stacked" formControlName="titular" [compareWith]="compararPorId" placeholder="Seleccionar titular">
           <ion-select-option [value]="null">Ninguno</ion-select-option>
           <ion-select-option *ngFor="let p of personas" [value]="p.id">{{p.nombre}}</ion-select-option>
         </ion-select>
       </ion-item>
       <ion-item>
-        <ion-label position="floating">Monto ($)</ion-label>
-        <ion-input type="number" formControlName="monto"></ion-input>
+        <ion-input label="Monto ($)" labelPlacement="stacked" type="number" formControlName="monto"></ion-input>
       </ion-item>
       <ion-item>
-        <ion-label>Estado</ion-label>
-        <ion-select formControlName="estado">
+        <ion-select label="Estado" labelPlacement="stacked" formControlName="estado">
           <ion-select-option *ngFor="let e of estados" [value]="e.value">{{e.label}}</ion-select-option>
         </ion-select>
       </ion-item>
       <ion-item>
-        <ion-label position="floating">Fecha Documento *</ion-label>
-        <ion-datetime formControlName="fecha_documento" presentation="date"></ion-datetime>
+        <ion-datetime label="Fecha Documento" labelPlacement="stacked" formControlName="fecha_documento" presentation="date"></ion-datetime>
       </ion-item>
       <ion-item>
-        <ion-label position="floating">Fecha Vencimiento</ion-label>
-        <ion-datetime formControlName="fecha_vencimiento" presentation="date"></ion-datetime>
+        <ion-datetime label="Fecha Vencimiento" labelPlacement="stacked" formControlName="fecha_vencimiento" presentation="date"></ion-datetime>
       </ion-item>
       <ion-item>
-        <ion-label position="floating">Archivo (PDF/Imagen)</ion-label>
+        <ion-label>Archivo (PDF/Imagen)</ion-label>
         <input type="file" (change)="onFileChange($event)" accept=".pdf,.jpg,.jpeg,.png" />
       </ion-item>
       <ion-item>
-        <ion-label position="floating">Observaciones</ion-label>
-        <ion-textarea formControlName="observaciones" placeholder="Notas adicionales..."></ion-textarea>
+        <ion-textarea label="Observaciones" labelPlacement="stacked" formControlName="observaciones" placeholder="Notas adicionales..." rows="4"></ion-textarea>
       </ion-item>
     </ion-list>
 

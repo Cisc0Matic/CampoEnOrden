@@ -13,35 +13,29 @@
   <form [formGroup]="parametroForm" class="form-container">
     <ion-list>
       <ion-item>
-        <ion-label position="floating">Nombre *</ion-label>
-        <ion-input formControlName="nombre" placeholder="Ej: Soja, Herbicida X..."></ion-input>
+        <ion-input label="Nombre" labelPlacement="stacked" formControlName="nombre" placeholder="Ej: Soja, Herbicida X..."></ion-input>
       </ion-item>
       <ion-item>
-        <ion-label>Categoría *</ion-label>
-        <ion-select formControlName="categoria">
+        <ion-select label="Categoría" labelPlacement="stacked" formControlName="categoria" placeholder="Seleccionar categoría">
           <ion-select-option *ngFor="let c of categorias" [value]="c.value">{{c.label}}</ion-select-option>
         </ion-select>
       </ion-item>
       <ion-item>
-        <ion-label position="floating">Valor *</ion-label>
-        <ion-input type="number" formControlName="valor"></ion-input>
+        <ion-input label="Valor" labelPlacement="stacked" type="number" formControlName="valor"></ion-input>
       </ion-item>
       <ion-item>
-        <ion-label>Unidad *</ion-label>
-        <ion-select formControlName="unidad">
+        <ion-select label="Unidad" labelPlacement="stacked" formControlName="unidad" placeholder="Seleccionar unidad">
           <ion-select-option *ngFor="let u of unidades" [value]="u">{{u}}</ion-select-option>
         </ion-select>
       </ion-item>
       <ion-item>
-        <ion-label>Campaña (para histórico)</ion-label>
-        <ion-select formControlName="campana" [compareWith]="compararPorId">
+        <ion-select label="Campaña (para histórico)" labelPlacement="stacked" formControlName="campana" [compareWith]="compararPorId" placeholder="Seleccionar campaña">
           <ion-select-option [value]="null">Ninguna (Vigente)</ion-select-option>
           <ion-select-option *ngFor="let c of campanas" [value]="c.id">{{c.nombre}}</ion-select-option>
         </ion-select>
       </ion-item>
       <ion-item>
-        <ion-label>Parámetro Vigente</ion-label>
-        <ion-toggle formControlName="vigente"></ion-toggle>
+        <ion-toggle labelPlacement="start" formControlName="vigente">Parámetro Vigente</ion-toggle>
       </ion-item>
     </ion-list>
 

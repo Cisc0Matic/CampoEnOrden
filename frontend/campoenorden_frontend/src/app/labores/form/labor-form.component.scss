@@ -5,9 +5,9 @@
 }
 
 ion-item {
-  --padding-start: 0;
-  --inner-padding-end: 0;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
+  --border-radius: 8px;
+  --background: var(--ion-color-step-50);
 }
 
 .insumos-section {

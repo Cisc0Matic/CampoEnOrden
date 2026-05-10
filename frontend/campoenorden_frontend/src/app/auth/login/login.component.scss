@@ -51,28 +51,9 @@ ion-list {
 }
 
 ion-item {
-  --background: #2a2a2a;
-  --color: #ffffff;
+  --background: var(--ion-color-step-50);
   --border-radius: 8px;
-  --padding-start: 12px;
-  --padding-end: 12px;
-  --min-height: 44px;
   margin-bottom: 12px;
-
-  ion-label {
-    font-size: 13px;
-    font-weight: 500;
-    margin: 0;
-    color: #cccccc;
-  }
-}
-
-ion-input {
-  --padding-start: 8px;
-  --padding-end: 8px;
-  font-size: 14px;
-  --placeholder-color: var(--ion-color-medium);
-  min-height: 44px;
 }
 
 .password-icon {
@@ -80,6 +61,7 @@ ion-input {
   color: var(--ion-color-medium);
   cursor: pointer;
   padding: 8px;
+  z-index: 2;
 }
 
 .submit-btn {
@@ -125,18 +107,8 @@ ion-input {
   }
 
   ion-item {
-    --min-height: 52px;
     --border-radius: 10px;
     margin-bottom: 16px;
-
-    ion-label {
-      font-size: 14px;
-    }
-  }
-
-  ion-input {
-    font-size: 16px;
-    min-height: 52px;
   }
 
   .submit-btn {

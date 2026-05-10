@@ -13,76 +13,60 @@
   <form [formGroup]="campoForm" class="form-container">
     <ion-list>
       <ion-item>
-        <ion-label position="floating">Nombre *</ion-label>
-        <ion-input formControlName="nombre" placeholder="Ej: Campo San José"></ion-input>
+        <ion-input label="Nombre" labelPlacement="stacked" formControlName="nombre" placeholder="Ej: Campo San José"></ion-input>
       </ion-item>
       <ion-item>
-        <ion-label position="floating">Ubicación</ion-label>
-        <ion-input formControlName="ubicacion" placeholder="Ej: Ruta 8, Km 120"></ion-input>
+        <ion-input label="Ubicación" labelPlacement="stacked" formControlName="ubicacion" placeholder="Ej: Ruta 8, Km 120"></ion-input>
       </ion-item>
       <ion-item>
-        <ion-label position="floating">Localidad</ion-label>
-        <ion-input formControlName="localidad" placeholder="Ej: Bell Ville"></ion-input>
+        <ion-input label="Localidad" labelPlacement="stacked" formControlName="localidad" placeholder="Ej: Bell Ville"></ion-input>
       </ion-item>
       <ion-item>
-        <ion-label position="floating">Provincia</ion-label>
-        <ion-input formControlName="provincia" placeholder="Ej: Córdoba"></ion-input>
+        <ion-input label="Provincia" labelPlacement="stacked" formControlName="provincia" placeholder="Ej: Córdoba"></ion-input>
       </ion-item>
       <ion-item>
-        <ion-label>Productor</ion-label>
-        <ion-select formControlName="productor" interface="action-sheet">
+        <ion-select label="Productor" labelPlacement="stacked" formControlName="productor" interface="action-sheet" placeholder="Seleccionar productor">
           <ion-select-option *ngFor="let p of personas" [value]="p.id">{{p.nombre}}</ion-select-option>
         </ion-select>
       </ion-item>
       <ion-item>
-        <ion-label position="floating">Superficie Total (ha) *</ion-label>
-        <ion-input type="number" formControlName="superficie_total"></ion-input>
+        <ion-input label="Superficie Total (ha)" labelPlacement="stacked" type="number" formControlName="superficie_total" placeholder="Ej: 100"></ion-input>
       </ion-item>
       <ion-item>
-        <ion-label position="floating">Superficie Trabajada (ha)</ion-label>
-        <ion-input type="number" formControlName="superficie_trabajada"></ion-input>
+        <ion-input label="Superficie Trabajada (ha)" labelPlacement="stacked" type="number" formControlName="superficie_trabajada" placeholder="Ej: 80"></ion-input>
       </ion-item>
       <ion-item>
-        <ion-label>Estado del Contrato</ion-label>
-        <ion-select formControlName="estado_contrato">
+        <ion-select label="Estado del Contrato" labelPlacement="stacked" formControlName="estado_contrato">
           <ion-select-option *ngFor="let e of estados" [value]="e.value">{{e.label}}</ion-select-option>
         </ion-select>
       </ion-item>
       <ion-item>
-        <ion-label>Locadores (Dueños)</ion-label>
-        <ion-select formControlName="locadores_ids" multiple="true" [compareWith]="compararPersona">
+        <ion-select label="Locadores (Dueños)" labelPlacement="stacked" formControlName="locadores_ids" multiple="true" [compareWith]="compararPersona" placeholder="Seleccionar locadores">
           <ion-select-option *ngFor="let p of personas" [value]="p.id">{{p.nombre}} ({{p.documento}})</ion-select-option>
         </ion-select>
       </ion-item>
       <ion-item>
-        <ion-label>Locatarios (Arrendatarios)</ion-label>
-        <ion-select formControlName="locatarios_ids" multiple="true" [compareWith]="compararPersona">
+        <ion-select label="Locatarios (Arrendatarios)" labelPlacement="stacked" formControlName="locatarios_ids" multiple="true" [compareWith]="compararPersona" placeholder="Seleccionar locatarios">
           <ion-select-option *ngFor="let p of personas" [value]="p.id">{{p.nombre}} ({{p.documento}})</ion-select-option>
         </ion-select>
       </ion-item>
       <ion-item>
-        <ion-label position="floating">Costo Total ($)</ion-label>
-        <ion-input type="number" formControlName="costo_total"></ion-input>
+        <ion-input label="Costo Total ($)" labelPlacement="stacked" type="number" formControlName="costo_total"></ion-input>
       </ion-item>
       <ion-item>
-        <ion-label position="floating">Costo por ha ($)</ion-label>
-        <ion-input type="number" formControlName="costo_por_ha"></ion-input>
+        <ion-input label="Costo por ha ($)" labelPlacement="stacked" type="number" formControlName="costo_por_ha"></ion-input>
       </ion-item>
       <ion-item>
-        <ion-label position="floating">Margen ($)</ion-label>
-        <ion-input type="number" formControlName="margen"></ion-input>
+        <ion-input label="Margen ($)" labelPlacement="stacked" type="number" formControlName="margen"></ion-input>
       </ion-item>
       <ion-item>
-        <ion-label position="floating">Alquiler Pendiente ($)</ion-label>
-        <ion-input type="number" formControlName="alquiler_pendiente"></ion-input>
+        <ion-input label="Alquiler Pendiente ($)" labelPlacement="stacked" type="number" formControlName="alquiler_pendiente"></ion-input>
       </ion-item>
       <ion-item>
-        <ion-label position="floating">Condiciones de Alquiler</ion-label>
-        <ion-textarea formControlName="condiciones_alquiler" placeholder="Ej: Pago mensual, ajuste anual..."></ion-textarea>
+        <ion-textarea label="Condiciones de Alquiler" labelPlacement="stacked" formControlName="condiciones_alquiler" placeholder="Ej: Pago mensual, ajuste anual..." rows="4"></ion-textarea>
       </ion-item>
       <ion-item>
-        <ion-label position="floating">Observaciones</ion-label>
-        <ion-textarea formControlName="observaciones" placeholder="Notas adicionales..."></ion-textarea>
+        <ion-textarea label="Observaciones" labelPlacement="stacked" formControlName="observaciones" placeholder="Notas adicionales..." rows="4"></ion-textarea>
       </ion-item>
     </ion-list>
 
