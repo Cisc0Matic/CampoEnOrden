@@ -278,34 +278,21 @@
   }
 }
 
-.donut-card {
+.pie-card {
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
-.donut-wrapper {
+.pie-wrapper {
   width: 100%;
   max-width: 220px;
   margin: 0 auto;
 }
 
-.donut-svg {
+.pie-svg {
   width: 100%;
   height: auto;
-}
-
-::ng-deep .donut-center-value {
-  font-size: 18px;
-  font-weight: 700;
-  fill: var(--ion-text-color);
-}
-
-::ng-deep .donut-center-label {
-  font-size: 11px;
-  fill: var(--ion-color-medium);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
 }
 
 .cost-bars {

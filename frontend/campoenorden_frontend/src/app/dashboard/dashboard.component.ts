@@ -37,8 +37,7 @@ export class DashboardComponent implements OnInit {
   svgSize = 220;
   centerX = 110;
   centerY = 110;
-  radius = 80;
-  donutWidth = 35;
+  radius = 90;
 
   private readonly COLORS = [
     '#4CAF50', '#2196F3', '#FF9800', '#9C27B0',
@@ -156,15 +155,11 @@ export class DashboardComponent implements OnInit {
     const start = this.polarToCartesian(cx, cy, r, endAngle);
     const end = this.polarToCartesian(cx, cy, r, startAngle);
     const largeArcFlag = endAngle - startAngle > Math.PI ? 1 : 0;
-    const innerR = r - this.donutWidth;
-    const innerStart = this.polarToCartesian(cx, cy, innerR, endAngle);
-    const innerEnd = this.polarToCartesian(cx, cy, innerR, startAngle);
 
     return [
-      `M ${start.x} ${start.y}`,
-      `A ${r} ${r} 0 ${largeArcFlag} 1 ${end.x} ${end.y}`,
-      `L ${innerEnd.x} ${innerEnd.y}`,
-      `A ${innerR} ${innerR} 0 ${largeArcFlag} 0 ${innerStart.x} ${innerStart.y}`,
+      `M ${cx} ${cy}`,
+      `L ${start.x} ${start.y}`,
+      `A ${r} ${r} 0 ${largeArcFlag} 0 ${end.x} ${end.y}`,
       'Z'
     ].join(' ');
   }

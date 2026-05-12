@@ -144,21 +144,13 @@
 
         <div *ngIf="margen" class="margen-charts">
           <div class="chart-row">
-            <div class="chart-card donut-card">
+            <div class="chart-card pie-card">
               <h3>Distribución de Costos</h3>
-              <div class="donut-wrapper">
-                <svg [attr.viewBox]="'0 0 ' + svgSize + ' ' + svgSize" class="donut-svg">
+              <div class="pie-wrapper">
+                <svg [attr.viewBox]="'0 0 ' + svgSize + ' ' + svgSize" class="pie-svg">
                   <path *ngFor="let seg of getDonutSegments()"
                         [attr.d]="seg.path"
                         [attr.fill]="seg.color" />
-                  <text [attr.x]="centerX" [attr.y]="centerY - 4"
-                        text-anchor="middle" class="donut-center-value">
-                    {{ totalCostsDisplay }}
-                  </text>
-                  <text [attr.x]="centerX" [attr.y]="centerY + 14"
-                        text-anchor="middle" class="donut-center-label">
-                    total costos
-                  </text>
                 </svg>
               </div>
             </div>
