@@ -7,32 +7,23 @@
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
-  <ion-toolbar *ngIf="!loading">
-    <div class="filter-row">
-      <ion-item lines="none" class="filter-item">
-        <ion-label>Categoría:</ion-label>
-        <ion-select [value]="categoriaSeleccionada" (ionChange)="categoriaSeleccionada = $event.detail.value; cargarParametros()" placeholder="Todas" interface="popover">
-          <ion-select-option value="">Todas</ion-select-option>
-          <ion-select-option *ngFor="let cat of categorias" [value]="cat">{{getCategoriaLabel(cat)}}</ion-select-option>
-        </ion-select>
-      </ion-item>
-      <ion-item lines="none" class="filter-item">
-        <ion-label>Campaña:</ion-label>
-        <ion-select [value]="filtroCampana" (ionChange)="filtroCampana = $event.detail.value; cargarParametros()" placeholder="Todas" interface="popover">
-          <ion-select-option value="">Todas</ion-select-option>
-          <ion-select-option *ngFor="let c of campanas" [value]="c.id.toString()">{{c.nombre}}</ion-select-option>
-        </ion-select>
-      </ion-item>
-    </div>
-  </ion-toolbar>
+  <div class="filter-bar" *ngIf="!loading">
+    <ion-chip class="filter-chip" [class.active]="categoriaSeleccionada === ''" (click)="filtrarPorCategoria('')">
+      <ion-label>Todas</ion-label>
+    </ion-chip>
+    <ion-chip class="filter-chip" *ngFor="let cat of categorias" [class.active]="categoriaSeleccionada === cat" (click)="filtrarPorCategoria(cat)">
+      <ion-label>{{getCategoriaLabel(cat)}}</ion-label>
+    </ion-chip>
+  </div>
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <div class="categoria-filters" *ngIf="!loading && parametros.length > 0">
-    <ion-chip *ngFor="let cat of categorias" 
-              [outline]="categoriaSeleccionada !== cat"
-              (click)="filtrarPorCategoria(cat)">
-      {{getCategoriaLabel(cat)}}
+  <div class="filter-bar" *ngIf="!loading && campanas.length > 0">
+    <ion-chip class="filter-chip" [class.active]="filtroCampana === ''" (click)="filtrarPorCampana('')">
+      <ion-label>Todas las campañas</ion-label>
+    </ion-chip>
+    <ion-chip class="filter-chip" *ngFor="let c of campanas" [class.active]="filtroCampana === c.id.toString()" (click)="filtrarPorCampana(c.id.toString())">
+      <ion-label>{{c.nombre}}</ion-label>
     </ion-chip>
   </div>
 

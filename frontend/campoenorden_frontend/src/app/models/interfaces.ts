@@ -186,3 +186,13 @@ export function getEstadoColor(estado: string): string {
     default: return 'medium';
   }
 }
+
+export function getHeaderClass(tipo: string): string {
+  if (tipo.startsWith('PULVERIZACION')) return 'header-pulverizacion';
+  if (tipo.startsWith('FERTILIZACION')) return 'header-fertilizacion';
+  switch (tipo) {
+    case 'SIEMBRA': return 'header-siembra';
+    case 'COSECHA': return 'header-cosecha';
+    default: return 'header-otra';
+  }
+}

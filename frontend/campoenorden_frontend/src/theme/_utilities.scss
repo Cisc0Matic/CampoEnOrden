@@ -1,0 +1,71 @@
+// Text alignment
+.text-left { text-align: left; }
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+
+// Font weight
+.fw-400 { font-weight: var(--ceo-font-regular); }
+.fw-500 { font-weight: var(--ceo-font-medium); }
+.fw-600 { font-weight: var(--ceo-font-semibold); }
+.fw-700 { font-weight: var(--ceo-font-bold); }
+
+// Font size
+.fs-xs { font-size: var(--ceo-font-size-xs); }
+.fs-sm { font-size: var(--ceo-font-size-sm); }
+.fs-body { font-size: var(--ceo-font-size-body); }
+.fs-md { font-size: var(--ceo-font-size-md); }
+.fs-lg { font-size: var(--ceo-font-size-lg); }
+.fs-xl { font-size: var(--ceo-font-size-xl); }
+.fs-xxl { font-size: var(--ceo-font-size-xxl); }
+.fs-xxxl { font-size: var(--ceo-font-size-xxxl); }
+
+// Margins
+.mt-0 { margin-top: 0; }
+.mt-4 { margin-top: 4px; }
+.mt-8 { margin-top: 8px; }
+.mt-12 { margin-top: 12px; }
+.mt-16 { margin-top: 16px; }
+.mt-24 { margin-top: 24px; }
+.mt-32 { margin-top: 32px; }
+.mb-0 { margin-bottom: 0; }
+.mb-4 { margin-bottom: 4px; }
+.mb-8 { margin-bottom: 8px; }
+.mb-12 { margin-bottom: 12px; }
+.mb-16 { margin-bottom: 16px; }
+.mb-24 { margin-bottom: 24px; }
+.mb-32 { margin-bottom: 32px; }
+
+// Paddings
+.p-0 { padding: 0; }
+.p-4 { padding: 4px; }
+.p-8 { padding: 8px; }
+.p-12 { padding: 12px; }
+.p-16 { padding: 16px; }
+.p-24 { padding: 24px; }
+
+// Flex
+.d-flex { display: flex; }
+.flex-center { display: flex; align-items: center; justify-content: center; }
+.flex-between { display: flex; align-items: center; justify-content: space-between; }
+.flex-col { display: flex; flex-direction: column; }
+.flex-wrap { flex-wrap: wrap; }
+.gap-4 { gap: 4px; }
+.gap-8 { gap: 8px; }
+.gap-12 { gap: 12px; }
+.gap-16 { gap: 16px; }
+
+// Grid
+.d-grid { display: grid; }
+.w-100 { width: 100%; }
+
+// Border radius
+.radius-sm { border-radius: var(--ceo-radius-sm); }
+.radius-md { border-radius: var(--ceo-radius-md); }
+.radius-lg { border-radius: var(--ceo-radius-lg); }
+
+// Text color
+.text-primary { color: var(--ion-color-primary); }
+.text-secondary { color: var(--ion-color-medium); }
+.text-danger { color: var(--ion-color-danger); }
+.text-success { color: var(--ion-color-success); }
+.text-warning { color: var(--ion-color-warning); }

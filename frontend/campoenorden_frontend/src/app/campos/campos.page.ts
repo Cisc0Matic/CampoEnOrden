@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { ApiService } from '../services/api.service';
 import { Router, RouterModule } from '@angular/router';
+import { SharedModule } from '../shared/shared.module';
 
 interface Campo {
   id: number;
@@ -31,7 +32,7 @@ interface Campo {
   templateUrl: './campos.page.html',
   styleUrls: ['./campos.page.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule, RouterModule]
+  imports: [CommonModule, IonicModule, RouterModule, SharedModule]
 })
 export class CamposPage implements OnInit, OnDestroy {
   campos: Campo[] = [];
@@ -105,6 +106,10 @@ export class CamposPage implements OnInit, OnDestroy {
   }
 
   verDocumentos(campo: Campo) {
-    this.router.navigate(['/documentos'], { queryParams: { campo_id: campo.id } });
+    this.router.navigate(['/tabs/documentos'], { queryParams: { campo_id: campo.id } });
+  }
+
+  verLotes(campo: Campo) {
+    this.router.navigate(['/tabs/lotes'], { queryParams: { campo_id: campo.id, campo_nombre: campo.nombre } });
   }
 }

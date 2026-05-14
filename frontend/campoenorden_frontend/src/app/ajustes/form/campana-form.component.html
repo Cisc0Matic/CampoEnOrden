@@ -1,0 +1,32 @@
+<div class="popup-wrapper">
+  <div class="popup-title">Nueva Campaña</div>
+
+  <form [formGroup]="form">
+    <ion-list>
+      <ion-item>
+        <ion-input label="Nombre" labelPlacement="stacked" formControlName="nombre" placeholder="Ej: 2026/2027" required></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-input label="Fecha Inicio" labelPlacement="stacked" type="date" formControlName="fecha_inicio"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-input label="Fecha Fin" labelPlacement="stacked" type="date" formControlName="fecha_fin"></ion-input>
+      </ion-item>
+      <ion-item lines="none">
+        <ion-toggle labelPlacement="start" formControlName="activo">Activa</ion-toggle>
+      </ion-item>
+    </ion-list>
+
+    <div class="error" *ngIf="error">
+      <p>{{error}}</p>
+    </div>
+  </form>
+
+  <div class="popup-actions">
+    <ion-button fill="clear" (click)="cancelar()" class="cancel-btn">Cancelar</ion-button>
+    <ion-button (click)="guardar()" [disabled]="loading" class="save-btn">
+      <ion-spinner *ngIf="loading" name="crescent" slot="start"></ion-spinner>
+      <span *ngIf="!loading">Guardar</span>
+    </ion-button>
+  </div>
+</div>

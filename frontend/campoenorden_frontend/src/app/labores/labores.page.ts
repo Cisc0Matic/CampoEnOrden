@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { ApiService } from '../services/api.service';
 import { Router, RouterModule } from '@angular/router';
-import { Labor, getTipoIcon, getEstadoColor } from '../models/interfaces';
+import { Labor, getTipoIcon, getEstadoColor, getHeaderClass } from '../models/interfaces';
 
 @Component({
   selector: 'app-labores',
@@ -21,6 +21,7 @@ export class LaboresPage implements OnInit, OnDestroy {
 
   getTipoIcon = getTipoIcon;
   getEstadoColor = getEstadoColor;
+  getHeaderClass = getHeaderClass;
 
   constructor(private api: ApiService, private router: Router) {
     this.routerListener = this.router.events.subscribe(() => {
@@ -83,7 +84,7 @@ export class LaboresPage implements OnInit, OnDestroy {
   }
 
   verDetalleLabor(labor: Labor) {
-    this.router.navigate(['/tabs/labores', labor.id]);
+    this.router.navigate(['/tabs/labores/editar', labor.id]);
   }
 
   verFoto(labor: Labor) {

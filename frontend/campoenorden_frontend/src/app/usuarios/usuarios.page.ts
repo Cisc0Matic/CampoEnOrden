@@ -75,6 +75,16 @@ export class UsuariosPage implements OnInit, OnDestroy {
     });
   }
 
+  filtrarPorTipo(tipo: string) {
+    this.filtroTipo = this.filtroTipo === tipo ? '' : tipo;
+    this.filtrarPersonas();
+  }
+
+  filtrarPorRol(rol: string) {
+    this.filtroRol = this.filtroRol === rol ? '' : rol;
+    this.filtrarPersonas();
+  }
+
   getRolIcon(rol: string): string {
     switch (rol) {
       case 'DUENO': return 'person';
@@ -95,7 +105,7 @@ export class UsuariosPage implements OnInit, OnDestroy {
   }
 
   verDetallePersona(persona: Persona) {
-    this.router.navigate(['/tabs/usuarios', persona.id]);
+    this.router.navigate(['/tabs/usuarios/editar', persona.id]);
   }
 
   toggleActivo(persona: Persona) {

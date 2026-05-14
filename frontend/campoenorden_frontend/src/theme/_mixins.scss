@@ -1,0 +1,176 @@
+@mixin page-container {
+  padding: 12px;
+  background: var(--ion-background-color);
+  min-height: 100%;
+}
+
+@mixin loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 64px 24px;
+  text-align: center;
+
+  p {
+    margin-top: 12px;
+    color: var(--ion-color-medium);
+    font-size: var(--ceo-font-size-md);
+  }
+}
+
+@mixin error-state {
+  @include loading-state;
+
+  ion-icon {
+    font-size: 48px;
+    color: var(--ion-color-danger);
+    margin-bottom: 8px;
+  }
+
+  p {
+    color: var(--ion-color-danger);
+    margin-bottom: 16px;
+  }
+}
+
+@mixin empty-state {
+  @include loading-state;
+
+  ion-icon {
+    font-size: 48px;
+    color: var(--ion-color-step-300);
+    margin-bottom: 8px;
+  }
+
+  ion-button {
+    margin-top: 16px;
+  }
+}
+
+@mixin card-base {
+  background: var(--ion-color-step-50);
+  border-radius: var(--ceo-radius-lg);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--ceo-shadow-md);
+}
+
+@mixin card-header($gradient-start: var(--ion-color-primary), $gradient-end: var(--ion-color-secondary)) {
+  padding: 14px;
+  background: linear-gradient(135deg, $gradient-start 0%, $gradient-end 100%);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+@mixin card-body {
+  padding: 14px;
+  flex: 1;
+}
+
+@mixin card-footer {
+  padding: 8px;
+  border-top: 1px solid var(--ion-color-step-150);
+  display: flex;
+  justify-content: space-around;
+
+  ion-button {
+    --padding-start: 8px;
+    --padding-end: 8px;
+    --color: var(--ion-color-medium);
+    font-size: var(--ceo-font-size-sm);
+  }
+}
+
+@mixin grid-2cols {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  padding-bottom: 24px;
+}
+
+@mixin stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+@mixin stat-box {
+  background: var(--ion-color-step-100);
+  border-radius: var(--ceo-radius-md);
+  padding: 10px 8px;
+  text-align: center;
+
+  .stat-value {
+    display: block;
+    font-size: var(--ceo-font-size-lg);
+    font-weight: var(--ceo-font-bold);
+    color: var(--ion-text-color);
+  }
+
+  .stat-label {
+    display: block;
+    font-size: var(--ceo-font-size-xs);
+    color: var(--ion-color-medium);
+  }
+}
+
+@mixin form-container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 16px;
+
+  ion-item {
+    margin-bottom: 10px;
+    --border-radius: var(--ceo-radius-sm);
+    --background: var(--ion-color-step-50);
+  }
+}
+
+@mixin form-actions {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+@mixin text-ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@mixin responsive($breakpoint) {
+  @if $breakpoint == tablet {
+    @media (min-width: 768px) { @content; }
+  } @else if $breakpoint == desktop {
+    @media (min-width: 1024px) { @content; }
+  } @else {
+    @media (min-width: $breakpoint) { @content; }
+  }
+}
+
+@mixin info-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--ceo-font-size-body);
+  color: var(--ion-color-medium);
+  margin-bottom: 4px;
+
+  ion-icon {
+    font-size: 14px;
+    color: var(--ion-color-primary);
+  }
+}
+
+@mixin segmented-grid($cols: 3) {
+  display: grid;
+  grid-template-columns: repeat($cols, 1fr);
+  gap: 8px;
+  padding: 10px 0;
+  border-top: 1px solid var(--ion-color-step-150);
+}

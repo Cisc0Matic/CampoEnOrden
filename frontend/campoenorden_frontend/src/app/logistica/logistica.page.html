@@ -7,25 +7,23 @@
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
-  <ion-toolbar *ngIf="!loading && fletes.length > 0">
-    <div class="chip-scroll">
-      <ion-chip [outline]="filtroEstado === ''" (click)="filtrarPorEstado('')">
-        <ion-label>Todos</ion-label>
-      </ion-chip>
-      <ion-chip [outline]="filtroEstado !== 'PENDIENTE'" (click)="filtrarPorEstado('PENDIENTE')">
-        <ion-label>Pendientes</ion-label>
-      </ion-chip>
-      <ion-chip [outline]="filtroEstado !== 'EN_TRASLADO'" (click)="filtrarPorEstado('EN_TRASLADO')">
-        <ion-label>En Traslado</ion-label>
-      </ion-chip>
-      <ion-chip [outline]="filtroEstado !== 'ENTREGADO'" (click)="filtrarPorEstado('ENTREGADO')">
-        <ion-label>Entregados</ion-label>
-      </ion-chip>
-      <ion-chip [outline]="filtroEstado !== 'FACTURADO'" (click)="filtrarPorEstado('FACTURADO')">
-        <ion-label>Facturados</ion-label>
-      </ion-chip>
-    </div>
-  </ion-toolbar>
+  <div class="filter-bar" *ngIf="!loading">
+    <ion-chip class="filter-chip" [class.active]="filtroEstado === ''" (click)="filtrarPorEstado('')">
+      <ion-label>Todos</ion-label>
+    </ion-chip>
+    <ion-chip class="filter-chip" [class.active]="filtroEstado === 'PENDIENTE'" (click)="filtrarPorEstado('PENDIENTE')">
+      <ion-label>Pendientes</ion-label>
+    </ion-chip>
+    <ion-chip class="filter-chip" [class.active]="filtroEstado === 'EN_TRASLADO'" (click)="filtrarPorEstado('EN_TRASLADO')">
+      <ion-label>En Traslado</ion-label>
+    </ion-chip>
+    <ion-chip class="filter-chip" [class.active]="filtroEstado === 'ENTREGADO'" (click)="filtrarPorEstado('ENTREGADO')">
+      <ion-label>Entregados</ion-label>
+    </ion-chip>
+    <ion-chip class="filter-chip" [class.active]="filtroEstado === 'FACTURADO'" (click)="filtrarPorEstado('FACTURADO')">
+      <ion-label>Facturados</ion-label>
+    </ion-chip>
+  </div>
 </ion-header>
 
 <ion-content [fullscreen]="true">
@@ -50,117 +48,130 @@
       </ion-button>
     </div>
 
-    <div *ngIf="!loading && fletes.length > 0" class="fletes-grid">
-      <div class="flete-card" *ngFor="let flete of fletes">
-        <div class="card-header" [class]="'header-' + flete.estado.toLowerCase()">
-          <div class="header-left">
-            <ion-icon name="truck"></ion-icon>
-            <span class="flete-nro">CPE: {{flete.nro_cpe}}</span>
-          </div>
-          <ion-badge [color]="getEstadoColor(flete.estado)">
-            {{flete.estado_display}}
-          </ion-badge>
-        </div>
-        
-        <div class="card-body">
-          <div class="lote-row" *ngIf="flete.lote_info">
-            <ion-icon name="leaf"></ion-icon>
-            <span>{{flete.lote_info}}</span>
-          </div>
-          
-          <div class="chofer-row" *ngIf="flete.chofer_nombre">
-            <ion-icon name="person"></ion-icon>
-            <span>{{flete.chofer_nombre}}</span>
-          </div>
-          
-          <div class="patente-row">
-            <ion-icon name="car"></ion-icon>
-            <span>{{flete.patente_camion}}</span>
-            <span *ngIf="flete.patente_acoplado" class="acoplado">/ {{flete.patente_acoplado}}</span>
-          </div>
-          
-          <div class="fechas-row" *ngIf="flete.fecha_hora_salida">
-            <div class="fecha-item">
-              <ion-icon name="time"></ion-icon>
-              <span>Salida: {{flete.fecha_hora_salida | date:'dd/MM HH:mm'}}</span>
+    <div *ngIf="!loading && fletes.length > 0">
+      <div class="fletes-count">{{fletes.length}} flete{{fletes.length !== 1 ? 's' : ''}}{{filtroEstado ? ' filtrados' : ''}}</div>
+      <div class="fletes-grid">
+        <div class="flete-card" *ngFor="let flete of fletes">
+          <div class="card-header" [class]="'card-header ' + getHeaderClass(flete.estado)">
+            <div class="header-left">
+              <ion-icon name="truck"></ion-icon>
+              <span class="flete-nro">CPE: {{flete.nro_cpe}}</span>
             </div>
-            <div class="fecha-item" *ngIf="flete.fecha_hora_llegada">
-              <ion-icon name="checkmark-circle"></ion-icon>
-              <span>Llegada: {{flete.fecha_hora_llegada | date:'dd/MM HH:mm'}}</span>
+            <div class="header-right">
+              <ion-badge [color]="getEstadoColor(flete.estado)">
+                {{flete.estado_display}}
+              </ion-badge>
             </div>
           </div>
-          
-          <div class="peso-row" *ngIf="flete.peso_origen || flete.peso_destino">
-            <div class="peso-box origen">
-              <span class="peso-label">Origen</span>
-              <span class="peso-value">{{flete.peso_origen | number:'1.0-0'}} kg</span>
+
+          <div class="card-body">
+            <div class="info-row" *ngIf="flete.lote_info">
+              <ion-icon name="leaf-outline"></ion-icon>
+              <span>{{flete.lote_info}}</span>
             </div>
-            <ion-icon name="arrow-forward"></ion-icon>
-            <div class="peso-box destino">
-              <span class="peso-label">Destino</span>
-              <span class="peso-value">{{flete.peso_destino | number:'1.0-0'}} kg</span>
+
+            <div class="info-row" *ngIf="flete.chofer_nombre">
+              <ion-icon name="person-outline"></ion-icon>
+              <span>{{flete.chofer_nombre}}</span>
             </div>
-            <div class="peso-box diferencia" *ngIf="flete.peso_origen && flete.peso_destino">
-              <span class="peso-label">Diferencia</span>
-              <span class="peso-value">{{flete.peso_origen - flete.peso_destino | number:'1.0-0'}} kg</span>
+
+            <div class="info-row">
+              <ion-icon name="car-outline"></ion-icon>
+              <span>{{flete.patente_camion}}<span *ngIf="flete.patente_acoplado"> / {{flete.patente_acoplado}}</span></span>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="fecha-row" *ngIf="flete.fecha_hora_salida">
+              <div class="meta-row">
+                <ion-icon name="time-outline"></ion-icon>
+                <span class="meta-label">Salida: {{flete.fecha_hora_salida | date:'dd/MM HH:mm'}}</span>
+              </div>
+              <div class="meta-row" *ngIf="flete.fecha_hora_llegada">
+                <ion-icon name="checkmark-circle-outline"></ion-icon>
+                <span class="meta-label">Llegada: {{flete.fecha_hora_llegada | date:'dd/MM HH:mm'}}</span>
+              </div>
+            </div>
+
+            <div class="pesos-grid" *ngIf="flete.peso_origen || flete.peso_destino">
+              <div class="peso-box">
+                <span class="peso-label">Origen</span>
+                <span class="peso-value">{{flete.peso_origen | number:'1.0-0'}}</span>
+                <span class="peso-unit">kg</span>
+              </div>
+              <ion-icon name="arrow-forward"></ion-icon>
+              <div class="peso-box">
+                <span class="peso-label">Destino</span>
+                <span class="peso-value">{{flete.peso_destino | number:'1.0-0'}}</span>
+                <span class="peso-unit">kg</span>
+              </div>
+              <div class="peso-box" *ngIf="flete.peso_origen && flete.peso_destino">
+                <span class="peso-label">Diferencia</span>
+                <span class="peso-value">{{flete.peso_origen - flete.peso_destino | number:'1.0-0'}}</span>
+                <span class="peso-unit">kg</span>
+              </div>
+            </div>
+
+            <div class="meta-row" *ngIf="flete.ctg">
+              <ion-icon name="pricetag-outline"></ion-icon>
+              <span class="meta-label">CTG: {{flete.ctg}}</span>
+            </div>
+
+            <div class="meta-row" *ngIf="flete.destino">
+              <ion-icon name="location-outline"></ion-icon>
+              <span class="meta-label">{{flete.destino}}</span>
+            </div>
+
+            <div class="costos-section">
+              <div class="costos-header">
+                <ion-icon name="cash-outline"></ion-icon>
+                <span>Costos</span>
+              </div>
+              <div class="costo-fila" *ngIf="flete.flete_corto">
+                <span>Flete corto</span>
+                <span>${{flete.flete_corto | number:'1.0-0'}}</span>
+              </div>
+              <div class="costo-fila" *ngIf="flete.flete_largo">
+                <span>Flete largo</span>
+                <span>${{flete.flete_largo | number:'1.0-0'}}</span>
+              </div>
+              <div class="costo-fila" *ngIf="flete.comision">
+                <span>Comisión</span>
+                <span>${{flete.comision | number:'1.0-0'}}</span>
+              </div>
+              <div class="costo-fila" *ngIf="flete.secada">
+                <span>Secada</span>
+                <span>${{flete.secada | number:'1.0-0'}}</span>
+              </div>
+              <div class="costo-fila" *ngIf="flete.cosecha">
+                <span>Cosecha</span>
+                <span>${{flete.cosecha | number:'1.0-0'}}</span>
+              </div>
+              <div class="costo-fila" *ngIf="flete.costo_comercial">
+                <span>Comercial</span>
+                <span>${{flete.costo_comercial | number:'1.0-0'}}</span>
+              </div>
+              <div class="costo-total">
+                <span>Total flete</span>
+                <span>${{getCostoTotal(flete) | number:'1.0-0'}}</span>
+              </div>
             </div>
           </div>
-          
-          <div class="ctg-row" *ngIf="flete.ctg">
-            <span class="ctg-label">CTG:</span>
-            <span class="ctg-value">{{flete.ctg}}</span>
+
+          <div class="card-footer">
+            <ion-button fill="clear" size="small" (click)="editarFlete(flete)">
+              <ion-icon slot="start" name="create-outline"></ion-icon>
+              Editar
+            </ion-button>
+            <ion-button fill="clear" size="small" (click)="verCPE(flete)">
+              <ion-icon slot="start" name="document-text-outline"></ion-icon>
+              Ver CPE
+            </ion-button>
+            <ion-button fill="clear" size="small" *ngIf="flete.estado === 'EN_TRASLADO'" (click)="actualizarEstado(flete, 'ENTREGADO')">
+              <ion-icon slot="start" name="checkmark-circle-outline"></ion-icon>
+              Entregar
+            </ion-button>
           </div>
-          
-          <div class="costos-grid">
-            <div class="costo-item" *ngIf="flete.flete_corto">
-              <span class="costo-label">Flete corto</span>
-              <span class="costo-value">${{flete.flete_corto | number:'1.0-0'}}</span>
-            </div>
-            <div class="costo-item" *ngIf="flete.flete_largo">
-              <span class="costo-label">Flete largo</span>
-              <span class="costo-value">${{flete.flete_largo | number:'1.0-0'}}</span>
-            </div>
-            <div class="costo-item" *ngIf="flete.comision">
-              <span class="costo-label">Comisión</span>
-              <span class="costo-value">${{flete.comision | number:'1.0-0'}}</span>
-            </div>
-            <div class="costo-item" *ngIf="flete.secada">
-              <span class="costo-label">Secada</span>
-              <span class="costo-value">${{flete.secada | number:'1.0-0'}}</span>
-            </div>
-            <div class="costo-item" *ngIf="flete.cosecha">
-              <span class="costo-label">Cosecha</span>
-              <span class="costo-value">${{flete.cosecha | number:'1.0-0'}}</span>
-            </div>
-            <div class="costo-item" *ngIf="flete.costo_comercial">
-              <span class="costo-label">Comercial</span>
-              <span class="costo-value">${{flete.costo_comercial | number:'1.0-0'}}</span>
-            </div>
-            <div class="costo-item total">
-              <span class="costo-label">Total flete</span>
-              <span class="costo-value">${{getCostoTotal(flete) | number:'1.0-0'}}</span>
-            </div>
-          </div>
-          
-          <div class="destino-row" *ngIf="flete.destino">
-            <ion-icon name="location"></ion-icon>
-            <span>{{flete.destino}}</span>
-          </div>
-        </div>
-        
-        <div class="card-footer">
-          <ion-button fill="clear" size="small" (click)="editarFlete(flete)">
-            <ion-icon slot="start" name="create"></ion-icon>
-            Editar
-          </ion-button>
-          <ion-button fill="clear" size="small" (click)="verCPE(flete)">
-            <ion-icon slot="start" name="document-text"></ion-icon>
-            Ver CPE
-          </ion-button>
-          <ion-button fill="clear" size="small" *ngIf="flete.estado === 'EN_TRASLADO'" (click)="actualizarEstado(flete, 'ENTREGADO')">
-            <ion-icon slot="start" name="checkmark"></ion-icon>
-            Marcar Entregado
-          </ion-button>
         </div>
       </div>
     </div>

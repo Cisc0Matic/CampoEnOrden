@@ -4,6 +4,42 @@
   min-height: 100%;
 }
 
+.lotes-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 0 12px;
+}
+
+.filter-row {
+  display: flex;
+  gap: 8px;
+
+  .round-filter {
+    flex: 1;
+    --border-radius: 24px;
+    --background: var(--ion-color-step-50);
+    --inner-padding-end: 0;
+    --padding-start: 16px;
+    --padding-end: 12px;
+    --min-height: 44px;
+    border-radius: 24px;
+    font-size: 14px;
+
+    ion-select {
+      --placeholder-color: var(--ion-color-medium);
+      --placeholder-opacity: 1;
+      width: 100%;
+    }
+  }
+}
+
+.segment-round {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+}
+
 .loading, .error, .empty {
   display: flex;
   flex-direction: column;

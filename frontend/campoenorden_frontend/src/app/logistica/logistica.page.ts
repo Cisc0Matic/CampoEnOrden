@@ -78,8 +78,12 @@ export class LogisticaPage implements OnInit, OnDestroy {
   }
 
   filtrarPorEstado(estado: string) {
-    this.filtroEstado = estado;
+    this.filtroEstado = this.filtroEstado === estado ? '' : estado;
     this.cargarFletes();
+  }
+
+  getHeaderClass(estado: string): string {
+    return 'header-' + estado.toLowerCase();
   }
 
   getEstadoColor(estado: string): string {
@@ -107,7 +111,7 @@ export class LogisticaPage implements OnInit, OnDestroy {
   }
 
   verCPE(flete: Flete) {
-    this.router.navigate(['/tabs/logistica', flete.id, 'cpe']);
+    this.router.navigate(['/tabs/logistica/editar', flete.id]);
   }
 
   actualizarEstado(flete: Flete, nuevoEstado: string) {

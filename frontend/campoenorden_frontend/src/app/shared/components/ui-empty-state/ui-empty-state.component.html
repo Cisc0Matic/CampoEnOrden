@@ -1,0 +1,9 @@
+<div class="ceo-empty-state">
+  <ion-icon [name]="icon"></ion-icon>
+  <p>{{title}}</p>
+  <span class="ceo-empty-message" *ngIf="message">{{message}}</span>
+  <ion-button *ngIf="actionLabel" (click)="action.emit()">
+    <ion-icon slot="start" name="add"></ion-icon>
+    {{actionLabel}}
+  </ion-button>
+</div>

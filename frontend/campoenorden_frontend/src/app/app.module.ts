@@ -1,6 +1,7 @@
 import { IonicStorageModule } from '@ionic/storage-angular';
-import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http'; // Importamos HTTP_INTERCEPTORS
-import { AuthInterceptor } from './auth/auth.interceptor'; // Ruta corregida a la carpeta /auth
+import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
+import { DemoInterceptor } from './auth/demo.interceptor';
+import { AuthInterceptor } from './auth/auth.interceptor';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
@@ -23,7 +24,11 @@ import { AppComponent } from './app.component';
   ],
   providers: [
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
-    // Registramos el interceptor de forma explícita
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: DemoInterceptor,
+      multi: true
+    },
     {
       provide: HTTP_INTERCEPTORS,
       useClass: AuthInterceptor,

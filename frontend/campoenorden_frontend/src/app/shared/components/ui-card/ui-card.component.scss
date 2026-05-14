@@ -1,0 +1,62 @@
+.ceo-card {
+  background: var(--ion-color-step-50);
+  border-radius: var(--ceo-radius-lg);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--ceo-shadow-md);
+}
+
+.card-header {
+  padding: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-primary .card-header {
+  background: linear-gradient(135deg, var(--ion-color-primary) 0%, var(--ion-color-secondary) 100%);
+}
+
+.card-secondary .card-header {
+  background: linear-gradient(135deg, var(--ion-color-secondary) 0%, var(--ion-color-tertiary) 100%);
+}
+
+.card-tertiary .card-header {
+  background: linear-gradient(135deg, var(--ion-color-tertiary) 0%, var(--ion-color-tertiary-shade) 100%);
+}
+
+.card-success .card-header {
+  background: linear-gradient(135deg, var(--ion-color-success) 0%, var(--ion-color-success-shade) 100%);
+}
+
+.card-warning .card-header {
+  background: linear-gradient(135deg, var(--ion-color-warning) 0%, var(--ion-color-warning-shade) 100%);
+}
+
+.card-danger .card-header {
+  background: linear-gradient(135deg, var(--ion-color-danger) 0%, var(--ion-color-danger-shade) 100%);
+}
+
+.card-medium .card-header {
+  background: linear-gradient(135deg, var(--ion-color-medium) 0%, var(--ion-color-medium-shade) 100%);
+}
+
+.card-body {
+  padding: 14px;
+  flex: 1;
+}
+
+.card-footer {
+  padding: 8px;
+  border-top: 1px solid var(--ion-color-step-150);
+  display: flex;
+  justify-content: space-around;
+
+  ::ng-deep ion-button {
+    --padding-start: 8px;
+    --padding-end: 8px;
+    --color: var(--ion-color-medium);
+    font-size: var(--ceo-font-size-sm);
+  }
+}

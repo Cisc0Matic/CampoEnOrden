@@ -106,6 +106,11 @@ export class AjustesPage implements OnInit, OnDestroy {
     this.cargarParametros();
   }
 
+  filtrarPorCampana(campana: string) {
+    this.filtroCampana = this.filtroCampana === campana ? '' : campana;
+    this.cargarParametros();
+  }
+
   getCategoriaLabel(cat: string): string {
     const labels: { [key: string]: string } = {
       'GRANO': 'Granos',

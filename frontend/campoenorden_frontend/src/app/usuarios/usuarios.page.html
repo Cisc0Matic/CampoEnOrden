@@ -7,29 +7,37 @@
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
-  <ion-toolbar *ngIf="!loading && personas.length > 0">
-    <div class="filter-row">
-      <ion-item lines="none" class="filter-item">
-        <ion-label>Tipo:</ion-label>
-        <ion-select [value]="filtroTipo" (ionChange)="filtroTipo = $event.detail.value; filtrarPersonas()" placeholder="Todos" interface="popover">
-          <ion-select-option value="">Todos</ion-select-option>
-          <ion-select-option value="PERSONA">Persona</ion-select-option>
-          <ion-select-option value="EMPRESA">Empresa</ion-select-option>
-        </ion-select>
-      </ion-item>
-      <ion-item lines="none" class="filter-item">
-        <ion-label>Rol:</ion-label>
-        <ion-select [value]="filtroRol" (ionChange)="filtroRol = $event.detail.value; filtrarPersonas()" placeholder="Todos" interface="popover">
-          <ion-select-option value="">Todos</ion-select-option>
-          <ion-select-option value="DUENO">Dueño</ion-select-option>
-          <ion-select-option value="ARRENDATARIO">Arrendatario</ion-select-option>
-          <ion-select-option value="CONTRATISTA">Contratista</ion-select-option>
-          <ion-select-option value="CHOFER">Chofer</ion-select-option>
-          <ion-select-option value="ADMINISTRADOR">Administrador</ion-select-option>
-        </ion-select>
-      </ion-item>
-    </div>
-  </ion-toolbar>
+  <div class="filter-bar" *ngIf="!loading">
+    <ion-chip class="filter-chip" [class.active]="filtroTipo === ''" (click)="filtrarPorTipo('')">
+      <ion-label>Todos</ion-label>
+    </ion-chip>
+    <ion-chip class="filter-chip" [class.active]="filtroTipo === 'PERSONA'" (click)="filtrarPorTipo('PERSONA')">
+      <ion-label>Persona</ion-label>
+    </ion-chip>
+    <ion-chip class="filter-chip" [class.active]="filtroTipo === 'EMPRESA'" (click)="filtrarPorTipo('EMPRESA')">
+      <ion-label>Empresa</ion-label>
+    </ion-chip>
+  </div>
+  <div class="filter-bar" *ngIf="!loading">
+    <ion-chip class="filter-chip" [class.active]="filtroRol === ''" (click)="filtrarPorRol('')">
+      <ion-label>Todos</ion-label>
+    </ion-chip>
+    <ion-chip class="filter-chip" [class.active]="filtroRol === 'DUENO'" (click)="filtrarPorRol('DUENO')">
+      <ion-label>Dueño</ion-label>
+    </ion-chip>
+    <ion-chip class="filter-chip" [class.active]="filtroRol === 'ARRENDATARIO'" (click)="filtrarPorRol('ARRENDATARIO')">
+      <ion-label>Arrendatario</ion-label>
+    </ion-chip>
+    <ion-chip class="filter-chip" [class.active]="filtroRol === 'CONTRATISTA'" (click)="filtrarPorRol('CONTRATISTA')">
+      <ion-label>Contratista</ion-label>
+    </ion-chip>
+    <ion-chip class="filter-chip" [class.active]="filtroRol === 'CHOFER'" (click)="filtrarPorRol('CHOFER')">
+      <ion-label>Chofer</ion-label>
+    </ion-chip>
+    <ion-chip class="filter-chip" [class.active]="filtroRol === 'ADMINISTRADOR'" (click)="filtrarPorRol('ADMINISTRADOR')">
+      <ion-label>Admin.</ion-label>
+    </ion-chip>
+  </div>
 </ion-header>
 
 <ion-content [fullscreen]="true">

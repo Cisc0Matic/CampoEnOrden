@@ -2,13 +2,13 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { ApiService } from '../services/api.service';
-import { Router, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 
 interface Lote {
   id: number;
   nombre: string;
+  campo: number;
   campo_nombre: string;
-  campo_id: number;
   campana_nombre: string;
   campana_id: number;
   cultivo_nombre: string;
@@ -50,9 +50,11 @@ export class LotesPage implements OnInit, OnDestroy {
   filtroCampana = '';
   filtroCultivo = '';
   filtroActivo: any = 'todos';
+  filtroCampo: number | null = null;
+  pageTitle = 'Lotes';
   private routerListener: any;
 
-  constructor(private api: ApiService, private router: Router) {
+  constructor(private api: ApiService, private router: Router, private route: ActivatedRoute) {
     this.routerListener = this.router.events.subscribe(() => {
       if (this.router.url.includes('/tabs/lotes')) {
         this.cargarDatos();
@@ -61,6 +63,13 @@ export class LotesPage implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    this.route.queryParams.subscribe(params => {
+      const campoId = params['campo_id'];
+      if (campoId) {
+        this.filtroCampo = Number(campoId);
+        this.pageTitle = `Lotes de ${params['campo_nombre'] || 'Campo'}`;
+      }
+    });
     this.cargarDatos();
   }
 
@@ -104,6 +113,7 @@ export class LotesPage implements OnInit, OnDestroy {
 
   filtrarLotes() {
     this.lotesFiltrados = this.lotes.filter(l => {
+      if (this.filtroCampo !== null && l.campo !== this.filtroCampo) return false;
       if (this.filtroCampana && l.campana_id?.toString() !== this.filtroCampana) return false;
       if (this.filtroCultivo && l.cultivo_id?.toString() !== this.filtroCultivo) return false;
       if (this.filtroActivo === 'activos') return l.activo;
@@ -112,8 +122,8 @@ export class LotesPage implements OnInit, OnDestroy {
     });
   }
 
-  filtrarPorTipo(tipo: string) {
-    this.filtroTipo = this.filtroTipo === tipo ? '' : tipo;
+  filtrarPorActivo(activo: string) {
+    this.filtroActivo = this.filtroActivo === activo ? 'todos' : activo;
     this.filtrarLotes();
   }
 
@@ -128,7 +138,11 @@ export class LotesPage implements OnInit, OnDestroy {
   }
 
   agregarLote() {
-    this.router.navigate(['/tabs/lotes/crear']);
+    const queryParams: any = {};
+    if (this.filtroCampo !== null) {
+      queryParams.campo_id = this.filtroCampo;
+    }
+    this.router.navigate(['/tabs/lotes/crear'], { queryParams });
   }
 
   editarLote(lote: Lote) {
@@ -136,6 +150,6 @@ export class LotesPage implements OnInit, OnDestroy {
   }
 
   verDetalleLote(lote: Lote) {
-    this.router.navigate(['/tabs/lotes', lote.id]);
+    this.router.navigate(['/tabs/lotes/editar', lote.id]);
   }
 }

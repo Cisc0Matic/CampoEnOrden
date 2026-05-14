@@ -71,6 +71,35 @@
   --ion-color-light-contrast-rgb: 0,0,0;
   --ion-color-light-shade: #d7d8da;
   --ion-color-light-tint: #f5f6f9;
+
+  // Design tokens - CampoEnOrden
+  --ceo-primary-light: #4CAF50;
+  --ceo-primary-dark: #1B5E20;
+  --ceo-bg: #f5f5f5;
+  --ceo-surface: #ffffff;
+  --ceo-text: #222428;
+  --ceo-text-secondary: #989aa2;
+  --ceo-border: #e0e0e0;
+
+  // Spacing
+  --ceo-space-xs: 4px;
+  --ceo-space-sm: 8px;
+  --ceo-space-md: 12px;
+  --ceo-space-lg: 16px;
+  --ceo-space-xl: 24px;
+  --ceo-space-xxl: 32px;
+  --ceo-space-xxxl: 48px;
+
+  // Border radius
+  --ceo-radius-sm: 8px;
+  --ceo-radius-md: 10px;
+  --ceo-radius-lg: 16px;
+  --ceo-radius-xl: 20px;
+
+  // Shadows
+  --ceo-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --ceo-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --ceo-shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.12);
 }
 
 // Light theme (default)
@@ -80,8 +109,7 @@
   --ion-text-color: #222428;
   --ion-text-color-rgb: 34,36,40;
   --ion-border-color: #e0e0e0;
-  
-  // Step colors for light mode
+
   --ion-color-step-50: #f9f9f9;
   --ion-color-step-100: #f0f0f0;
   --ion-color-step-150: #e8e8e8;
@@ -100,7 +128,7 @@
   --ion-color-step-800: #808080;
 }
 
-// Dark theme - Professional dark mode
+// Dark theme
 @media (prefers-color-scheme: dark) {
   :root {
     --ion-background-color: #121212;
@@ -108,7 +136,7 @@
     --ion-text-color: #e0e0e0;
     --ion-text-color-rgb: 224,224,224;
     --ion-border-color: #2a2a2a;
-    
+
     --ion-color-step-50: #1e1e1e;
     --ion-color-step-100: #2a2a2a;
     --ion-color-step-150: #363636;
@@ -128,14 +156,13 @@
   }
 }
 
-// Force dark mode class support
 .ion-palette-dark {
   --ion-background-color: #121212;
   --ion-background-color-rgb: 18,18,18;
   --ion-text-color: #e0e0e0;
   --ion-text-color-rgb: 224,224,224;
   --ion-border-color: #2a2a2a;
-  
+
   --ion-color-step-50: #1e1e1e;
   --ion-color-step-100: #2a2a2a;
   --ion-color-step-150: #363636;

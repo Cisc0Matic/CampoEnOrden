@@ -1,0 +1,36 @@
+<div class="popup-wrapper">
+  <div class="popup-title">Nuevo Cultivo</div>
+
+  <form [formGroup]="form">
+    <ion-list>
+      <ion-item>
+        <ion-input label="Nombre" labelPlacement="stacked" formControlName="nombre" placeholder="Ej: Girasol" required></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-select label="Familia" labelPlacement="stacked" formControlName="familia" interface="popover">
+          <ion-select-option *ngFor="let f of familias" [value]="f">{{f}}</ion-select-option>
+        </ion-select>
+      </ion-item>
+      <ion-item>
+        <ion-select label="Ciclo" labelPlacement="stacked" formControlName="ciclo" interface="popover">
+          <ion-select-option *ngFor="let c of ciclos" [value]="c">{{c}}</ion-select-option>
+        </ion-select>
+      </ion-item>
+      <ion-item lines="none">
+        <ion-toggle labelPlacement="start" formControlName="activo">Activo</ion-toggle>
+      </ion-item>
+    </ion-list>
+
+    <div class="error" *ngIf="error">
+      <p>{{error}}</p>
+    </div>
+  </form>
+
+  <div class="popup-actions">
+    <ion-button fill="clear" (click)="cancelar()" class="cancel-btn">Cancelar</ion-button>
+    <ion-button (click)="guardar()" [disabled]="loading" class="save-btn">
+      <ion-spinner *ngIf="loading" name="crescent" slot="start"></ion-spinner>
+      <span *ngIf="!loading">Guardar</span>
+    </ion-button>
+  </div>
+</div>

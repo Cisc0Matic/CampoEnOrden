@@ -1,0 +1,11 @@
+<div class="ceo-card" [class]="'card-' + color">
+  <div class="card-header">
+    <ng-content select="[card-header]"></ng-content>
+  </div>
+  <div class="card-body">
+    <ng-content select="[card-body]"></ng-content>
+  </div>
+  <div class="card-footer" (click)="$event.stopPropagation()">
+    <ng-content select="[card-footer]"></ng-content>
+  </div>
+</div>

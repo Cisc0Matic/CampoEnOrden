@@ -70,24 +70,16 @@ export class LoginComponent implements OnInit {
 
     const { username, password } = this.loginForm.value;
 
-    // LOGIN DE EMERGENCIA - QUITAR EN PRODUCCIÓN
+    // DEMO MODE - funciona sin backend
     if (username === 'demo' && password === 'demo') {
-      try {
-        const response: any = await firstValueFrom(
-          this.apiService.post('token/', { username: 'admin', password: 'admin123' })
-        );
-      if (response && response.access) {
-        localStorage.setItem('jwt_token', response.access);
-        await this.storage.set('jwt_token', response.access);
-        await this.storage.set('username', username);
-        this.goToTabs();
-      }
-    } catch (error) {
-      this.errorMessage = 'Demo no disponible. ¿Backend corriendo?';
+      const fakeToken = 'demo_' + Date.now() + '_' + Math.random().toString(36).substring(2);
+      localStorage.setItem('jwt_token', fakeToken);
+      await this.storage.set('jwt_token', fakeToken);
+      await this.storage.set('username', 'demo');
+      this.loading = false;
+      this.goToTabs();
+      return;
     }
-    this.loading = false;
-    return;
-  }
 
   try {
     const response: any = await firstValueFrom(

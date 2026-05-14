@@ -21,11 +21,17 @@
         <ion-select label="Campaña" labelPlacement="stacked" formControlName="campana" [compareWith]="compararPorId" placeholder="Seleccionar campaña">
           <ion-select-option *ngFor="let c of campanas" [value]="c.id">{{c.nombre}}</ion-select-option>
         </ion-select>
+        <ion-button slot="end" fill="clear" size="small" (click)="crearCampana()">
+          <ion-icon name="add-circle-outline"></ion-icon>
+        </ion-button>
       </ion-item>
       <ion-item>
         <ion-select label="Cultivo" labelPlacement="stacked" formControlName="cultivo" [compareWith]="compararPorId" placeholder="Seleccionar cultivo">
           <ion-select-option *ngFor="let c of cultivos" [value]="c.id">{{c.nombre}}</ion-select-option>
         </ion-select>
+        <ion-button slot="end" fill="clear" size="small" (click)="crearCultivo()">
+          <ion-icon name="add-circle-outline"></ion-icon>
+        </ion-button>
       </ion-item>
       <ion-item>
         <ion-input label="Superficie (ha)" labelPlacement="stacked" type="number" formControlName="superficie" placeholder="Ej: 50"></ion-input>

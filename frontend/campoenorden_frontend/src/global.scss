@@ -1,13 +1,11 @@
 /*
  * App Global CSS
  * ----------------------------------------------------------------------------
- * Put style rules here that you want to apply globally. These styles are for
- * the entire app and not just one component. Additionally, this file can be
- * used as an entry point to import other CSS/Sass files to be included in the
- * output CSS.
- * For more information on global stylesheets, visit the documentation:
- * https://ionicframework.com/docs/layout/global-stylesheets
  */
+
+/* CampoEnOrden Design System - @use must come first */
+@use "./theme/typography";
+@use "./theme/utilities";
 
 /* Core CSS required for Ionic components to work properly */
 @import "@ionic/angular/css/core.css";
@@ -18,18 +16,56 @@
 @import "@ionic/angular/css/typography.css";
 @import "@ionic/angular/css/display.css";
 
-/* Optional CSS utils that can be commented out */
+/* Optional CSS utils */
 @import "@ionic/angular/css/padding.css";
 @import "@ionic/angular/css/float-elements.css";
 @import "@ionic/angular/css/text-alignment.css";
 @import "@ionic/angular/css/text-transformation.css";
 @import "@ionic/angular/css/flex-utils.css";
 
-/**
- * Ionic Dark Mode
- * -----------------------------------------------------
- * For more info, please see:
- * https://ionicframework.com/docs/theming/dark-mode
- */
-
+/* Ionic Dark Mode */
 @import "@ionic/angular/css/palettes/dark.system.css";
+
+ion-modal.popup-modal {
+  --border-radius: 16px;
+  --width: 90%;
+  --max-width: 360px;
+  --height: auto;
+  --box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  --backdrop-opacity: 0.4;
+}
+
+ion-modal.popup-modal .ion-page {
+  position: relative;
+  display: block;
+  contain: content;
+}
+
+.filter-bar {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 6px 12px 10px;
+  background: var(--ion-background-color);
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.filter-chip {
+  --background: var(--ion-color-step-100);
+  --color: var(--ion-color-medium);
+  min-width: fit-content;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+
+  &.active {
+    --background: var(--ion-color-primary);
+    --color: var(--ion-color-primary-contrast);
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(var(--ion-color-primary-rgb), 0.3);
+  }
+}

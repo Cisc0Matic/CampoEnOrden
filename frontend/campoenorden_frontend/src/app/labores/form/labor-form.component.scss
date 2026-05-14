@@ -1,7 +1,11 @@
 .form-container {
+  max-width: 600px;
+  margin: 0 auto;
   padding: 16px;
-  background: var(--ion-background-color);
-  min-height: 100%;
+}
+
+ion-list {
+  background: transparent;
 }
 
 ion-item {
@@ -10,18 +14,40 @@ ion-item {
   --background: var(--ion-color-step-50);
 }
 
-.insumos-section {
-  margin-top: 16px;
-  padding: 16px;
+.foto-section {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px 4px;
   background: var(--ion-color-step-50);
   border-radius: 8px;
+  margin-bottom: 10px;
 }
 
-.insumo-row {
+.foto-preview {
+  width: 100%;
+  max-height: 200px;
+  object-fit: contain;
+  border-radius: 8px;
+  margin-top: 8px;
+}
+
+.insumos-section {
+  margin-bottom: 10px;
+}
+
+.insumos-header {
   display: flex;
-  gap: 8px;
   align-items: center;
-  margin-bottom: 8px;
+  justify-content: space-between;
+  padding: 4px 16px 8px;
+}
+
+.insumos-header ion-label {
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--ion-text-color);
 }
 
 .form-actions {
@@ -29,4 +55,15 @@ ion-item {
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+.loading {
+  text-align: center;
+  padding: 40px 16px;
+}
+
+.error {
+  color: var(--ion-color-danger);
+  text-align: center;
+  padding: 16px;
 }

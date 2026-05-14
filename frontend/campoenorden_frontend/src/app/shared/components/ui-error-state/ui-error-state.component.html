@@ -1,0 +1,5 @@
+<div class="ceo-error-state">
+  <ion-icon name="warning-outline"></ion-icon>
+  <p>{{message}}</p>
+  <ion-button *ngIf="showRetry" (click)="retry.emit()">Reintentar</ion-button>
+</div>

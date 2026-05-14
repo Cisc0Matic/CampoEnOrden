@@ -92,6 +92,16 @@ export class DocumentosPage implements OnInit, OnDestroy {
     });
   }
 
+  filtrarPorTipo(tipo: string) {
+    this.filtroTipo = this.filtroTipo === tipo ? '' : tipo;
+    this.cargarDocumentos();
+  }
+
+  filtrarPorEstado(estado: string) {
+    this.filtroEstado = this.filtroEstado === estado ? '' : estado;
+    this.cargarDocumentos();
+  }
+
   getEstadoColor(estado: string): string {
     switch (estado) {
       case 'APROBADO': return 'success';

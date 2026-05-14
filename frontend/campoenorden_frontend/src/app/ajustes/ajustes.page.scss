@@ -4,14 +4,6 @@
   min-height: 100%;
 }
 
-.categoria-filters {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  padding: 12px;
-  background: var(--ion-color-step-50);
-}
-
 .loading, .error, .empty {
   display: flex;
   flex-direction: column;

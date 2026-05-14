@@ -1,6 +1,6 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
-    <ion-title>Lotes / Campañas</ion-title>
+    <ion-title>{{pageTitle}}</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="agregarLote()">
         <ion-icon slot="icon-only" name="add-circle"></ion-icon>
@@ -11,32 +11,32 @@
 
 <ion-content [fullscreen]="true">
   <div class="lotes-container">
-    <div class="filtros-container" *ngIf="!loading && lotes.length > 0">
-      <ion-item lines="none">
-        <ion-label>Campaña:</ion-label>
-        <ion-select [value]="filtroCampana" (ionChange)="filtroCampana = $event.detail.value; filtrarLotes()" placeholder="Todas" interface="popover">
-          <ion-select-option value="">Todas</ion-select-option>
-          <ion-select-option *ngFor="let c of campanas" [value]="c.id.toString()">{{c.nombre}}</ion-select-option>
-        </ion-select>
-      </ion-item>
-      <ion-item lines="none">
-        <ion-label>Cultivo:</ion-label>
-        <ion-select [value]="filtroCultivo" (ionChange)="filtroCultivo = $event.detail.value; filtrarLotes()" placeholder="Todos" interface="popover">
-          <ion-select-option value="">Todos</ion-select-option>
-          <ion-select-option *ngFor="let c of cultivos" [value]="c.id.toString()">{{c.nombre}}</ion-select-option>
-        </ion-select>
-      </ion-item>
-      <ion-segment value="filtroActivo" (ionChange)="filtroActivo = $event.detail.value; filtrarLotes()">
-        <ion-segment-button value="todos">
+    <div class="lotes-filters" *ngIf="!loading && lotes.length > 0">
+      <div class="filter-row">
+        <ion-item class="round-filter">
+          <ion-select interface="popover" placeholder="Campaña" [value]="filtroCampana" (ionChange)="filtroCampana = $event.detail.value; filtrarLotes()">
+            <ion-select-option value="">Todas las campañas</ion-select-option>
+            <ion-select-option *ngFor="let c of campanas" [value]="c.id.toString()">{{c.nombre}}</ion-select-option>
+          </ion-select>
+        </ion-item>
+        <ion-item class="round-filter">
+          <ion-select interface="popover" placeholder="Cultivo" [value]="filtroCultivo" (ionChange)="filtroCultivo = $event.detail.value; filtrarLotes()">
+            <ion-select-option value="">Todos los cultivos</ion-select-option>
+            <ion-select-option *ngFor="let c of cultivos" [value]="c.id.toString()">{{c.nombre}}</ion-select-option>
+          </ion-select>
+        </ion-item>
+      </div>
+      <div class="segment-round">
+        <ion-chip class="filter-chip" [class.active]="filtroActivo === 'todos'" (click)="filtrarPorActivo('todos')">
           <ion-label>Todos</ion-label>
-        </ion-segment-button>
-        <ion-segment-button value="activos">
+        </ion-chip>
+        <ion-chip class="filter-chip" [class.active]="filtroActivo === 'activos'" (click)="filtrarPorActivo('activos')">
           <ion-label>Activos</ion-label>
-        </ion-segment-button>
-        <ion-segment-button value="inactivos">
+        </ion-chip>
+        <ion-chip class="filter-chip" [class.active]="filtroActivo === 'inactivos'" (click)="filtrarPorActivo('inactivos')">
           <ion-label>Inactivos</ion-label>
-        </ion-segment-button>
-      </ion-segment>
+        </ion-chip>
+      </div>
     </div>
 
     <div *ngIf="loading" class="loading">

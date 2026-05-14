@@ -7,31 +7,43 @@
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
-  <ion-toolbar *ngIf="!loading">
-    <div class="filter-row">
-      <ion-item lines="none" class="filter-item">
-        <ion-label>Tipo:</ion-label>
-        <ion-select [value]="filtroTipo" (ionChange)="filtroTipo = $event.detail.value; filtrarDocumentos()" placeholder="Todos" interface="popover">
-          <ion-select-option value="">Todos</ion-select-option>
-          <ion-select-option value="CONTRATO">Contrato</ion-select-option>
-          <ion-select-option value="FACTURA">Factura</ion-select-option>
-          <ion-select-option value="COMPROBANTE">Comprobante</ion-select-option>
-          <ion-select-option value="TRANSFERENCIA">Transferencia</ion-select-option>
-          <ion-select-option value="MAPA">Mapa</ion-select-option>
-        </ion-select>
-      </ion-item>
-      <ion-item lines="none" class="filter-item">
-        <ion-label>Estado:</ion-label>
-        <ion-select [value]="filtroEstado" (ionChange)="filtroEstado = $event.detail.value; filtrarDocumentos()" placeholder="Todos" interface="popover">
-          <ion-select-option value="">Todos</ion-select-option>
-          <ion-select-option value="PENDIENTE">Pendiente</ion-select-option>
-          <ion-select-option value="APROBADO">Aprobado</ion-select-option>
-          <ion-select-option value="VENCIDO">Vencido</ion-select-option>
-          <ion-select-option value="ARCHIVADO">Archivado</ion-select-option>
-        </ion-select>
-      </ion-item>
-    </div>
-  </ion-toolbar>
+  <div class="filter-bar" *ngIf="!loading">
+    <ion-chip class="filter-chip" [class.active]="filtroTipo === ''" (click)="filtrarPorTipo('')">
+      <ion-label>Todos</ion-label>
+    </ion-chip>
+    <ion-chip class="filter-chip" [class.active]="filtroTipo === 'CONTRATO'" (click)="filtrarPorTipo('CONTRATO')">
+      <ion-label>Contrato</ion-label>
+    </ion-chip>
+    <ion-chip class="filter-chip" [class.active]="filtroTipo === 'FACTURA'" (click)="filtrarPorTipo('FACTURA')">
+      <ion-label>Factura</ion-label>
+    </ion-chip>
+    <ion-chip class="filter-chip" [class.active]="filtroTipo === 'COMPROBANTE'" (click)="filtrarPorTipo('COMPROBANTE')">
+      <ion-label>Comprobante</ion-label>
+    </ion-chip>
+    <ion-chip class="filter-chip" [class.active]="filtroTipo === 'TRANSFERENCIA'" (click)="filtrarPorTipo('TRANSFERENCIA')">
+      <ion-label>Transferencia</ion-label>
+    </ion-chip>
+    <ion-chip class="filter-chip" [class.active]="filtroTipo === 'MAPA'" (click)="filtrarPorTipo('MAPA')">
+      <ion-label>Mapa</ion-label>
+    </ion-chip>
+  </div>
+  <div class="filter-bar" *ngIf="!loading">
+    <ion-chip class="filter-chip" [class.active]="filtroEstado === ''" (click)="filtrarPorEstado('')">
+      <ion-label>Todos</ion-label>
+    </ion-chip>
+    <ion-chip class="filter-chip" [class.active]="filtroEstado === 'PENDIENTE'" (click)="filtrarPorEstado('PENDIENTE')">
+      <ion-label>Pendiente</ion-label>
+    </ion-chip>
+    <ion-chip class="filter-chip" [class.active]="filtroEstado === 'APROBADO'" (click)="filtrarPorEstado('APROBADO')">
+      <ion-label>Aprobado</ion-label>
+    </ion-chip>
+    <ion-chip class="filter-chip" [class.active]="filtroEstado === 'VENCIDO'" (click)="filtrarPorEstado('VENCIDO')">
+      <ion-label>Vencido</ion-label>
+    </ion-chip>
+    <ion-chip class="filter-chip" [class.active]="filtroEstado === 'ARCHIVADO'" (click)="filtrarPorEstado('ARCHIVADO')">
+      <ion-label>Archivado</ion-label>
+    </ion-chip>
+  </div>
 </ion-header>
 
 <ion-content [fullscreen]="true">
@@ -79,7 +91,7 @@
             <span>Vinculado a labor</span>
           </div>
           <div class="info-row" *ngIf="doc.flete_id">
-            <ion-icon name="truck"></ion-icon>
+            <ion-icon name="truck-outline"></ion-icon>
             <span>Vinculado a flete</span>
           </div>
           

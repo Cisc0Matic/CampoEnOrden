@@ -1,0 +1,73 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --ceo-font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --ceo-font-size-xs: 10px;
+  --ceo-font-size-sm: 11px;
+  --ceo-font-size-body: 12px;
+  --ceo-font-size-md: 14px;
+  --ceo-font-size-lg: 16px;
+  --ceo-font-size-xl: 18px;
+  --ceo-font-size-xxl: 22px;
+  --ceo-font-size-xxxl: 28px;
+  --ceo-font-regular: 400;
+  --ceo-font-medium: 500;
+  --ceo-font-semibold: 600;
+  --ceo-font-bold: 700;
+}
+
+* {
+  font-family: var(--ceo-font-family);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  margin: 0;
+}
+
+.ceo-h1 {
+  font-size: var(--ceo-font-size-xxxl);
+  font-weight: var(--ceo-font-bold);
+  line-height: 1.2;
+}
+
+.ceo-h2 {
+  font-size: var(--ceo-font-size-xxl);
+  font-weight: var(--ceo-font-bold);
+  line-height: 1.25;
+}
+
+.ceo-h3 {
+  font-size: var(--ceo-font-size-xl);
+  font-weight: var(--ceo-font-semibold);
+  line-height: 1.3;
+}
+
+.ceo-h4 {
+  font-size: var(--ceo-font-size-lg);
+  font-weight: var(--ceo-font-semibold);
+  line-height: 1.35;
+}
+
+.ceo-body {
+  font-size: var(--ceo-font-size-md);
+  font-weight: var(--ceo-font-regular);
+  line-height: 1.4;
+}
+
+.ceo-body-small {
+  font-size: var(--ceo-font-size-body);
+  font-weight: var(--ceo-font-regular);
+  line-height: 1.4;
+}
+
+.ceo-caption {
+  font-size: var(--ceo-font-size-sm);
+  font-weight: var(--ceo-font-regular);
+  line-height: 1.3;
+}
+
+.ceo-small {
+  font-size: var(--ceo-font-size-xs);
+  font-weight: var(--ceo-font-regular);
+  line-height: 1.2;
+}
