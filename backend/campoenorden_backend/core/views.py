@@ -137,6 +137,15 @@ class ParametroViewSet(viewsets.ModelViewSet):
 
 
 @api_view(['GET'])
+def provincias_view(request):
+    import json, os
+    json_path = os.path.join(os.path.dirname(__file__), 'provincias.json')
+    with open(json_path, 'r', encoding='utf-8') as f:
+        provincias = json.load(f)
+    return Response(provincias)
+
+
+@api_view(['GET'])
 def dashboard(request):
     campos_activos = Campo.objects.filter(estado_contrato='ACTIVO').count()
     hectareas_totales = Campo.objects.aggregate(

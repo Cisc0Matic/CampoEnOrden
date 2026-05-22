@@ -8,6 +8,7 @@ import { UiErrorStateComponent } from './components/ui-error-state/ui-error-stat
 import { UiLoadingStateComponent } from './components/ui-loading-state/ui-loading-state.component';
 import { UiFormActionsComponent } from './components/ui-form-actions/ui-form-actions.component';
 import { UiConfirmDeleteComponent } from './components/ui-confirm-delete/ui-confirm-delete.component';
+import { CrearPersonaModalComponent } from './components/crear-persona-modal/crear-persona-modal.component';
 
 @NgModule({
   imports: [
@@ -20,6 +21,7 @@ import { UiConfirmDeleteComponent } from './components/ui-confirm-delete/ui-conf
     UiLoadingStateComponent,
     UiFormActionsComponent,
     UiConfirmDeleteComponent,
+    CrearPersonaModalComponent,
   ],
   exports: [
     UiCardComponent,
@@ -29,6 +31,7 @@ import { UiConfirmDeleteComponent } from './components/ui-confirm-delete/ui-conf
     UiLoadingStateComponent,
     UiFormActionsComponent,
     UiConfirmDeleteComponent,
+    CrearPersonaModalComponent,
   ],
 })
 export class SharedModule {}

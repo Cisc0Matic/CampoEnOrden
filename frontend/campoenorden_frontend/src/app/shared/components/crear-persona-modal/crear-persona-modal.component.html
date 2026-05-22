@@ -1,0 +1,51 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Crear {{rol === 'DUENO' ? 'Locador' : 'Locatario'}}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="cerrar()">
+        <ion-icon slot="icon-only" name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <form [formGroup]="personaForm" class="form-container">
+    <ion-list>
+      <ion-item>
+        <ion-input label="Nombre" labelPlacement="stacked" formControlName="nombre" placeholder="Ej: Juan Pérez"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-select label="Tipo" labelPlacement="stacked" formControlName="tipo" placeholder="Seleccionar tipo">
+          <ion-select-option *ngFor="let t of tipos" [value]="t.value">{{t.label}}</ion-select-option>
+        </ion-select>
+      </ion-item>
+      <ion-item>
+        <ion-input label="Documento (DNI/CUIT)" labelPlacement="stacked" formControlName="documento" placeholder="Ej: 12345678"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-input label="CUIL" labelPlacement="stacked" formControlName="cuil" placeholder="Ej: 20-12345678-9"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-input label="Teléfono" labelPlacement="stacked" formControlName="telefono" placeholder="Ej: 351 1234567"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-input label="Email" labelPlacement="stacked" type="email" formControlName="email" placeholder="Ej: juan@email.com"></ion-input>
+      </ion-item>
+    </ion-list>
+
+    <div class="error" *ngIf="error">
+      <p>{{error}}</p>
+    </div>
+
+    <div class="form-actions">
+      <ion-button expand="block" (click)="guardar()" [disabled]="loading">
+        <ion-spinner *ngIf="loading" name="crescent"></ion-spinner>
+        {{loading ? 'Creando...' : 'Crear'}}
+      </ion-button>
+      <ion-button expand="block" fill="clear" (click)="cerrar()">
+        Cancelar
+      </ion-button>
+    </div>
+  </form>
+</ion-content>

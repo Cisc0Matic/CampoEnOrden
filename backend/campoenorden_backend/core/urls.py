@@ -5,7 +5,7 @@ from .views import (
     CultivoViewSet, InsumoViewSet, ProductoPrecioViewSet,
     TipoLaborPersonalizadoViewSet,
     LaborViewSet, FleteViewSet, DocumentoViewSet, ParametroViewSet,
-    dashboard, indicadores_campo, margen_view,
+    dashboard, indicadores_campo, margen_view, provincias_view,
     lista_campos, lista_lotes, lista_labores, lista_fletes, lista_documentos
 )
 
@@ -25,6 +25,7 @@ router.register(r'parametros', ParametroViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
+    path('provincias/', provincias_view, name='provincias'),
     path('dashboard/', dashboard, name='dashboard'),
     path('dashboard/campo/<int:campo_id>/', indicadores_campo, name='indicadores-campo'),
     path('dashboard/margen/', margen_view, name='margen'),

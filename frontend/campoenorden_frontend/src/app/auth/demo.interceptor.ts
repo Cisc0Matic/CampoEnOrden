@@ -158,6 +158,35 @@ export class DemoInterceptor implements HttpInterceptor {
   private handleGET(url: string): any {
     const path = this.extractPath(url);
 
+    if (path === 'core/provincias/') {
+      return [
+        { codigo: 'AR-B', nombre: 'Buenos Aires' },
+        { codigo: 'AR-C', nombre: 'Ciudad Autónoma de Buenos Aires' },
+        { codigo: 'AR-K', nombre: 'Catamarca' },
+        { codigo: 'AR-H', nombre: 'Chaco' },
+        { codigo: 'AR-U', nombre: 'Chubut' },
+        { codigo: 'AR-X', nombre: 'Córdoba' },
+        { codigo: 'AR-W', nombre: 'Corrientes' },
+        { codigo: 'AR-E', nombre: 'Entre Ríos' },
+        { codigo: 'AR-P', nombre: 'Formosa' },
+        { codigo: 'AR-Y', nombre: 'Jujuy' },
+        { codigo: 'AR-L', nombre: 'La Pampa' },
+        { codigo: 'AR-F', nombre: 'La Rioja' },
+        { codigo: 'AR-M', nombre: 'Mendoza' },
+        { codigo: 'AR-N', nombre: 'Misiones' },
+        { codigo: 'AR-Q', nombre: 'Neuquén' },
+        { codigo: 'AR-R', nombre: 'Río Negro' },
+        { codigo: 'AR-A', nombre: 'Salta' },
+        { codigo: 'AR-J', nombre: 'San Juan' },
+        { codigo: 'AR-D', nombre: 'San Luis' },
+        { codigo: 'AR-Z', nombre: 'Santa Cruz' },
+        { codigo: 'AR-S', nombre: 'Santa Fe' },
+        { codigo: 'AR-G', nombre: 'Santiago del Estero' },
+        { codigo: 'AR-V', nombre: 'Tierra del Fuego, Antártida e Islas del Atlántico Sur' },
+        { codigo: 'AR-T', nombre: 'Tucumán' }
+      ];
+    }
+
     if (path === 'core/dashboard/') {
       return {
         campos_activos: 8, hectareas_totales: 1200, hectareas_trabajadas: 850,

@@ -4,3 +4,4 @@ djangorestframework-simplejwt
 PyMySQL
 Pillow
 django-cors-headers
+django-filter

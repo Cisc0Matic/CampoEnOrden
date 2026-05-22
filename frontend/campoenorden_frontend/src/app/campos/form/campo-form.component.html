@@ -22,7 +22,9 @@
         <ion-input label="Localidad" labelPlacement="stacked" formControlName="localidad" placeholder="Ej: Bell Ville"></ion-input>
       </ion-item>
       <ion-item>
-        <ion-input label="Provincia" labelPlacement="stacked" formControlName="provincia" placeholder="Ej: Córdoba"></ion-input>
+        <ion-select label="Provincia" labelPlacement="stacked" formControlName="provincia" placeholder="Seleccionar provincia">
+          <ion-select-option *ngFor="let p of provincias" [value]="p.nombre">{{p.nombre}}</ion-select-option>
+        </ion-select>
       </ion-item>
       <ion-item>
         <ion-select label="Productor" labelPlacement="stacked" formControlName="productor" interface="action-sheet" placeholder="Seleccionar productor">
@@ -41,14 +43,20 @@
         </ion-select>
       </ion-item>
       <ion-item>
-        <ion-select label="Locadores (Dueños)" labelPlacement="stacked" formControlName="locadores_ids" multiple="true" [compareWith]="compararPersona" placeholder="Seleccionar locadores">
+        <ion-select label="Locadores (Dueños)" labelPlacement="stacked" formControlName="locadores_ids" multiple="true" placeholder="Seleccionar locadores" class="ceo-inline-select">
           <ion-select-option *ngFor="let p of personas" [value]="p.id">{{p.nombre}} ({{p.documento}})</ion-select-option>
         </ion-select>
+        <ion-button slot="end" fill="clear" size="small" (click)="abrirCrearLocador()" title="Crear nuevo locador">
+          <ion-icon slot="icon-only" name="add-circle"></ion-icon>
+        </ion-button>
       </ion-item>
       <ion-item>
-        <ion-select label="Locatarios (Arrendatarios)" labelPlacement="stacked" formControlName="locatarios_ids" multiple="true" [compareWith]="compararPersona" placeholder="Seleccionar locatarios">
+        <ion-select label="Locatarios (Arrendatarios)" labelPlacement="stacked" formControlName="locatarios_ids" multiple="true" placeholder="Seleccionar locatarios" class="ceo-inline-select">
           <ion-select-option *ngFor="let p of personas" [value]="p.id">{{p.nombre}} ({{p.documento}})</ion-select-option>
         </ion-select>
+        <ion-button slot="end" fill="clear" size="small" (click)="abrirCrearLocatario()" title="Crear nuevo locatario">
+          <ion-icon slot="icon-only" name="add-circle"></ion-icon>
+        </ion-button>
       </ion-item>
       <ion-item>
         <ion-input label="Costo Total ($)" labelPlacement="stacked" type="number" formControlName="costo_total"></ion-input>

@@ -1,9 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonicModule, ToastController } from '@ionic/angular';
+import { IonicModule, ToastController, ModalController } from '@ionic/angular';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { ActivatedRoute, Router } from '@angular/router';
+import { CrearPersonaModalComponent } from '../../shared/components/crear-persona-modal/crear-persona-modal.component';
 
 @Component({
   selector: 'app-campo-form',
@@ -19,11 +20,18 @@ export class CampoFormComponent implements OnInit {
   loading = false;
   error: string | null = null;
   personas: any[] = [];
+  provincias: any[] = [];
   estados = [
     { value: 'ACTIVO', label: 'Activo' },
     { value: 'PENDIENTE', label: 'Pendiente' },
     { value: 'VENCIDO', label: 'Vencido' },
     { value: 'RENOVADO', label: 'Renovado' }
+  ];
+  private provinciasFallback = [
+    'Buenos Aires', 'Catamarca', 'Chaco', 'Chubut', 'Ciudad Autónoma de Buenos Aires',
+    'Córdoba', 'Corrientes', 'Entre Ríos', 'Formosa', 'Jujuy', 'La Pampa', 'La Rioja',
+    'Mendoza', 'Misiones', 'Neuquén', 'Río Negro', 'Salta', 'San Juan', 'San Luis',
+    'Santa Cruz', 'Santa Fe', 'Santiago del Estero', 'Tierra del Fuego', 'Tucumán'
   ];
 
   constructor(
@@ -31,7 +39,8 @@ export class CampoFormComponent implements OnInit {
     private api: ApiService,
     private route: ActivatedRoute,
     public router: Router,
-    private toastCtrl: ToastController
+    private toastCtrl: ToastController,
+    private modalCtrl: ModalController
   ) {
     this.campoForm = this.fb.group({
       nombre: ['', Validators.required],
@@ -57,6 +66,7 @@ export class CampoFormComponent implements OnInit {
     this.campoId = this.route.snapshot.paramMap.get('id');
     this.isEdit = this.route.snapshot.url.some(segment => segment.path === 'editar');
     this.cargarPersonas();
+    this.cargarProvincias();
     
     if (this.isEdit && this.campoId) {
       this.cargarCampo();
@@ -68,6 +78,45 @@ export class CampoFormComponent implements OnInit {
       next: (data) => this.personas = data || [],
       error: () => console.error('Error cargando personas')
     });
+  }
+
+  cargarProvincias() {
+    this.api.get<any[]>('core/provincias/').subscribe({
+      next: (data) => {
+        this.provincias = data || [];
+      },
+      error: () => {
+        this.provincias = this.provinciasFallback.map(n => ({ codigo: '', nombre: n }));
+      }
+    });
+  }
+
+  async abrirCrearLocador() {
+    await this.abrirModalPersona('DUENO', 'locadores_ids');
+  }
+
+  async abrirCrearLocatario() {
+    await this.abrirModalPersona('ARRENDATARIO', 'locatarios_ids');
+  }
+
+  private async abrirModalPersona(rol: string, formControl: string) {
+    const modal = await this.modalCtrl.create({
+      component: CrearPersonaModalComponent,
+      componentProps: { rol },
+      breakpoints: [0, 0.75, 1],
+      initialBreakpoint: 0.75
+    });
+
+    await modal.present();
+    const { data } = await modal.onWillDismiss();
+
+    if (data && data.id) {
+      const currentIds = this.campoForm.get(formControl)?.value || [];
+      this.campoForm.patchValue({
+        [formControl]: [...currentIds, data.id]
+      });
+      this.cargarPersonas();
+    }
   }
 
   cargarCampo() {
@@ -137,7 +186,4 @@ export class CampoFormComponent implements OnInit {
     });
   }
 
-  compararPersona(p1: any, p2: any): boolean {
-    return p1 && p2 ? p1.id === p2.id : p1 === p2;
-  }
 }

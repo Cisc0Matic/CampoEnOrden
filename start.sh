@@ -73,7 +73,7 @@ fi
 source "$VENV_DIR/bin/activate"
 
 # Instalar dependencias si hace falta
-if ! python -c "import django" 2>/dev/null; then
+if ! python -c "import django, django_filters, rest_framework, corsheaders" 2>/dev/null; then
     echo "Instalando dependencias de Python..."
     pip install -r "$REQS_FILE"
 fi
