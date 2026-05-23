@@ -316,20 +316,20 @@
     }
 
     .features-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      display: flex;
       gap: var(--ceo-space-xl);
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      padding-bottom: var(--ceo-space-sm);
     }
 
-    @media (max-width: 768px) {
-      .features-grid { grid-template-columns: repeat(2, 1fr); }
-    }
-
-    @media (max-width: 480px) {
-      .features-grid { grid-template-columns: 1fr; }
-    }
+    .features-grid::-webkit-scrollbar { display: none; }
 
     .feature-card {
+      flex: 0 0 280px;
+      scroll-snap-align: start;
       background: var(--ceo-surface);
       border-radius: var(--ceo-radius-lg);
       padding: var(--ceo-space-xl);
@@ -434,17 +434,20 @@
     }
 
     .plans-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      display: flex;
       gap: var(--ceo-space-xl);
-      align-items: start;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      padding: var(--ceo-space-sm) 0;
     }
 
-    @media (max-width: 640px) {
-      .plans-grid { grid-template-columns: 1fr; }
-    }
+    .plans-grid::-webkit-scrollbar { display: none; }
 
     .plan-card {
+      flex: 0 0 300px;
+      scroll-snap-align: center;
       background: var(--ceo-bg);
       border-radius: var(--ceo-radius-lg);
       padding: var(--ceo-space-xxl);
@@ -456,6 +459,7 @@
     .plan-card:hover { transform: translateY(-4px); }
 
     .plan-card.featured {
+      flex: 0 0 320px;
       border-color: var(--ceo-primary);
       box-shadow: 0 0 0 1px var(--ceo-primary), var(--ceo-shadow-md);
       background: var(--ceo-surface);
