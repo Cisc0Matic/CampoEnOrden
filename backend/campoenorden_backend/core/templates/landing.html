@@ -265,23 +265,106 @@
       border: 1px solid var(--ceo-border);
     }
 
-    .mockup-placeholder {
-      background: var(--ceo-step-100);
-      padding: 60px 20px;
-      text-align: center;
-      color: var(--ceo-text-secondary);
+    .mockup-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 20px;
+      background: var(--ceo-surface);
+      border-bottom: 1px solid var(--ceo-border);
+      gap: var(--ceo-space-md);
+      flex-wrap: wrap;
+    }
+
+    .mockup-header-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
       font-size: 14px;
-      min-height: 300px;
+      color: var(--ceo-primary);
+    }
+
+    .mockup-header-left ion-icon { font-size: 20px; }
+
+    .mockup-header-right {
+      display: flex;
+      gap: var(--ceo-space-lg);
+    }
+
+    .mockup-stat { font-size: 12px; color: var(--ceo-text-secondary); }
+    .mockup-stat-value { font-weight: 700; color: var(--ceo-primary); }
+
+    .mockup-body {
+      background: var(--ceo-step-50);
+      padding: 20px;
+      display: flex;
+      gap: 20px;
+    }
+
+    .mockup-cards {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .mockup-card {
+      background: var(--ceo-surface);
+      border-radius: var(--ceo-radius-sm);
+      padding: 12px 14px;
+      border: 1px solid var(--ceo-border);
+    }
+
+    .mockup-card-top { display: flex; justify-content: space-between; margin-bottom: 6px; }
+    .mockup-card-name { font-size: 13px; font-weight: 600; }
+    .mockup-card-ha { font-size: 11px; color: var(--ceo-text-secondary); }
+    .mockup-card-sub { font-size: 11px; color: var(--ceo-text-secondary); }
+    .mockup-bar { height: 6px; background: var(--ceo-step-100); border-radius: 3px; overflow: hidden; margin-bottom: 4px; }
+    .mockup-bar-fill { height: 100%; border-radius: 3px; background: var(--ceo-gradient); }
+
+    .mockup-chart {
+      flex: 1;
+      background: var(--ceo-surface);
+      border-radius: var(--ceo-radius-sm);
+      padding: 14px;
+      border: 1px solid var(--ceo-border);
+      min-width: 0;
+    }
+
+    .mockup-chart-title { font-size: 12px; font-weight: 600; margin-bottom: 12px; }
+
+    .mockup-chart-bars {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      height: 100px;
+      gap: 6px;
+    }
+
+    .mockup-chart-col {
+      flex: 1;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      gap: var(--ceo-space-md);
+      height: 100%;
+      justify-content: flex-end;
     }
 
-    .mockup-placeholder ion-icon {
-      font-size: 48px;
-      color: var(--ceo-step-300);
+    .mockup-chart-col span { font-size: 10px; color: var(--ceo-text-secondary); margin-top: 4px; }
+
+    .mockup-chart-bar {
+      width: 100%;
+      max-width: 36px;
+      border-radius: 4px 4px 0 0;
+      background: linear-gradient(180deg, #4CAF50, #2E7D32);
+      transition: height 0.3s;
+    }
+
+    @media (max-width: 640px) {
+      .mockup-body { flex-direction: column; }
+      .mockup-header-right { display: none; }
     }
 
     section { padding: 80px 0; }
@@ -440,14 +523,14 @@
       scroll-snap-type: x mandatory;
       -webkit-overflow-scrolling: touch;
       scrollbar-width: none;
-      padding: var(--ceo-space-sm) 0;
+      padding: 20px 0 var(--ceo-space-sm);
     }
 
     .plans-grid::-webkit-scrollbar { display: none; }
 
     .plan-card {
       flex: 0 0 300px;
-      scroll-snap-align: center;
+      scroll-snap-align: start;
       background: var(--ceo-bg);
       border-radius: var(--ceo-radius-lg);
       padding: var(--ceo-space-xxl);
@@ -642,11 +725,33 @@
         </button>
       </div>
       <div class="hero-mockup">
-        <div class="mockup-placeholder">
-          <ion-icon name="grid-outline"></ion-icon>
-          <div>
-            <div style="font-weight:600;color:var(--ceo-text);margin-bottom:4px">Vista previa del dashboard</div>
-            <div style="font-size:12px">Campos activos · Hectáreas · Labores · Márgenes</div>
+        <div class="mockup-header">
+          <div class="mockup-header-left">
+            <ion-icon name="leaf"></ion-icon>
+            <span>Panel de Gestión</span>
+          </div>
+          <div class="mockup-header-right">
+            <span class="mockup-stat"><span class="mockup-stat-value">8</span> campos activos</span>
+            <span class="mockup-stat"><span class="mockup-stat-value">850</span> ha trabajadas</span>
+            <span class="mockup-stat"><span class="mockup-stat-value">45</span> labores</span>
+          </div>
+        </div>
+        <div class="mockup-body">
+          <div class="mockup-cards">
+            <div class="mockup-card"><div class="mockup-card-top"><span class="mockup-card-name">San José</span><span class="mockup-card-ha">350 ha</span></div><div class="mockup-bar"><div class="mockup-bar-fill" style="width:80%"></div></div><span class="mockup-card-sub">Margen: $25.000</span></div>
+            <div class="mockup-card"><div class="mockup-card-top"><span class="mockup-card-name">La Merced</span><span class="mockup-card-ha">280 ha</span></div><div class="mockup-bar"><div class="mockup-bar-fill" style="width:65%"></div></div><span class="mockup-card-sub">Margen: $18.000</span></div>
+            <div class="mockup-card"><div class="mockup-card-top"><span class="mockup-card-name">El Ombú</span><span class="mockup-card-ha">220 ha</span></div><div class="mockup-bar"><div class="mockup-bar-fill" style="width:50%"></div></div><span class="mockup-card-sub">Margen: $5.000</span></div>
+          </div>
+          <div class="mockup-chart">
+            <div class="mockup-chart-title">Costos por ha (USD)</div>
+            <div class="mockup-chart-bars">
+              <div class="mockup-chart-col"><div class="mockup-chart-bar" style="height:70%"></div><span>Ene</span></div>
+              <div class="mockup-chart-col"><div class="mockup-chart-bar" style="height:45%"></div><span>Feb</span></div>
+              <div class="mockup-chart-col"><div class="mockup-chart-bar" style="height:90%"></div><span>Mar</span></div>
+              <div class="mockup-chart-col"><div class="mockup-chart-bar" style="height:60%"></div><span>Abr</span></div>
+              <div class="mockup-chart-col"><div class="mockup-chart-bar" style="height:30%"></div><span>May</span></div>
+              <div class="mockup-chart-col"><div class="mockup-chart-bar" style="height:75%"></div><span>Jun</span></div>
+            </div>
           </div>
         </div>
       </div>
@@ -800,5 +905,22 @@
     </div>
   </footer>
 
+<script>
+document.querySelectorAll('.features-grid, .plans-grid').forEach(el => {
+  let isDown = false, startX, scrollLeft;
+  el.addEventListener('mousedown', e => {
+    isDown = true; el.style.cursor = 'grabbing';
+    startX = e.pageX - el.offsetLeft; scrollLeft = el.scrollLeft;
+  });
+  el.addEventListener('mouseleave', () => { isDown = false; el.style.cursor = 'grab'; });
+  el.addEventListener('mouseup', () => { isDown = false; el.style.cursor = 'grab'; });
+  el.addEventListener('mousemove', e => {
+    if (!isDown) return; e.preventDefault();
+    const x = e.pageX - el.offsetLeft;
+    el.scrollLeft = scrollLeft - (x - startX) * 1.5;
+  });
+  el.style.cursor = 'grab';
+});
+</script>
 </body>
 </html>
