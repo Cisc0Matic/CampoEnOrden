@@ -10,9 +10,9 @@ interface Lote {
   campo: number;
   campo_nombre: string;
   campana_nombre: string;
-  campana_id: number;
+  campana: number;
   cultivo_nombre: string;
-  cultivo_id: number;
+  cultivo: number;
   superficie: number;
   rendimiento_estimado: number;
   precio_tn: number;
@@ -114,8 +114,8 @@ export class LotesPage implements OnInit, OnDestroy {
   filtrarLotes() {
     this.lotesFiltrados = this.lotes.filter(l => {
       if (this.filtroCampo !== null && l.campo !== this.filtroCampo) return false;
-      if (this.filtroCampana && l.campana_id?.toString() !== this.filtroCampana) return false;
-      if (this.filtroCultivo && l.cultivo_id?.toString() !== this.filtroCultivo) return false;
+      if (this.filtroCampana && l.campana?.toString() !== this.filtroCampana) return false;
+      if (this.filtroCultivo && l.cultivo?.toString() !== this.filtroCultivo) return false;
       if (this.filtroActivo === 'activos') return l.activo;
       if (this.filtroActivo === 'inactivos') return !l.activo;
       return true;

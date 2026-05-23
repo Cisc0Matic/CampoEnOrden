@@ -213,12 +213,29 @@ export class DemoInterceptor implements HttpInterceptor {
     const parsed = this.parsePath(path);
     if (!parsed) return null;
 
+    let items = DemoInterceptor.store[parsed.collection] || [];
+
     if (parsed.id !== undefined) {
-      const items = DemoInterceptor.store[parsed.collection] || [];
       return items.find(item => item.id === parsed.id) || null;
     }
 
-    return DemoInterceptor.store[parsed.collection] || [];
+    const queryParams = this.extractQueryParams(url);
+    if (queryParams['tipo']) {
+      items = items.filter(item => item.tipo === queryParams['tipo']);
+    }
+    if (queryParams['tipo__in']) {
+      const tipos = queryParams['tipo__in'].split(',');
+      items = items.filter(item => tipos.includes(item.tipo));
+    }
+    if (queryParams['lote']) {
+      const loteId = parseInt(queryParams['lote'], 10);
+      items = items.filter(item => item.lote === loteId);
+    }
+    if (queryParams['estado']) {
+      items = items.filter(item => item.estado === queryParams['estado']);
+    }
+
+    return items;
   }
 
   private handleWrite(method: 'POST' | 'PUT' | 'PATCH', url: string, request: HttpRequest<any>): any {
@@ -265,6 +282,18 @@ export class DemoInterceptor implements HttpInterceptor {
   private extractPath(url: string): string {
     const match = url.match(/\/api\/(.+?)(\?|$)/);
     return match ? match[1] : '';
+  }
+
+  private extractQueryParams(url: string): { [key: string]: string } {
+    const qIndex = url.indexOf('?');
+    if (qIndex === -1) return {};
+    const qs = url.substring(qIndex + 1);
+    const params: { [key: string]: string } = {};
+    qs.split('&').forEach(pair => {
+      const [key, value] = pair.split('=').map(s => decodeURIComponent(s || ''));
+      if (key) params[key] = value || '';
+    });
+    return params;
   }
 
   private parsePath(path: string): { collection: string; id?: number } | null {

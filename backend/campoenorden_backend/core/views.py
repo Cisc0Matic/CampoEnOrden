@@ -11,6 +11,7 @@ from .models import (
     ProductoPrecio, TipoLaborPersonalizado,
     Labor, LaborInsumo, Flete, Documento, Parametro
 )
+from .filters import LaborFilter
 from .serializers import (
     CampoSerializer, PersonaSerializer, CampanaSerializer, LoteSerializer,
     CultivoSerializer, InsumoSerializer, ProductoPrecioSerializer,
@@ -94,7 +95,7 @@ class LaborViewSet(viewsets.ModelViewSet):
         'cargada_por', 'revisada_por', 'sub_tipo_otra'
     ).prefetch_related('insumos__insumo').all()
     serializer_class = LaborSerializer
-    filterset_fields = ['lote', 'tipo', 'estado', 'fecha', 'contratista', 'cargada_por']
+    filterset_class = LaborFilter
 
     def perform_create(self, serializer):
         insumos_data = self.request.data.get('insumos', [])

@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
+import { HttpParams } from '@angular/common/http';
 import { ApiService } from '../services/api.service';
 import { Router, RouterModule } from '@angular/router';
 import { Labor, getTipoIcon, getEstadoColor, getHeaderClass } from '../models/interfaces';
@@ -43,17 +44,17 @@ export class LaboresPage implements OnInit, OnDestroy {
 
   cargarLabores() {
     this.loading = true;
-    let endpoint = 'core/labores/';
+    let params = new HttpParams();
     if (this.filterTipo) {
       if (this.filterTipo === 'PULVERIZACION') {
-        endpoint = 'core/labores/?tipo__in=PULVERIZACION_TERRESTRE,PULVERIZACION_DRONES,PULVERIZACION_AEREA';
+        params = params.set('tipo__in', 'PULVERIZACION_TERRESTRE,PULVERIZACION_DRONES,PULVERIZACION_AEREA');
       } else if (this.filterTipo === 'FERTILIZACION') {
-        endpoint = 'core/labores/?tipo__in=FERTILIZACION_TERRESTRE,FERTILIZACION_DRONES';
+        params = params.set('tipo__in', 'FERTILIZACION_TERRESTRE,FERTILIZACION_DRONES');
       } else {
-        endpoint = `core/labores/?tipo=${this.filterTipo}`;
+        params = params.set('tipo', this.filterTipo);
       }
     }
-    this.api.get<Labor[]>(endpoint).subscribe({
+    this.api.get<Labor[]>('core/labores/', { params }).subscribe({
       next: (data) => {
         this.labores = data || [];
         this.loading = false;
