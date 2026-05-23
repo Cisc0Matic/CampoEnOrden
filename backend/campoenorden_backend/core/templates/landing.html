@@ -402,7 +402,8 @@
       display: flex;
       gap: var(--ceo-space-xl);
       overflow-x: auto;
-      scroll-snap-type: x mandatory;
+      scroll-snap-type: x proximity;
+      scroll-padding: 0 20px;
       -webkit-overflow-scrolling: touch;
       scrollbar-width: none;
       padding-bottom: var(--ceo-space-sm);
@@ -520,7 +521,8 @@
       display: flex;
       gap: var(--ceo-space-xl);
       overflow-x: auto;
-      scroll-snap-type: x mandatory;
+      scroll-snap-type: x proximity;
+      scroll-padding: 0 20px;
       -webkit-overflow-scrolling: touch;
       scrollbar-width: none;
       padding: 20px 0 var(--ceo-space-sm);
@@ -907,17 +909,30 @@
 
 <script>
 document.querySelectorAll('.features-grid, .plans-grid').forEach(el => {
-  let isDown = false, startX, scrollLeft;
+  let isDown = false, startX, scrollLeft, velocity, momentumID;
+  const ease = 0.95;
   el.addEventListener('mousedown', e => {
     isDown = true; el.style.cursor = 'grabbing';
     startX = e.pageX - el.offsetLeft; scrollLeft = el.scrollLeft;
+    velocity = 0; cancelAnimationFrame(momentumID);
   });
-  el.addEventListener('mouseleave', () => { isDown = false; el.style.cursor = 'grab'; });
-  el.addEventListener('mouseup', () => { isDown = false; el.style.cursor = 'grab'; });
+  el.addEventListener('mouseleave', () => { isDown = false; });
+  el.addEventListener('mouseup', () => {
+    isDown = false; el.style.cursor = 'grab';
+    const step = () => {
+      if (Math.abs(velocity) < 0.5) return;
+      el.scrollLeft -= velocity;
+      velocity *= ease;
+      momentumID = requestAnimationFrame(step);
+    };
+    momentumID = requestAnimationFrame(step);
+  });
   el.addEventListener('mousemove', e => {
     if (!isDown) return; e.preventDefault();
     const x = e.pageX - el.offsetLeft;
-    el.scrollLeft = scrollLeft - (x - startX) * 1.5;
+    const walk = (x - startX) * 1.5;
+    velocity = walk * 0.15;
+    el.scrollLeft = scrollLeft - walk;
   });
   el.style.cursor = 'grab';
 });
