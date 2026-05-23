@@ -34,6 +34,7 @@ export class CultivoFormComponent {
   }
 
   guardar() {
+    this.form.markAllAsTouched();
     if (this.form.invalid) return;
     this.loading = true;
     this.error = null;

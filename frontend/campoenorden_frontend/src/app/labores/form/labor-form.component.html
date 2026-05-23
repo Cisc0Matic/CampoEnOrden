@@ -116,15 +116,21 @@
 
       <ion-list>
         <ion-item>
-          <ion-select label="Contratista" labelPlacement="stacked" formControlName="contratista" placeholder="Seleccionar contratista">
+          <ion-select label="Contratista" labelPlacement="stacked" formControlName="contratista" placeholder="Seleccionar contratista" class="ceo-inline-select">
             <ion-select-option *ngFor="let p of personas" [value]="p.id">{{ p.nombre }} ({{ p.nombre_rol }})</ion-select-option>
           </ion-select>
+          <ion-button slot="end" fill="clear" size="small" (click)="abrirCrearContratista()" title="Crear nuevo contratista">
+            <ion-icon slot="icon-only" name="add-circle"></ion-icon>
+          </ion-button>
         </ion-item>
 
         <ion-item>
-          <ion-select label="Responsable" labelPlacement="stacked" formControlName="responsable" placeholder="Seleccionar responsable">
+          <ion-select label="Responsable" labelPlacement="stacked" formControlName="responsable" placeholder="Seleccionar responsable" class="ceo-inline-select">
             <ion-select-option *ngFor="let p of personas" [value]="p.id">{{ p.nombre }} ({{ p.nombre_rol }})</ion-select-option>
           </ion-select>
+          <ion-button slot="end" fill="clear" size="small" (click)="abrirCrearResponsable()" title="Crear nuevo responsable">
+            <ion-icon slot="icon-only" name="add-circle"></ion-icon>
+          </ion-button>
         </ion-item>
 
         <ion-item>

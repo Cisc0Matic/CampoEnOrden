@@ -189,6 +189,9 @@ SIMPLE_JWT = {
 # Custom User Model
 AUTH_USER_MODEL = 'users.User'
 
+# Frontend URL for landing page links
+FRONTEND_URL = 'http://localhost:8100'
+
 # CORS settings
 # CORS_ALLOWED_ORIGINS = [
 #     "http://localhost:8100", # Frontend development server

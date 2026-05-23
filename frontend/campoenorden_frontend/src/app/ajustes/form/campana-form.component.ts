@@ -24,13 +24,14 @@ export class CampanaFormComponent {
   ) {
     this.form = this.fb.group({
       nombre: ['', Validators.required],
-      fecha_inicio: [''],
-      fecha_fin: [''],
-      activo: [true]
+      inicio: [''],
+      fin: [''],
+      activa: [true]
     });
   }
 
   guardar() {
+    this.form.markAllAsTouched();
     if (this.form.invalid) return;
     this.loading = true;
     this.error = null;

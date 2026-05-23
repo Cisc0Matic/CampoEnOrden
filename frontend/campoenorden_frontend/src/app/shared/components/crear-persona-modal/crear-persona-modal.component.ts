@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonicModule, ModalController, ToastController } from '@ionic/angular';
+import { IonicModule, ModalController } from '@ionic/angular';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ApiService } from '../../../services/api.service';
 
@@ -25,8 +25,7 @@ export class CrearPersonaModalComponent {
   constructor(
     private fb: FormBuilder,
     private api: ApiService,
-    private modalCtrl: ModalController,
-    private toastCtrl: ToastController
+    private modalCtrl: ModalController
   ) {
     this.personaForm = this.fb.group({
       nombre: ['', Validators.required],
@@ -39,6 +38,7 @@ export class CrearPersonaModalComponent {
   }
 
   guardar() {
+    this.personaForm.markAllAsTouched();
     if (this.personaForm.invalid) return;
 
     this.loading = true;
@@ -56,15 +56,9 @@ export class CrearPersonaModalComponent {
           this.loading = false;
           return;
         }
-        const toast = await this.toastCtrl.create({
-          message: 'Persona creada correctamente',
-          duration: 1500,
-          color: 'success'
-        });
-        await toast.present();
-        this.modalCtrl.dismiss(persona);
+        await this.modalCtrl.dismiss(persona, 'created');
       },
-      error: async () => {
+      error: () => {
         this.error = 'Error al crear persona';
         this.loading = false;
       }
@@ -72,6 +66,6 @@ export class CrearPersonaModalComponent {
   }
 
   cerrar() {
-    this.modalCtrl.dismiss();
+    this.modalCtrl.dismiss(null, 'cancel');
   }
 }

@@ -119,6 +119,7 @@ export class FleteFormComponent implements OnInit {
   }
 
   guardar() {
+    this.fleteForm.markAllAsTouched();
     if (this.fleteForm.invalid) {
       this.error = 'Por favor complete los campos requeridos';
       return;

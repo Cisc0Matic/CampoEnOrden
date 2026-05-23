@@ -133,6 +133,7 @@ export class DocumentoFormComponent implements OnInit {
   }
 
   guardar() {
+    this.documentoForm.markAllAsTouched();
     if (this.documentoForm.invalid) {
       this.error = 'Por favor complete los campos requeridos';
       return;

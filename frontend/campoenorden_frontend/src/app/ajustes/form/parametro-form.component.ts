@@ -94,6 +94,7 @@ export class ParametroFormComponent implements OnInit {
   }
 
   guardar() {
+    this.parametroForm.markAllAsTouched();
     if (this.parametroForm.invalid) {
       this.error = 'Por favor complete los campos requeridos';
       return;

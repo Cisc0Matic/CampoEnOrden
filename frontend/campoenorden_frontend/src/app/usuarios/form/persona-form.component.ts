@@ -87,6 +87,7 @@ export class PersonaFormComponent implements OnInit {
   }
 
   guardar() {
+    this.personaForm.markAllAsTouched();
     if (this.personaForm.invalid) {
       this.error = 'Por favor complete los campos requeridos';
       return;

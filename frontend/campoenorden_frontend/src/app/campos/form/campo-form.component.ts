@@ -103,14 +103,13 @@ export class CampoFormComponent implements OnInit {
     const modal = await this.modalCtrl.create({
       component: CrearPersonaModalComponent,
       componentProps: { rol },
-      breakpoints: [0, 0.75, 1],
-      initialBreakpoint: 0.75
+      cssClass: 'popup-modal'
     });
 
     await modal.present();
-    const { data } = await modal.onWillDismiss();
+    const { data, role } = await modal.onWillDismiss();
 
-    if (data && data.id) {
+    if (role === 'created' && data && data.id) {
       const currentIds = this.campoForm.get(formControl)?.value || [];
       this.campoForm.patchValue({
         [formControl]: [...currentIds, data.id]
@@ -152,6 +151,7 @@ export class CampoFormComponent implements OnInit {
   }
 
   guardar() {
+    this.campoForm.markAllAsTouched();
     if (this.campoForm.invalid) {
       this.error = 'Por favor complete los campos requeridos';
       return;

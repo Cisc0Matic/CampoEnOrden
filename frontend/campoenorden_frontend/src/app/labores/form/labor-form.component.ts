@@ -1,10 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonicModule, ToastController } from '@ionic/angular';
+import { IonicModule, ToastController, ModalController } from '@ionic/angular';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TIPOS_LABOR, ESTADOS_LABOR, getEstadoColor } from '../../models/interfaces';
+import { CrearPersonaModalComponent } from '../../shared/components/crear-persona-modal/crear-persona-modal.component';
 
 @Component({
   selector: 'app-labor-form',
@@ -36,7 +37,8 @@ export class LaborFormComponent implements OnInit {
     private api: ApiService,
     private route: ActivatedRoute,
     public router: Router,
-    private toastCtrl: ToastController
+    private toastCtrl: ToastController,
+    private modalCtrl: ModalController
   ) {
     this.laborForm = this.fb.group({
       lote: ['', Validators.required],
@@ -73,28 +75,30 @@ export class LaborFormComponent implements OnInit {
     this.laborForm.patchValue({ costo_total: ha * precio }, { emitEvent: false });
   }
 
+  cargarPersonas() {
+    this.api.get<any[]>('core/personas/').subscribe({
+      next: (data) => this.personas = data || [],
+      error: () => console.error('Error cargando personas')
+    });
+  }
+
   cargarDatos() {
     this.loading = true;
     this.api.get<any[]>('core/lotes/').subscribe({
       next: (lotes) => {
         this.lotes = lotes || [];
-        this.api.get<any[]>('core/personas/').subscribe({
-          next: (personas) => {
-            this.personas = personas || [];
-            this.api.get<any[]>('core/insumos/').subscribe({
-              next: (insumos) => {
-                this.insumos = insumos || [];
-                this.api.get<any[]>('core/tipos-labor-personalizado/').subscribe({
-                  next: (tipos) => {
-                    this.tiposLaborPersonalizado = tipos || [];
-                    if (this.isEdit && this.laborId) {
-                      this.cargarLabor();
-                    } else {
-                      this.loading = false;
-                    }
-                  },
-                  error: () => this.loading = false
-                });
+        this.cargarPersonas();
+        this.api.get<any[]>('core/insumos/').subscribe({
+          next: (insumos) => {
+            this.insumos = insumos || [];
+            this.api.get<any[]>('core/tipos-labor-personalizado/').subscribe({
+              next: (tipos) => {
+                this.tiposLaborPersonalizado = tipos || [];
+                if (this.isEdit && this.laborId) {
+                  this.cargarLabor();
+                } else {
+                  this.loading = false;
+                }
               },
               error: () => this.loading = false
             });
@@ -140,6 +144,30 @@ export class LaborFormComponent implements OnInit {
         this.loading = false;
       }
     });
+  }
+
+  async abrirCrearContratista() {
+    await this.abrirModalPersona('CONTRATISTA', 'contratista');
+  }
+
+  async abrirCrearResponsable() {
+    await this.abrirModalPersona('CONTRATISTA', 'responsable');
+  }
+
+  private async abrirModalPersona(rol: string, formControl: string) {
+    const modal = await this.modalCtrl.create({
+      component: CrearPersonaModalComponent,
+      componentProps: { rol },
+      cssClass: 'popup-modal'
+    });
+
+    await modal.present();
+    const { data, role } = await modal.onWillDismiss();
+
+    if (role === 'created' && data && data.id) {
+      this.laborForm.patchValue({ [formControl]: data.id });
+      this.cargarPersonas();
+    }
   }
 
   onTipoChange(event: any) {
@@ -224,6 +252,7 @@ export class LaborFormComponent implements OnInit {
   }
 
   guardar() {
+    this.laborForm.markAllAsTouched();
     if (this.laborForm.invalid) {
       this.error = 'Por favor complete los campos requeridos';
       return;

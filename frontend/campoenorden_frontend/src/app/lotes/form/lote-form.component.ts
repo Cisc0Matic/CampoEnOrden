@@ -36,6 +36,7 @@ export class LoteFormComponent implements OnInit {
     this.loteForm = this.fb.group({
       campo: ['', Validators.required],
       campana: ['', Validators.required],
+      nombre: ['', Validators.required],
       cultivo: ['', Validators.required],
       superficie: [0, [Validators.required, Validators.min(0.1)]],
       rendimiento_estimado: [0, Validators.min(0)],
@@ -94,6 +95,7 @@ export class LoteFormComponent implements OnInit {
         this.loteForm.patchValue({
           campo: lote.campo,
           campana: lote.campana,
+          nombre: lote.nombre,
           cultivo: lote.cultivo,
           superficie: lote.superficie,
           rendimiento_estimado: lote.rendimiento_estimado,
@@ -139,6 +141,7 @@ export class LoteFormComponent implements OnInit {
   }
 
   guardar() {
+    this.loteForm.markAllAsTouched();
     if (this.loteForm.invalid) {
       this.error = 'Por favor complete los campos requeridos';
       return;

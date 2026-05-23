@@ -69,3 +69,9 @@ ion-modal.popup-modal .ion-page {
     box-shadow: 0 2px 8px rgba(var(--ion-color-primary-rgb), 0.3);
   }
 }
+
+/* Form validation - highlight invalid touched fields */
+ion-item.ion-invalid.ion-touched {
+  --border-color: var(--ion-color-danger);
+  --highlight-color-invalid: var(--ion-color-danger);
+}

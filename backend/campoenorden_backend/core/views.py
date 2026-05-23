@@ -4,6 +4,8 @@ from rest_framework.response import Response
 from django.db.models import Sum, Count, Q, F, Value
 from django.db.models.functions import Coalesce
 from django.db.models.fields import DecimalField
+from django.shortcuts import render, redirect
+from django.conf import settings
 from .models import (
     Campo, Persona, Campana, Lote, Cultivo, Insumo,
     ProductoPrecio, TipoLaborPersonalizado,
@@ -134,6 +136,13 @@ class ParametroViewSet(viewsets.ModelViewSet):
     queryset = Parametro.objects.all()
     serializer_class = ParametroSerializer
     filterset_fields = ['categoria', 'campana', 'vigente']
+
+
+def landing_view(request):
+    frontend_url = settings.FRONTEND_URL
+    if request.user.is_authenticated:
+        return redirect(f'{frontend_url}/tabs/campos')
+    return render(request, 'landing.html', {'frontend_url': frontend_url})
 
 
 @api_view(['GET'])

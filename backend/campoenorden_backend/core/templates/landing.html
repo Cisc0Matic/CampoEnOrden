@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CampoEnOrden — Gestión agrícola simple</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+  <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+  <style>
+    :root {
+      --ceo-primary: #2E7D32;
+      --ceo-primary-rgb: 46, 125, 50;
+      --ceo-primary-light: #4CAF50;
+      --ceo-primary-dark: #1B5E20;
+      --ceo-bg: #f5f5f5;
+      --ceo-surface: #ffffff;
+      --ceo-text: #222428;
+      --ceo-text-secondary: #989aa2;
+      --ceo-border: #e0e0e0;
+      --ceo-step-50: #f9f9f9;
+      --ceo-step-100: #f0f0f0;
+      --ceo-step-150: #e8e8e8;
+      --ceo-step-300: #d0d0d0;
+      --ceo-radius-sm: 8px;
+      --ceo-radius-md: 10px;
+      --ceo-radius-lg: 16px;
+      --ceo-radius-xl: 20px;
+      --ceo-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
+      --ceo-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+      --ceo-shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.12);
+      --ceo-space-xs: 4px;
+      --ceo-space-sm: 8px;
+      --ceo-space-md: 12px;
+      --ceo-space-lg: 16px;
+      --ceo-space-xl: 24px;
+      --ceo-space-xxl: 32px;
+      --ceo-space-xxxl: 48px;
+      --ceo-gradient: linear-gradient(135deg, #2E7D32 0%, #4CAF50 100%);
+      --ceo-gradient-dark: linear-gradient(135deg, #1B5E20 0%, #2E7D32 100%);
+      --ceo-gradient-warm: linear-gradient(135deg, #2E7D32 0%, #66BB6A 100%);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --ceo-bg: #121212;
+        --ceo-surface: #1e1e1e;
+        --ceo-text: #e0e0e0;
+        --ceo-text-secondary: #8a8a8a;
+        --ceo-border: #2a2a2a;
+        --ceo-step-50: #1e1e1e;
+        --ceo-step-100: #2a2a2a;
+        --ceo-step-150: #363636;
+        --ceo-step-300: #5a5a5a;
+        --ceo-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+        --ceo-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+        --ceo-shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
+      }
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--ceo-bg);
+      color: var(--ceo-text);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    img { max-width: 100%; display: block; }
+    a { color: var(--ceo-primary); text-decoration: none; }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 var(--ceo-space-xl);
+    }
+
+    .navbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      border-bottom: 1px solid var(--ceo-border);
+      backdrop-filter: blur(12px);
+      background: rgba(255,255,255,0.85);
+      transition: background 0.3s;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .navbar { background: rgba(30,30,30,0.85); }
+    }
+
+    .navbar .container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+    }
+
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: var(--ceo-space-sm);
+      font-weight: 700;
+      font-size: 20px;
+      color: var(--ceo-primary);
+    }
+
+    .nav-logo ion-icon {
+      font-size: 28px;
+      color: var(--ceo-primary);
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: var(--ceo-space-xl);
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--ceo-text);
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover { color: var(--ceo-primary); }
+
+    .nav-cta {
+      background: var(--ceo-gradient);
+      color: #fff !important;
+      padding: 8px 20px;
+      border-radius: var(--ceo-radius-sm);
+      font-weight: 600;
+      font-size: 14px;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .nav-cta:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(var(--ceo-primary-rgb), 0.3);
+    }
+
+    @media (max-width: 640px) {
+      .nav-links { display: none; }
+    }
+
+    .hero {
+      padding: 140px 0 80px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 800px;
+      height: 800px;
+      background: radial-gradient(circle, rgba(var(--ceo-primary-rgb), 0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(var(--ceo-primary-rgb), 0.1);
+      color: var(--ceo-primary);
+      padding: 4px 14px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: var(--ceo-space-xl);
+    }
+
+    .hero h1 {
+      font-size: 48px;
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      margin-bottom: var(--ceo-space-lg);
+    }
+
+    .hero h1 span {
+      background: var(--ceo-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero p {
+      font-size: 18px;
+      color: var(--ceo-text-secondary);
+      max-width: 560px;
+      margin: 0 auto var(--ceo-space-xxl);
+      line-height: 1.6;
+    }
+
+    .hero-actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--ceo-space-md);
+      flex-wrap: wrap;
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--ceo-gradient);
+      color: #fff;
+      border: none;
+      padding: 14px 32px;
+      border-radius: var(--ceo-radius-sm);
+      font-size: 16px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      text-decoration: none;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(var(--ceo-primary-rgb), 0.35);
+    }
+
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--ceo-surface);
+      color: var(--ceo-text);
+      border: 1px solid var(--ceo-border);
+      padding: 14px 32px;
+      border-radius: var(--ceo-radius-sm);
+      font-size: 16px;
+      font-weight: 500;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-secondary:hover { background: var(--ceo-step-100); }
+
+    .hero-mockup {
+      margin-top: var(--ceo-space-xxxl);
+      border-radius: var(--ceo-radius-lg);
+      box-shadow: var(--ceo-shadow-lg);
+      overflow: hidden;
+      border: 1px solid var(--ceo-border);
+    }
+
+    .mockup-placeholder {
+      background: var(--ceo-step-100);
+      padding: 60px 20px;
+      text-align: center;
+      color: var(--ceo-text-secondary);
+      font-size: 14px;
+      min-height: 300px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: var(--ceo-space-md);
+    }
+
+    .mockup-placeholder ion-icon {
+      font-size: 48px;
+      color: var(--ceo-step-300);
+    }
+
+    section { padding: 80px 0; }
+
+    .section-header {
+      text-align: center;
+      margin-bottom: var(--ceo-space-xxxl);
+    }
+
+    .section-header h2 {
+      font-size: 32px;
+      font-weight: 700;
+      margin-bottom: var(--ceo-space-sm);
+      letter-spacing: -0.01em;
+    }
+
+    .section-header p {
+      font-size: 16px;
+      color: var(--ceo-text-secondary);
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    .section-label {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--ceo-primary);
+      margin-bottom: var(--ceo-space-sm);
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--ceo-space-xl);
+    }
+
+    @media (max-width: 768px) {
+      .features-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 480px) {
+      .features-grid { grid-template-columns: 1fr; }
+    }
+
+    .feature-card {
+      background: var(--ceo-surface);
+      border-radius: var(--ceo-radius-lg);
+      padding: var(--ceo-space-xl);
+      box-shadow: var(--ceo-shadow-sm);
+      border: 1px solid var(--ceo-border);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--ceo-shadow-md);
+    }
+
+    .feature-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: var(--ceo-radius-md);
+      background: linear-gradient(135deg, rgba(var(--ceo-primary-rgb), 0.1), rgba(var(--ceo-primary-rgb), 0.05));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: var(--ceo-space-md);
+    }
+
+    .feature-icon ion-icon {
+      font-size: 24px;
+      color: var(--ceo-primary);
+    }
+
+    .feature-card h3 {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: var(--ceo-space-xs);
+    }
+
+    .feature-card p {
+      font-size: 13px;
+      color: var(--ceo-text-secondary);
+      line-height: 1.5;
+    }
+
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--ceo-space-xxl);
+      position: relative;
+    }
+
+    @media (max-width: 640px) {
+      .steps-grid { grid-template-columns: 1fr; gap: var(--ceo-space-xl); }
+    }
+
+    .step {
+      text-align: center;
+      position: relative;
+    }
+
+    .step-number {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: var(--ceo-gradient);
+      color: #fff;
+      font-size: 22px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto var(--ceo-space-lg);
+    }
+
+    @media (min-width: 641px) {
+      .step:not(:last-child)::after {
+        content: '';
+        position: absolute;
+        top: 28px;
+        right: -40px;
+        width: 60px;
+        height: 2px;
+        background: linear-gradient(90deg, var(--ceo-primary), var(--ceo-step-300));
+      }
+    }
+
+    .step h3 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: var(--ceo-space-sm);
+    }
+
+    .step p {
+      font-size: 14px;
+      color: var(--ceo-text-secondary);
+      max-width: 260px;
+      margin: 0 auto;
+      line-height: 1.5;
+    }
+
+    .plans-bg {
+      background: var(--ceo-surface);
+      border-top: 1px solid var(--ceo-border);
+      border-bottom: 1px solid var(--ceo-border);
+    }
+
+    .plans-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--ceo-space-xl);
+      align-items: start;
+    }
+
+    @media (max-width: 640px) {
+      .plans-grid { grid-template-columns: 1fr; }
+    }
+
+    .plan-card {
+      background: var(--ceo-bg);
+      border-radius: var(--ceo-radius-lg);
+      padding: var(--ceo-space-xxl);
+      border: 1px solid var(--ceo-border);
+      position: relative;
+      transition: transform 0.2s;
+    }
+
+    .plan-card:hover { transform: translateY(-4px); }
+
+    .plan-card.featured {
+      border-color: var(--ceo-primary);
+      box-shadow: 0 0 0 1px var(--ceo-primary), var(--ceo-shadow-md);
+      background: var(--ceo-surface);
+      transform: scale(1.03);
+    }
+
+    .plan-card.featured:hover { transform: scale(1.03) translateY(-4px); }
+
+    .plan-badge {
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--ceo-gradient);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 4px 16px;
+      border-radius: 999px;
+    }
+
+    .plan-name {
+      font-size: 14px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--ceo-text-secondary);
+      margin-bottom: var(--ceo-space-sm);
+    }
+
+    .plan-price {
+      font-size: 36px;
+      font-weight: 800;
+      margin-bottom: var(--ceo-space-xs);
+    }
+
+    .plan-price span {
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--ceo-text-secondary);
+    }
+
+    .plan-desc {
+      font-size: 13px;
+      color: var(--ceo-text-secondary);
+      margin-bottom: var(--ceo-space-xl);
+    }
+
+    .plan-features {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: var(--ceo-space-sm);
+      margin-bottom: var(--ceo-space-xl);
+    }
+
+    .plan-features li {
+      display: flex;
+      align-items: center;
+      gap: var(--ceo-space-sm);
+      font-size: 13px;
+    }
+
+    .plan-features li ion-icon {
+      font-size: 18px;
+      flex-shrink: 0;
+      color: var(--ceo-primary);
+    }
+
+    .plan-features li .muted ion-icon { color: var(--ceo-step-300); }
+    .plan-features li .muted { color: var(--ceo-step-300); }
+
+    .plan-btn {
+      display: block;
+      width: 100%;
+      text-align: center;
+      padding: 12px;
+      border-radius: var(--ceo-radius-sm);
+      font-size: 14px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      border: 1px solid var(--ceo-border);
+      background: var(--ceo-surface);
+      color: var(--ceo-text);
+      transition: all 0.2s;
+    }
+
+    .plan-btn:hover { background: var(--ceo-step-100); }
+
+    .plan-btn.primary {
+      background: var(--ceo-gradient);
+      color: #fff;
+      border: none;
+    }
+
+    .plan-btn.primary:hover {
+      box-shadow: 0 4px 16px rgba(var(--ceo-primary-rgb), 0.3);
+    }
+
+    .footer {
+      padding: var(--ceo-space-xxl) 0;
+      text-align: center;
+      font-size: 13px;
+      color: var(--ceo-text-secondary);
+    }
+
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: var(--ceo-space-xl);
+      margin-bottom: var(--ceo-space-md);
+    }
+
+    .footer-links a {
+      font-size: 13px;
+      color: var(--ceo-text-secondary);
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover { color: var(--ceo-primary); }
+
+    @media (max-width: 768px) {
+      .hero h1 { font-size: 32px; }
+      .hero p { font-size: 16px; }
+      section { padding: 60px 0; }
+      .section-header h2 { font-size: 26px; }
+    }
+
+    @media (max-width: 480px) {
+      .hero { padding: 100px 0 60px; }
+      .hero h1 { font-size: 28px; }
+      .btn-primary, .btn-secondary { width: 100%; justify-content: center; }
+      .hero-actions { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="container">
+      <div class="nav-logo">
+        <ion-icon name="leaf"></ion-icon>
+        CampoEnOrden
+      </div>
+      <ul class="nav-links">
+        <li><a href="#features">Funcionalidades</a></li>
+        <li><a href="#como-funciona">Cómo funciona</a></li>
+        <li><a href="#planes">Planes</a></li>
+        <li><a href="{{ frontend_url }}" class="nav-cta">Ingresar</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <div class="container">
+      <div class="hero-badge">
+        <ion-icon name="checkmark-circle" style="font-size:16px"></ion-icon>
+        Gestión agropecuaria simple y moderna
+      </div>
+      <h1>
+        Tu campo,<br/>
+        <span>siempre en orden</span>
+      </h1>
+      <p>
+        La herramienta todo-en-uno para productores y contratistas.
+        Gestioná campos, lotes, labores, fletes, documentos y márgenes
+        desde un solo lugar.
+      </p>
+      <div class="hero-actions">
+        <a href="{{ frontend_url }}/login" class="btn-primary">
+          <ion-icon name="rocket-outline"></ion-icon>
+          Probar gratis
+        </a>
+        <button class="btn-secondary" onclick="document.getElementById('features').scrollIntoView({behavior:'smooth'})">
+          <ion-icon name="information-circle-outline"></ion-icon>
+          Ver más
+        </button>
+      </div>
+      <div class="hero-mockup">
+        <div class="mockup-placeholder">
+          <ion-icon name="grid-outline"></ion-icon>
+          <div>
+            <div style="font-weight:600;color:var(--ceo-text);margin-bottom:4px">Vista previa del dashboard</div>
+            <div style="font-size:12px">Campos activos · Hectáreas · Labores · Márgenes</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="features">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-label">Funcionalidades</span>
+        <h2>Todo lo que necesitás para gestionar tu campo</h2>
+        <p>Módulos integrados que cubren cada aspecto de la producción agrícola.</p>
+      </div>
+      <div class="features-grid">
+
+        <div class="feature-card">
+          <div class="feature-icon"><ion-icon name="map-outline"></ion-icon></div>
+          <h3>Campos</h3>
+          <p>Administrá tus campos con información de ubicación, superficie, estado de contrato y relación con propietarios e inquilinos.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon"><ion-icon name="layers-outline"></ion-icon></div>
+          <h3>Lotes</h3>
+          <p>Dividí cada campo en lotes con cultivo asignado, rendimiento estimado, precio por tonelada y campaña asociada.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon"><ion-icon name="leaf-outline"></ion-icon></div>
+          <h3>Labores</h3>
+          <p>Registrá siembra, pulverización, fertilización y cosecha con costos por hectárea, insumos aplicados y estado de aprobación.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon"><ion-icon name="car-outline"></ion-icon></div>
+          <h3>Fletes</h3>
+          <p>Gestioná el transporte de granos con tracking por CPE, pesos de origen/destino y desglose completo de costos.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon"><ion-icon name="document-text-outline"></ion-icon></div>
+          <h3>Documentos</h3>
+          <p>Asociá contratos, facturas y comprobantes a campos, labores o fletes con control de vencimientos y archivos adjuntos.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon"><ion-icon name="trending-up-outline"></ion-icon></div>
+          <h3>Dashboard &amp; Márgenes</h3>
+          <p>Visualizá indicadores clave, evolución de costos, margen bruto y rentabilidad por campo con gráficos interactivos.</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <section id="como-funciona" class="plans-bg">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-label">Cómo funciona</span>
+        <h2>Empezá en 3 pasos simples</h2>
+      </div>
+      <div class="steps-grid">
+        <div class="step">
+          <div class="step-number">1</div>
+          <h3>Creá tu cuenta</h3>
+          <p>Registrate en segundos. Sin compromiso, sin tarjeta de crédito.</p>
+        </div>
+        <div class="step">
+          <div class="step-number">2</div>
+          <h3>Cargá tu campo</h3>
+          <p>Agregá tus campos, lotes y la información base de tu operación.</p>
+        </div>
+        <div class="step">
+          <div class="step-number">3</div>
+          <h3>Gestioná todo</h3>
+          <p>Registrá labores, seguí fletes, controlá documentos y analizá resultados.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="planes">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-label">Planes</span>
+        <h2>Elegí el plan que mejor se adapte a tu operación</h2>
+        <p>Precios de prueba. Todos los planes incluyen actualizaciones y soporte básico.</p>
+      </div>
+      <div class="plans-grid">
+
+        <div class="plan-card">
+          <div class="plan-name">Gratuito</div>
+          <div class="plan-price">$0 <span>/mes</span></div>
+          <div class="plan-desc">Perfecto para productores que recién empiezan.</div>
+          <ul class="plan-features">
+            <li><ion-icon name="checkmark-circle"></ion-icon> Hasta 2 campos</li>
+            <li><ion-icon name="checkmark-circle"></ion-icon> 1 usuario</li>
+            <li><ion-icon name="checkmark-circle"></ion-icon> Labores y lotes básicos</li>
+            <li><span class="muted"><ion-icon name="close-circle"></ion-icon> Dashboard financiero</span></li>
+            <li><span class="muted"><ion-icon name="close-circle"></ion-icon> Fletes y documentos</span></li>
+            <li><span class="muted"><ion-icon name="close-circle"></ion-icon> Exportación de datos</span></li>
+          </ul>
+          <a href="{{ frontend_url }}/login" class="plan-btn">Comenzar gratis</a>
+        </div>
+
+        <div class="plan-card featured">
+          <div class="plan-badge">Recomendado</div>
+          <div class="plan-name">Pro</div>
+          <div class="plan-price">$29 <span>/mes</span></div>
+          <div class="plan-desc">Para productores y contratistas con operación en crecimiento.</div>
+          <ul class="plan-features">
+            <li><ion-icon name="checkmark-circle"></ion-icon> Hasta 15 campos</li>
+            <li><ion-icon name="checkmark-circle"></ion-icon> Hasta 5 usuarios</li>
+            <li><ion-icon name="checkmark-circle"></ion-icon> Labores, lotes y cultivos</li>
+            <li><ion-icon name="checkmark-circle"></ion-icon> Dashboard con márgenes</li>
+            <li><ion-icon name="checkmark-circle"></ion-icon> Fletes y documentos</li>
+            <li><span class="muted"><ion-icon name="close-circle"></ion-icon> Exportación de datos</span></li>
+          </ul>
+          <a href="{{ frontend_url }}/login" class="plan-btn primary">Elegir Pro</a>
+        </div>
+
+        <div class="plan-card">
+          <div class="plan-name">Empresa</div>
+          <div class="plan-price">$99 <span>/mes</span></div>
+          <div class="plan-desc">Solución completa para grandes operaciones y empresas.</div>
+          <ul class="plan-features">
+            <li><ion-icon name="checkmark-circle"></ion-icon> Campos ilimitados</li>
+            <li><ion-icon name="checkmark-circle"></ion-icon> Usuarios ilimitados</li>
+            <li><ion-icon name="checkmark-circle"></ion-icon> Todas las funcionalidades</li>
+            <li><ion-icon name="checkmark-circle"></ion-icon> Dashboard avanzado + ROI</li>
+            <li><ion-icon name="checkmark-circle"></ion-icon> Exportación de datos</li>
+            <li><ion-icon name="checkmark-circle"></ion-icon> Soporte prioritario</li>
+          </ul>
+          <a href="{{ frontend_url }}/login" class="plan-btn">Contactar</a>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-links">
+        <a href="#features">Funcionalidades</a>
+        <a href="#como-funciona">Cómo funciona</a>
+        <a href="#planes">Planes</a>
+        <a href="{{ frontend_url }}">Ingresar</a>
+      </div>
+      <p>&copy; 2026 CampoEnOrden. Todos los derechos reservados.</p>
+      <p style="margin-top:4px;font-size:11px">Hecho con <ion-icon name="leaf" style="color:var(--ceo-primary);vertical-align:-2px"></ion-icon> para el campo argentino.</p>
+    </div>
+  </footer>
+
+</body>
+</html>

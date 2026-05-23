@@ -26,6 +26,9 @@
         </ion-button>
       </ion-item>
       <ion-item>
+        <ion-input label="Nombre del Lote" labelPlacement="stacked" formControlName="nombre" placeholder="Ej: Lote A"></ion-input>
+      </ion-item>
+      <ion-item>
         <ion-select label="Cultivo" labelPlacement="stacked" formControlName="cultivo" [compareWith]="compararPorId" placeholder="Seleccionar cultivo">
           <ion-select-option *ngFor="let c of cultivos" [value]="c.id">{{c.nombre}}</ion-select-option>
         </ion-select>
