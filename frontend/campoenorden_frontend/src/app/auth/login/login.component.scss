@@ -85,6 +85,24 @@ ion-input {
   font-size: 13px;
 }
 
+.auth-links {
+  margin-top: 20px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--ion-color-medium);
+
+  a {
+    color: var(--ion-color-primary);
+    text-decoration: none;
+    &:hover { text-decoration: underline; }
+  }
+
+  .separator {
+    margin: 0 8px;
+    color: var(--ion-color-step-300);
+  }
+}
+
 @media (min-width: 768px) {
   .login-wrapper {
     justify-content: center;

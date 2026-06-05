@@ -1,76 +1,64 @@
-import { Component, OnInit, NgZone } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { Component, NgZone, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { IonicModule, NavController } from '@ionic/angular';
-import { ApiService } from '../../services/api.service';
 import { Storage } from '@ionic/storage-angular';
-import { Router } from '@angular/router';
-import { firstValueFrom } from 'rxjs';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule, ReactiveFormsModule]
+  imports: [CommonModule, IonicModule, ReactiveFormsModule, RouterModule],
 })
 export class LoginComponent implements OnInit {
   loginForm: FormGroup;
   errorMessage: string | null = null;
   showPassword = false;
   loading = false;
+  cuentaInactiva = false;
+  reenvioLoading = false;
+  reenvioExito = false;
 
   constructor(
     private fb: FormBuilder,
-    private apiService: ApiService,
+    private authService: AuthService,
     private storage: Storage,
     private router: Router,
     private ngZone: NgZone,
-    private navCtrl: NavController
+    private navCtrl: NavController,
   ) {
     this.loginForm = this.fb.group({
       username: ['', Validators.required],
-      password: ['', Validators.required]
+      password: ['', Validators.required],
     });
   }
 
   async ngOnInit() {
     await this.storage.create();
-    
-    // Si ya estamos en /login, no redirigir a tabs aunque haya token
-    if (this.router.url.includes('/login')) {
-      console.log('Ya estamos en login, mostrando login...');
-      return;
-    }
-    
-    const token = localStorage.getItem('jwt_token') || await this.storage.get('jwt_token');
-    if (token) {
-      console.log('Token encontrado, redirigiendo a tabs...');
+    if (await this.authService.isLoggedIn()) {
       this.goToTabs();
-    } else {
-      console.log('No hay token, mostrando login...');
     }
   }
 
   goToTabs() {
-    this.ngZone.run(() => {
-      this.router.navigate(['/tabs']);
-    });
+    this.ngZone.run(() => this.router.navigate(['/tabs']));
   }
 
   async onSubmit() {
     this.errorMessage = null;
-    this.loading = true;
-    
+    this.cuentaInactiva = false;
+    this.reenvioExito = false;
     if (this.loginForm.invalid) {
       this.loginForm.markAllAsTouched();
-      this.loading = false;
       return;
     }
-
+    this.loading = true;
     const { username, password } = this.loginForm.value;
 
-    // DEMO MODE - funciona sin backend
+    // Demo mode
     if (username === 'demo' && password === 'demo') {
       const fakeToken = 'demo_' + Date.now() + '_' + Math.random().toString(36).substring(2);
       localStorage.setItem('jwt_token', fakeToken);
@@ -81,39 +69,43 @@ export class LoginComponent implements OnInit {
       return;
     }
 
-  try {
-    const response: any = await firstValueFrom(
-      this.apiService.post('token/', { username, password })
-    );
-
-    console.log('Login response:', response);
-
-    if (response && response.access) {
-      localStorage.setItem('jwt_token', response.access);
-      await this.storage.set('jwt_token', response.access);
-      await this.storage.set('username', username);
+    try {
+      await this.authService.login(username, password);
       this.goToTabs();
-      } else if (response && response.detail) {
-        this.errorMessage = response.detail;
-      } else {
-        this.errorMessage = 'Credenciales inválidas.';
-      }
     } catch (error: any) {
-      console.error('Login error:', error);
-      this.errorMessage = 'Error de conexión. ¿Backend corriendo?';
+      const detail = error?.error?.detail;
+      if (detail === 'cuenta_no_activada') {
+        this.cuentaInactiva = true;
+      } else {
+        this.errorMessage = detail || 'Credenciales inválidas.';
+      }
     } finally {
       this.loading = false;
+    }
+  }
+
+  async reenviarActivacion() {
+    const username = this.loginForm.value.username;
+    if (!username) return;
+    this.reenvioLoading = true;
+    try {
+      await this.authService.resendActivationByUsername(username);
+      this.reenvioExito = true;
+      this.cuentaInactiva = false;
+    } catch {
+      this.errorMessage = 'No se pudo reenviar el email. Verificá el usuario ingresado.';
+      this.cuentaInactiva = false;
+    } finally {
+      this.reenvioLoading = false;
     }
   }
 
   togglePassword() {
     this.showPassword = !this.showPassword;
   }
-  
+
   async clearToken() {
-    console.log('Limpiando tokens...');
     localStorage.removeItem('jwt_token');
-    localStorage.removeItem('username');
     await this.storage.remove('jwt_token');
     await this.storage.remove('username');
     this.router.navigate(['/login']);

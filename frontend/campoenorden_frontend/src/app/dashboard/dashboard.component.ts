@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { ApiService } from '../services/api.service';
-import { Storage } from '@ionic/storage-angular';
+import { AuthService } from '../services/auth.service';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { MargenData, MargenConcepto } from '../models/interfaces';
@@ -46,7 +46,7 @@ export class DashboardComponent implements OnInit {
 
   constructor(
     private api: ApiService,
-    private storage: Storage,
+    private authService: AuthService,
     private router: Router,
     private decimalPipe: DecimalPipe
   ) {}
@@ -184,8 +184,6 @@ export class DashboardComponent implements OnInit {
   }
 
   async cerrarSesion() {
-    await this.storage.remove('jwt_token');
-    await this.storage.remove('username');
-    window.location.href = '/login';
+    await this.authService.logout();
   }
 }

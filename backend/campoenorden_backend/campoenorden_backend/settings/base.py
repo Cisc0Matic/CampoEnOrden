@@ -11,9 +11,19 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
+
+# Load .env file if present (sin dependencias externas)
+_env_path = BASE_DIR / '.env'
+if _env_path.exists():
+    for _line in _env_path.read_text(encoding='utf-8').splitlines():
+        _line = _line.strip()
+        if _line and not _line.startswith('#') and '=' in _line:
+            _k, _v = _line.split('=', 1)
+            os.environ.setdefault(_k.strip(), _v.strip())
 
 
 # Quick-start development settings - unsuitable for production
@@ -46,6 +56,8 @@ INSTALLED_APPS = [
     'users',
     'core',
     'logistica',
+    # JWT token blacklist (logout)
+    'rest_framework_simplejwt.token_blacklist',
 ]
 
 MIDDLEWARE = [
@@ -158,8 +170,8 @@ from datetime import timedelta
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
-    'ROTATE_REFRESH_TOKENS': False,
-    'BLACKLIST_AFTER_ROTATION': False,
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
     'UPDATE_LAST_LOGIN': False,
 
     'ALGORITHM': 'HS256',
@@ -188,6 +200,20 @@ SIMPLE_JWT = {
 
 # Custom User Model
 AUTH_USER_MODEL = 'users.User'
+
+# Email — Gmail SMTP
+_email_password = os.environ.get('EMAIL_HOST_PASSWORD', '')
+if _email_password and not _email_password.startswith('reemplazar'):
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_HOST = 'smtp.gmail.com'
+    EMAIL_PORT = 587
+    EMAIL_USE_TLS = True
+    EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
+    EMAIL_HOST_PASSWORD = _email_password
+    DEFAULT_FROM_EMAIL = f"CampoEnOrden <{EMAIL_HOST_USER}>"
+else:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+    DEFAULT_FROM_EMAIL = 'CampoEnOrden <noreply@campoenorden.com>'
 
 # Frontend URL for landing page links
 FRONTEND_URL = 'http://localhost:8100'

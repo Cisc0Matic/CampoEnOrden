@@ -1,0 +1,105 @@
+<div class="auth-wrapper">
+  <div class="auth-logo">
+    <ion-icon name="leaf" color="primary"></ion-icon>
+    <h1>CampoEnOrden</h1>
+    <p>Crear cuenta</p>
+  </div>
+
+  <div *ngIf="successMessage" class="success-card">
+    <ion-icon name="checkmark-circle" color="success"></ion-icon>
+    <p>{{ successMessage }}</p>
+    <ion-button fill="clear" routerLink="/login">Ir al inicio de sesión</ion-button>
+  </div>
+
+  <form *ngIf="!successMessage" class="auth-form" [formGroup]="form" (ngSubmit)="onSubmit()">
+    <p class="section-label">Datos de la empresa</p>
+    <ion-list lines="none">
+      <ion-item>
+        <ion-input
+          label="Nombre de la empresa *"
+          labelPlacement="stacked"
+          formControlName="empresa_nombre"
+          placeholder="Ej: Agrícola San José SA"
+        ></ion-input>
+      </ion-item>
+    </ion-list>
+
+    <p class="section-label">Datos del administrador</p>
+    <ion-list lines="none">
+      <ion-item>
+        <ion-input
+          label="Nombre *"
+          labelPlacement="stacked"
+          formControlName="first_name"
+          placeholder="Tu nombre"
+        ></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-input
+          label="Apellido"
+          labelPlacement="stacked"
+          formControlName="last_name"
+          placeholder="Tu apellido"
+        ></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-input
+          label="Usuario *"
+          labelPlacement="stacked"
+          formControlName="username"
+          placeholder="Nombre de usuario único"
+          autocomplete="username"
+        ></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-input
+          label="Email *"
+          labelPlacement="stacked"
+          formControlName="email"
+          type="email"
+          placeholder="tu@email.com"
+          autocomplete="email"
+        ></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-input
+          label="Contraseña *"
+          labelPlacement="stacked"
+          formControlName="password"
+          [type]="showPassword ? 'text' : 'password'"
+          placeholder="Mínimo 8 caracteres"
+          autocomplete="new-password"
+        ></ion-input>
+        <ion-icon
+          slot="end"
+          [name]="showPassword ? 'eye-off' : 'eye'"
+          (click)="togglePassword()"
+          class="password-icon"
+        ></ion-icon>
+      </ion-item>
+      <ion-item>
+        <ion-input
+          label="Confirmar contraseña *"
+          labelPlacement="stacked"
+          formControlName="password_confirm"
+          [type]="showPassword ? 'text' : 'password'"
+          placeholder="Repetí la contraseña"
+          autocomplete="new-password"
+        ></ion-input>
+      </ion-item>
+    </ion-list>
+
+    <ion-button expand="block" type="submit" class="submit-btn" [disabled]="loading">
+      <ion-spinner *ngIf="loading" name="dots"></ion-spinner>
+      <span *ngIf="!loading">Crear cuenta</span>
+    </ion-button>
+
+    <ion-text color="danger" *ngIf="errorMessage" class="error-message">
+      <p>{{ errorMessage }}</p>
+    </ion-text>
+  </form>
+
+  <div class="auth-links">
+    <a routerLink="/login">¿Ya tenés cuenta? Iniciá sesión</a>
+  </div>
+</div>
