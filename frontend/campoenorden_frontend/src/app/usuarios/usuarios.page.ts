@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { ApiService } from '../services/api.service';
@@ -25,31 +25,18 @@ interface Persona {
   standalone: true,
   imports: [CommonModule, IonicModule]
 })
-export class UsuariosPage implements OnInit, OnDestroy {
+export class UsuariosPage {
   personas: Persona[] = [];
   personasFiltradas: Persona[] = [];
   loading = true;
   error: string | null = null;
   filtroRol = '';
   filtroTipo = '';
-  private routerListener: any;
 
-  constructor(private api: ApiService, private router: Router) {
-    this.routerListener = this.router.events.subscribe(() => {
-      if (this.router.url.includes('/tabs/usuarios')) {
-        this.cargarPersonas();
-      }
-    });
-  }
+  constructor(private api: ApiService, private router: Router) {}
 
-  ngOnInit() {
+  ionViewWillEnter() {
     this.cargarPersonas();
-  }
-
-  ngOnDestroy() {
-    if (this.routerListener) {
-      this.routerListener.unsubscribe();
-    }
   }
 
   cargarPersonas() {

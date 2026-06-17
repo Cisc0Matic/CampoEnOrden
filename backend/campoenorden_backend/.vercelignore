@@ -1,0 +1,8 @@
+venv/
+db.sqlite3
+server_err.txt
+server_out.txt
+.env
+__pycache__/
+*.pyc
+*.pyo

@@ -31,6 +31,7 @@ export class InviteComponent implements OnInit {
       first_name: ['', Validators.required],
       last_name: [''],
       username: ['', [Validators.required, Validators.minLength(3)]],
+      dni: [''],
       password: ['', [Validators.required, Validators.minLength(8)]],
       password_confirm: ['', Validators.required],
     });

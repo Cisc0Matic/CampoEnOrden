@@ -10,6 +10,7 @@ def send_activation_email(user, token):
         subject="Activá tu cuenta en CampoEnOrden",
         message=(
             f"Hola {user.first_name or user.username},\n\n"
+            f"Tu usuario es: {user.username}\n\n"
             f"Para activar tu cuenta hacé click en el siguiente enlace:\n{link}\n\n"
             f"El enlace expira en 24 horas.\n\n"
             f"Si no creaste una cuenta en CampoEnOrden, ignorá este email.\n\n"
@@ -64,6 +65,7 @@ def send_password_reset_email(user, token):
         subject="Restablecer contraseña — CampoEnOrden",
         message=(
             f"Hola {user.first_name or user.username},\n\n"
+            f"Tu usuario es: {user.username}\n\n"
             f"Recibimos una solicitud para restablecer la contraseña de tu cuenta.\n\n"
             f"Hacé click en el siguiente enlace para elegir una nueva contraseña:\n{link}\n\n"
             f"El enlace expira en 1 hora. Si no solicitaste el cambio, ignorá este email.\n\n"

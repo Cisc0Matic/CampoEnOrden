@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { ApiService } from '../services/api.service';
@@ -34,28 +34,15 @@ interface Campo {
   standalone: true,
   imports: [CommonModule, IonicModule, RouterModule, SharedModule]
 })
-export class CamposPage implements OnInit, OnDestroy {
+export class CamposPage {
   campos: Campo[] = [];
   loading = true;
   error: string | null = null;
-  private ionViewWillEnterListener: any;
 
-  constructor(private api: ApiService, private router: Router) {
-    this.ionViewWillEnterListener = this.router.events.subscribe(() => {
-      if (this.router.url.includes('/tabs/campos')) {
-        this.cargarCampos();
-      }
-    });
-  }
+  constructor(private api: ApiService, private router: Router) {}
 
-  ngOnInit() {
+  ionViewWillEnter() {
     this.cargarCampos();
-  }
-
-  ngOnDestroy() {
-    if (this.ionViewWillEnterListener) {
-      this.ionViewWillEnterListener.unsubscribe();
-    }
   }
 
   cargarCampos() {

@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { NavController } from '@ionic/angular';
 import { Storage } from '@ionic/storage-angular';
 import { firstValueFrom } from 'rxjs';
+import { environment } from 'src/environments/environment';
 
 export interface UserProfile {
   id: number;
@@ -12,6 +13,7 @@ export interface UserProfile {
   last_name: string;
   role: string;
   role_display: string;
+  dni: string | null;
   telefono: string | null;
   empresa: number | null;
   empresa_nombre: string | null;
@@ -24,6 +26,7 @@ export interface RegisterData {
   email: string;
   first_name: string;
   last_name?: string;
+  dni?: string;
   password: string;
   password_confirm: string;
 }
@@ -33,13 +36,14 @@ export interface AcceptInviteData {
   username: string;
   first_name: string;
   last_name?: string;
+  dni?: string;
   password: string;
   password_confirm: string;
 }
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private readonly API = '/api/users';
+  private readonly API = `${environment.apiUrl}/users`;
   private _currentUser: UserProfile | null = null;
 
   constructor(
@@ -91,7 +95,7 @@ export class AuthService {
 
   async login(username: string, password: string): Promise<void> {
     const res = await firstValueFrom(
-      this.http.post<{ access: string; refresh: string }>('/api/token/', { username, password })
+      this.http.post<{ access: string; refresh: string }>(`${environment.apiUrl}/token/`, { username, password })
     );
     await this._saveSession(res.access, res.refresh, username);
   }

@@ -1,3 +1,5 @@
+import logging
+
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
@@ -23,6 +25,8 @@ from .serializers import (
     UserSerializer,
 )
 
+logger = logging.getLogger(__name__)
+
 
 class IsAdmin(IsAuthenticated):
     def has_permission(self, request, view):
@@ -43,7 +47,11 @@ class RegisterView(APIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.create(serializer.validated_data)
         token_obj = EmailVerificationToken.create_for_user(user)
-        send_activation_email(user, token_obj.token)
+        try:
+            send_activation_email(user, token_obj.token)
+            logger.info("Email de activación enviado a %s", user.email)
+        except Exception:
+            logger.exception("FALLO email de activación a %s", user.email)
         return Response(
             {"detail": f"Cuenta creada. Revisá {user.email} para activar tu cuenta."},
             status=status.HTTP_201_CREATED,
@@ -75,7 +83,14 @@ class ResendActivationView(APIView):
             # No revelar si existe o no
             return Response({"detail": "Si la cuenta existe y no está activada, recibirás el email."})
         token_obj = EmailVerificationToken.create_for_user(user)
-        send_activation_email(user, token_obj.token)
+        try:
+            send_activation_email(user, token_obj.token)
+        except Exception:
+            logger.exception("FALLO reenvío de activación a %s", user.email)
+            return Response(
+                {"detail": "No se pudo enviar el email. Intentá de nuevo en unos minutos."},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
         return Response({"detail": "Email de activación reenviado."})
 
 
@@ -142,6 +157,7 @@ class AdminCreateUserView(APIView):
             email=serializer.validated_data['email'],
             first_name=serializer.validated_data['first_name'],
             last_name=serializer.validated_data['last_name'],
+            dni=serializer.validated_data.get('dni', '') or None,
             password=plain_password,
             role=serializer.validated_data['role'],
             empresa=request.user.empresa,
@@ -213,7 +229,10 @@ class PasswordResetRequestView(APIView):
         serializer.is_valid(raise_exception=True)
         if serializer.user:
             token_obj = PasswordResetToken.create_for_user(serializer.user)
-            send_password_reset_email(serializer.user, token_obj.token)
+            try:
+                send_password_reset_email(serializer.user, token_obj.token)
+            except Exception:
+                logger.exception("FALLO email de password reset a %s", serializer.user.email)
         return Response({"detail": "Si el email existe, recibirás las instrucciones en breve."})
 
 

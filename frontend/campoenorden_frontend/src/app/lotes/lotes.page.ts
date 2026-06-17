@@ -1,8 +1,9 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { ApiService } from '../services/api.service';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { forkJoin } from 'rxjs';
 
 interface Lote {
   id: number;
@@ -39,7 +40,7 @@ interface Cultivo {
   standalone: true,
   imports: [CommonModule, IonicModule, RouterModule]
 })
-export class LotesPage implements OnInit, OnDestroy {
+export class LotesPage {
   lotes: Lote[] = [];
   lotesFiltrados: Lote[] = [];
   campanas: Campana[] = [];
@@ -52,17 +53,10 @@ export class LotesPage implements OnInit, OnDestroy {
   filtroActivo: any = 'todos';
   filtroCampo: number | null = null;
   pageTitle = 'Lotes';
-  private routerListener: any;
 
-  constructor(private api: ApiService, private router: Router, private route: ActivatedRoute) {
-    this.routerListener = this.router.events.subscribe(() => {
-      if (this.router.url.includes('/tabs/lotes')) {
-        this.cargarDatos();
-      }
-    });
-  }
+  constructor(private api: ApiService, private router: Router, private route: ActivatedRoute) {}
 
-  ngOnInit() {
+  ionViewWillEnter() {
     this.route.queryParams.subscribe(params => {
       const campoId = params['campo_id'];
       if (campoId) {
@@ -73,33 +67,17 @@ export class LotesPage implements OnInit, OnDestroy {
     this.cargarDatos();
   }
 
-  ngOnDestroy() {
-    if (this.routerListener) {
-      this.routerListener.unsubscribe();
-    }
-  }
-
   cargarDatos() {
     this.loading = true;
-    this.api.get<Campana[]>('core/campanas/').subscribe({
-      next: (campanas) => {
+    forkJoin({
+      campanas: this.api.get<Campana[]>('core/campanas/'),
+      cultivos: this.api.get<Cultivo[]>('core/cultivos/'),
+      lotes: this.api.get<Lote[]>('core/lotes/')
+    }).subscribe({
+      next: ({ campanas, cultivos, lotes }) => {
         this.campanas = campanas || [];
-        this.api.get<Cultivo[]>('core/cultivos/').subscribe({
-          next: (cultivos) => {
-            this.cultivos = cultivos || [];
-            this.cargarLotes();
-          },
-          error: () => this.cargarLotes()
-        });
-      },
-      error: () => this.cargarLotes()
-    });
-  }
-
-  cargarLotes() {
-    this.api.get<Lote[]>('core/lotes/').subscribe({
-      next: (data) => {
-        this.lotes = data || [];
+        this.cultivos = cultivos || [];
+        this.lotes = lotes || [];
         this.filtrarLotes();
         this.loading = false;
       },

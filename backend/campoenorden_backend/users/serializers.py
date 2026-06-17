@@ -15,7 +15,7 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = [
             'id', 'username', 'email', 'first_name', 'last_name',
-            'role', 'role_display', 'telefono',
+            'role', 'role_display', 'dni', 'telefono',
             'empresa', 'empresa_nombre', 'permisos_especiales',
             'fecha_alta', 'is_active',
         ]
@@ -28,6 +28,7 @@ class RegisterSerializer(serializers.Serializer):
     email = serializers.EmailField()
     first_name = serializers.CharField(max_length=150)
     last_name = serializers.CharField(max_length=150, required=False, allow_blank=True, default='')
+    dni = serializers.CharField(max_length=20, required=False, allow_blank=True, default='')
     password = serializers.CharField(write_only=True)
     password_confirm = serializers.CharField(write_only=True)
 
@@ -39,6 +40,11 @@ class RegisterSerializer(serializers.Serializer):
     def validate_email(self, value):
         if User.objects.filter(email=value).exists():
             raise serializers.ValidationError("Ya existe una cuenta con ese email.")
+        return value
+
+    def validate_dni(self, value):
+        if value and User.objects.filter(dni=value).exclude(pk=getattr(self, 'instance', None)).exists():
+            raise serializers.ValidationError("Ya existe un usuario con ese DNI.")
         return value
 
     def validate(self, data):
@@ -58,6 +64,7 @@ class RegisterSerializer(serializers.Serializer):
             email=validated_data['email'],
             first_name=validated_data['first_name'],
             last_name=validated_data['last_name'],
+            dni=validated_data.get('dni', '') or None,
             password=validated_data['password'],
             role=User.Role.ADMIN_EMPRESA,
             empresa=empresa,
@@ -100,7 +107,7 @@ class ResendActivationSerializer(serializers.Serializer):
 class UpdateProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['first_name', 'last_name', 'email', 'telefono']
+        fields = ['first_name', 'last_name', 'email', 'dni', 'telefono']
 
     def validate_email(self, value):
         if User.objects.exclude(pk=self.instance.pk).filter(email=value).exists():
@@ -113,6 +120,7 @@ class InviteUserSerializer(serializers.Serializer):
 
     email = serializers.EmailField()
     role = serializers.ChoiceField(choices=INVITABLE_ROLES)
+    dni = serializers.CharField(max_length=20, required=False, allow_blank=True, default='')
 
     def validate_email(self, value):
         if User.objects.filter(email=value).exists():
@@ -124,6 +132,11 @@ class InviteUserSerializer(serializers.Serializer):
             raise serializers.ValidationError("Ya hay una invitación pendiente para ese email.")
         return value
 
+    def validate_dni(self, value):
+        if value and User.objects.filter(dni=value).exists():
+            raise serializers.ValidationError("Ya existe un usuario con ese DNI.")
+        return value
+
 
 class AdminCreateUserSerializer(serializers.Serializer):
     CREATABLE_ROLES = [User.Role.OPERARIO, User.Role.CONSULTA, User.Role.PRODUCTOR]
@@ -132,6 +145,7 @@ class AdminCreateUserSerializer(serializers.Serializer):
     email = serializers.EmailField()
     first_name = serializers.CharField(max_length=150)
     last_name = serializers.CharField(max_length=150, required=False, allow_blank=True, default='')
+    dni = serializers.CharField(max_length=20, required=False, allow_blank=True, default='')
     password = serializers.CharField(write_only=True)
     role = serializers.ChoiceField(choices=CREATABLE_ROLES)
 
@@ -145,6 +159,11 @@ class AdminCreateUserSerializer(serializers.Serializer):
             raise serializers.ValidationError("Ya existe un usuario con ese email.")
         return value
 
+    def validate_dni(self, value):
+        if value and User.objects.filter(dni=value).exists():
+            raise serializers.ValidationError("Ya existe un usuario con ese DNI.")
+        return value
+
     def validate_password(self, value):
         validate_password(value)
         return value
@@ -155,6 +174,7 @@ class AcceptInvitationSerializer(serializers.Serializer):
     username = serializers.CharField(max_length=150)
     first_name = serializers.CharField(max_length=150)
     last_name = serializers.CharField(max_length=150, required=False, allow_blank=True, default='')
+    dni = serializers.CharField(max_length=20, required=False, allow_blank=True, default='')
     password = serializers.CharField(write_only=True)
     password_confirm = serializers.CharField(write_only=True)
 
@@ -173,6 +193,11 @@ class AcceptInvitationSerializer(serializers.Serializer):
             raise serializers.ValidationError("El nombre de usuario ya está en uso.")
         return value
 
+    def validate_dni(self, value):
+        if value and User.objects.filter(dni=value).exists():
+            raise serializers.ValidationError("Ya existe un usuario con ese DNI.")
+        return value
+
     def validate(self, data):
         if data['password'] != data['password_confirm']:
             raise serializers.ValidationError({"password_confirm": "Las contraseñas no coinciden."})
@@ -186,6 +211,7 @@ class AcceptInvitationSerializer(serializers.Serializer):
             email=inv.email,
             first_name=self.validated_data['first_name'],
             last_name=self.validated_data['last_name'],
+            dni=self.validated_data.get('dni', '') or None,
             password=self.validated_data['password'],
             role=inv.role,
             empresa=inv.empresa,

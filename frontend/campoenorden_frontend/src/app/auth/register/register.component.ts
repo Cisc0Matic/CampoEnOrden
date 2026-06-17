@@ -30,6 +30,7 @@ export class RegisterComponent {
       last_name: [''],
       username: ['', [Validators.required, Validators.minLength(3)]],
       email: ['', [Validators.required, Validators.email]],
+      dni: [''],
       password: ['', [Validators.required, Validators.minLength(8)]],
       password_confirm: ['', Validators.required],
     });

@@ -35,7 +35,7 @@ SECRET_KEY = 'django-insecure-2aq%qp8@ek#uh+dxw!0&n5f2gk1pmo!ei4yuae#5g^f7vrhp=j
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.trycloudflare.com', '.ngrok-free.app', '.ngrok.io']
 
 
 # Application definition
@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     'users',
     'core',
     'logistica',
+    'chatbot',
     # JWT token blacklist (logout)
     'rest_framework_simplejwt.token_blacklist',
 ]
@@ -96,21 +97,11 @@ WSGI_APPLICATION = 'campoenorden_backend.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'campoenorden_db',
-        'USER': 'fran_admin',
-        'PASSWORD': 'Campo123',
-        'HOST': '127.0.0.1',
-        'PORT': '3306',
-        'OPTIONS': {
-            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-        },
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-# NOTE: mysqlclient requires MySQL client development headers and libraries.
-# If you encounter issues, consider using PyMySQL (pip install PyMySQL)
-# and changing 'django.db.backends.mysql' to 'mysql.connector.django' or similar
-# after configuring PyMySQL as a backend.
+# Override in environment-specific settings (development.py, production.py).
 
 
 # Password validation
@@ -201,22 +192,45 @@ SIMPLE_JWT = {
 # Custom User Model
 AUTH_USER_MODEL = 'users.User'
 
-# Email — Gmail SMTP
+# Email — Resend (preferido) o Gmail SMTP como fallback
+_resend_key = os.environ.get('RESEND_API_KEY', '')
+_email_user = os.environ.get('EMAIL_HOST_USER', '')
 _email_password = os.environ.get('EMAIL_HOST_PASSWORD', '')
-if _email_password and not _email_password.startswith('reemplazar'):
+_has_smtp = (
+    _email_user
+    and not _email_user.startswith('reemplazar')
+    and _email_password
+    and not _email_password.startswith('reemplazar')
+)
+
+if _resend_key:
+    EMAIL_BACKEND = 'campoenorden_backend.resend_backend.ResendEmailBackend'
+    DEFAULT_FROM_EMAIL = os.environ.get(
+        'DEFAULT_FROM_EMAIL', 'CampoEnOrden <noreply@campoenorden.com>'
+    )
+elif _has_smtp:
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-    EMAIL_HOST = 'smtp.gmail.com'
-    EMAIL_PORT = 587
+    EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
+    EMAIL_PORT = int(os.environ.get('EMAIL_PORT', '587'))
     EMAIL_USE_TLS = True
-    EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
+    EMAIL_HOST_USER = _email_user
     EMAIL_HOST_PASSWORD = _email_password
-    DEFAULT_FROM_EMAIL = f"CampoEnOrden <{EMAIL_HOST_USER}>"
+    DEFAULT_FROM_EMAIL = f"CampoEnOrden <{_email_user}>"
 else:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
     DEFAULT_FROM_EMAIL = 'CampoEnOrden <noreply@campoenorden.com>'
 
 # Frontend URL for landing page links
 FRONTEND_URL = 'http://localhost:8100'
+
+# WhatsApp / Meta Cloud API
+WHATSAPP_ACCESS_TOKEN = os.environ.get('WHATSAPP_ACCESS_TOKEN', '')
+WHATSAPP_PHONE_NUMBER_ID = os.environ.get('WHATSAPP_PHONE_NUMBER_ID', '')
+WHATSAPP_WEBHOOK_VERIFY_TOKEN = os.environ.get('WHATSAPP_WEBHOOK_VERIFY_TOKEN', 'campoenorden_webhook_2026')
+WHATSAPP_APP_SECRET = os.environ.get('WHATSAPP_APP_SECRET', '')
+
+# Anthropic (Claude Vision)
+ANTHROPIC_API_KEY = os.environ.get('ANTHROPIC_API_KEY', '')
 
 # CORS settings
 # CORS_ALLOWED_ORIGINS = [

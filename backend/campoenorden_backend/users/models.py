@@ -20,6 +20,7 @@ class User(AbstractUser):
     base_role = Role.OPERARIO
 
     role = models.CharField(max_length=50, choices=Role.choices, default=base_role)
+    dni = models.CharField(max_length=20, blank=True, null=True, unique=True)
     telefono = models.CharField(max_length=50, blank=True, null=True)
     empresa = models.ForeignKey(
         'core.Persona', on_delete=models.SET_NULL, null=True, blank=True,

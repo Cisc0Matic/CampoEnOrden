@@ -1,9 +1,10 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { ApiService } from '../services/api.service';
 import { Router } from '@angular/router';
 import { HttpParams } from '@angular/common/http';
+import { forkJoin } from 'rxjs';
 
 interface Parametro {
   id: number;
@@ -30,7 +31,7 @@ interface Campana {
   standalone: true,
   imports: [CommonModule, IonicModule]
 })
-export class AjustesPage implements OnInit, OnDestroy {
+export class AjustesPage {
   parametros: Parametro[] = [];
   parametrosFiltrados: Parametro[] = [];
   campanas: Campana[] = [];
@@ -42,33 +43,29 @@ export class AjustesPage implements OnInit, OnDestroy {
   mostrarHistorial = false;
   parametroSeleccionado: Parametro | null = null;
   historial: Parametro[] = [];
-  private routerListener: any;
 
-  constructor(private api: ApiService, private router: Router) {
-    this.routerListener = this.router.events.subscribe(() => {
-      if (this.router.url.includes('/tabs/ajustes')) {
-        this.cargarParametros();
-      }
-    });
+  constructor(private api: ApiService, private router: Router) {}
+
+  ionViewWillEnter() {
+    this.cargarDatos();
   }
 
-  ngOnInit() {
-    this.cargarCampanas();
-  }
-
-  ngOnDestroy() {
-    if (this.routerListener) {
-      this.routerListener.unsubscribe();
-    }
-  }
-
-  cargarCampanas() {
-    this.api.get<Campana[]>('core/campanas/').subscribe({
-      next: (campanas) => {
+  cargarDatos() {
+    this.loading = true;
+    forkJoin({
+      campanas: this.api.get<Campana[]>('core/campanas/'),
+      parametros: this.api.get<Parametro[]>('core/parametros/')
+    }).subscribe({
+      next: ({ campanas, parametros }) => {
         this.campanas = campanas || [];
-        this.cargarParametros();
+        this.parametros = parametros || [];
+        this.filtrarParametros();
+        this.loading = false;
       },
-      error: () => this.cargarParametros()
+      error: () => {
+        this.error = 'Error al cargar datos';
+        this.loading = false;
+      }
     });
   }
 

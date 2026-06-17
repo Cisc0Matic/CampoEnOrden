@@ -296,9 +296,17 @@ class LaborInsumo(models.Model):
 
     def save(self, *args, **kwargs):
         if self.total_aplicado and self.labor and self.labor.hectareas:
-            self.dosis_calculada = self.total_aplicado / self.labor.hectareas
+            try:
+                ha = float(self.labor.hectareas)
+                if ha:
+                    self.dosis_calculada = float(self.total_aplicado) / ha
+            except (TypeError, ValueError, ZeroDivisionError):
+                pass
         if self.total_aplicado and self.precio_unitario:
-            self.costo_total = self.total_aplicado * self.precio_unitario
+            try:
+                self.costo_total = float(self.total_aplicado) * float(self.precio_unitario)
+            except (TypeError, ValueError):
+                pass
         super().save(*args, **kwargs)
 
 

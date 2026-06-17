@@ -34,6 +34,7 @@ urlpatterns = [
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/users/', include('users.urls')),
     path('api/core/', include('core.urls')),
+    path('api/chatbot/', include('chatbot.urls')),
 ]
 
 if settings.DEBUG:

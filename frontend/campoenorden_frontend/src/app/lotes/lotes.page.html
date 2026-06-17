@@ -47,7 +47,7 @@
     <div *ngIf="error" class="error">
       <ion-icon name="warning-outline"></ion-icon>
       <p>{{error}}</p>
-      <ion-button (click)="cargarLotes()">Reintentar</ion-button>
+      <ion-button (click)="cargarDatos()">Reintentar</ion-button>
     </div>
 
     <div *ngIf="!loading && lotes.length === 0" class="empty">

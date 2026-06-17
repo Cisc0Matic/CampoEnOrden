@@ -14,6 +14,10 @@ import { AuthService } from '../../services/auth.service';
   imports: [CommonModule, IonicModule, ReactiveFormsModule, RouterModule],
 })
 export class LoginComponent implements OnInit {
+  ionViewWillLeave() {
+    (document.activeElement as HTMLElement)?.blur();
+  }
+
   loginForm: FormGroup;
   errorMessage: string | null = null;
   showPassword = false;

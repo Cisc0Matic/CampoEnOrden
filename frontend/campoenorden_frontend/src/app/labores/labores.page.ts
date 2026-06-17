@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { HttpParams } from '@angular/common/http';
@@ -13,33 +13,20 @@ import { Labor, getTipoIcon, getEstadoColor, getHeaderClass } from '../models/in
   standalone: true,
   imports: [CommonModule, IonicModule, RouterModule]
 })
-export class LaboresPage implements OnInit, OnDestroy {
+export class LaboresPage {
   labores: Labor[] = [];
   loading = true;
   error: string | null = null;
   filterTipo = '';
-  private routerListener: any;
 
   getTipoIcon = getTipoIcon;
   getEstadoColor = getEstadoColor;
   getHeaderClass = getHeaderClass;
 
-  constructor(private api: ApiService, private router: Router) {
-    this.routerListener = this.router.events.subscribe(() => {
-      if (this.router.url.includes('/tabs/labores')) {
-        this.cargarLabores();
-      }
-    });
-  }
+  constructor(private api: ApiService, private router: Router) {}
 
-  ngOnInit() {
+  ionViewWillEnter() {
     this.cargarLabores();
-  }
-
-  ngOnDestroy() {
-    if (this.routerListener) {
-      this.routerListener.unsubscribe();
-    }
   }
 
   cargarLabores() {
