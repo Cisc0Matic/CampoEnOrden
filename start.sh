@@ -1,26 +1,119 @@
 #!/bin/bash
 
-# CampoEnOrden - Iniciar backend y frontend
+# CampoEnOrden - Iniciar backend y frontend (local) o deploy a Vercel
+# Uso:
+#   ./start.sh              → inicia servidores locales
+#   ./start.sh --deploy     → deploy a Vercel (production)
+#   ./start.sh --dni <ID> <DNI>  → asigna DNI a usuario en prod
+
+set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 BACKEND_DIR="$SCRIPT_DIR/backend/campoenorden_backend"
 FRONTEND_DIR="$SCRIPT_DIR/frontend/campoenorden_frontend"
 VENV_DIR="$SCRIPT_DIR/backend/venv"
-REQS_FILE="$SCRIPT_DIR/backend/requirements.txt"
+REQS_BACKEND="$BACKEND_DIR/requirements.txt"
+REQS_ROOT="$SCRIPT_DIR/requirements.txt"
+
+# ── Helpers ──────────────────────────────────────────────────────────────────
+
+sync_requirements() {
+    echo "▶ Sincronizando requirements.txt raíz con backend..."
+    if [ -f "$REQS_BACKEND" ]; then
+        cp "$REQS_BACKEND" "$REQS_ROOT"
+        echo "  ✓ $REQS_ROOT actualizado"
+    fi
+}
+
+whatsapp_check() {
+    missing=()
+    [ -z "${WHATSAPP_ACCESS_TOKEN:-}" ] && missing+=("WHATSAPP_ACCESS_TOKEN")
+    [ -z "${WHATSAPP_PHONE_NUMBER_ID:-}" ] && missing+=("WHATSAPP_PHONE_NUMBER_ID")
+
+    if [ ${#missing[@]} -gt 0 ]; then
+        echo "⚠  Variables de WhatsApp faltantes: ${missing[*]}"
+        echo "   El chatbot no podrá responder mensajes."
+        echo "   Configuralas en Vercel: vercel env add <NOMBRE> production"
+    else
+        echo "  ✓ Variables de WhatsApp OK"
+    fi
+}
+
+# ── Deploy a Vercel ──────────────────────────────────────────────────────────
+
+deploy_to_vercel() {
+    echo ""
+    echo "══════════════════════════════════════"
+    echo "  Deploy a Vercel (production)"
+    echo "══════════════════════════════════════"
+    sync_requirements
+    echo ""
+    vercel deploy --prod
+    echo ""
+    echo "✓ Deploy completado."
+    echo "  URL: https://campoenorden-api.vercel.app"
+}
+
+# ── Asignar DNI ──────────────────────────────────────────────────────────────
+
+assign_dni() {
+    local user_id="$1"
+    local dni_value="$2"
+    if [ -z "$user_id" ] || [ -z "$dni_value" ]; then
+        echo "Uso: $0 --dni <USER_ID> <DNI>"
+        echo "Ej:  $0 --dni 1 19372727"
+        exit 1
+    fi
+    echo "▶ Asignando DNI=$dni_value al usuario ID=$user_id en producción..."
+    source "$SCRIPT_DIR/.env.prod" 2>/dev/null || true
+    python3 -c "
+import os, psycopg2, sys
+conn = psycopg2.connect(
+    dbname=os.environ.get('PGDATABASE',''),
+    user=os.environ.get('PGUSER',''),
+    password=os.environ.get('PGPASSWORD',''),
+    host=os.environ.get('PGHOST',''),
+    port=os.environ.get('PGPORT','5432')
+)
+cur = conn.cursor()
+cur.execute(\"UPDATE users_user SET dni=%s WHERE id=%s\", (sys.argv[2], sys.argv[1]))
+print(f'Filas actualizadas: {cur.rowcount}')
+conn.commit()
+cur.close()
+conn.close()
+" "$user_id" "$dni_value"
+    echo "✓ DNI asignado"
+}
+
+# ── Main ─────────────────────────────────────────────────────────────────────
+
+MODE="${1:-local}"
+
+case "$MODE" in
+    --deploy|-d)
+        deploy_to_vercel
+        exit 0
+        ;;
+    --dni)
+        shift
+        assign_dni "$@"
+        exit 0
+        ;;
+esac
+
+# ── Local development ────────────────────────────────────────────────────────
 
 cleanup() {
     echo ""
     echo "Deteniendo servidores..."
-    [ ! -z "$BACKEND_PID" ] && kill $BACKEND_PID 2>/dev/null
-    [ ! -z "$FRONTEND_PID" ] && kill $FRONTEND_PID 2>/dev/null
+    [ ! -z "${BACKEND_PID:-}" ] && kill $BACKEND_PID 2>/dev/null
+    [ ! -z "${FRONTEND_PID:-}" ] && kill $FRONTEND_PID 2>/dev/null
     exit 0
 }
 
 trap cleanup INT TERM
 
-# Obtener IP local de forma portable
 get_local_ip() {
-    # Intentar con Python (no necesita paquetes extra)
     LOCAL_IP=$(python3 -c "
 import socket
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -32,20 +125,26 @@ except:
 finally:
     s.close()
 " 2>/dev/null)
-    
-    # Fallback: hostname -i
     if [ -z "$LOCAL_IP" ] || [ "$LOCAL_IP" = "localhost" ]; then
         LOCAL_IP=$(hostname -i 2>/dev/null | grep -oE '([0-9]{1,3}\.){3}[0-9]{1,3}' | grep -v '^127' | head -1)
     fi
-    
-    # Último recurso
     [ -z "$LOCAL_IP" ] && LOCAL_IP="localhost"
     echo "$LOCAL_IP"
 }
 
 LOCAL_IP=$(get_local_ip)
 
-echo "Iniciando CampoEnOrden..."
+echo ""
+echo "══════════════════════════════════════"
+echo "  CampoEnOrden - Inicio local"
+echo "══════════════════════════════════════"
+echo ""
+
+# Sync requirements
+sync_requirements
+
+# WhatsApp check
+whatsapp_check
 
 # Matar procesos anteriores en los puertos
 fuser -k 8000/tcp 2>/dev/null
@@ -64,7 +163,6 @@ fi
 # ---------- BACKEND ----------
 cd "$BACKEND_DIR" || exit 1
 
-# Recrear venv si no existe
 if [ ! -f "$VENV_DIR/bin/activate" ]; then
     echo "Creando entorno virtual..."
     python3 -m venv "$VENV_DIR"
@@ -72,30 +170,25 @@ fi
 
 source "$VENV_DIR/bin/activate"
 
-# Instalar dependencias si hace falta
-if ! python -c "import django, django_filters, rest_framework, corsheaders" 2>/dev/null; then
+if ! python -c "import django, requests, anthropic, rest_framework, corsheaders" 2>/dev/null; then
     echo "Instalando dependencias de Python..."
-    pip install -r "$REQS_FILE"
+    pip install -r "$REQS_BACKEND"
 fi
 
 python manage.py migrate --run-syncdb 2>/dev/null || python manage.py migrate
 
 python manage.py runserver 0.0.0.0:8000 &
 BACKEND_PID=$!
-
 sleep 2
 
 # ---------- FRONTEND ----------
 cd "$FRONTEND_DIR" || exit 1
 
-# Instalar node_modules si hace falta
 [ ! -d "node_modules" ] && npm install
 
-# Configurar PATH para node/npm/ionic
 export PATH="/usr/local/bin:/usr/bin:$HOME/.npm/bin:$HOME/node/bin:$HOME/node/lib/node_modules/@ionic/cli/bin:$PATH"
 [ -f "$HOME/.nvm/nvm.sh" ] && source "$HOME/.nvm/nvm.sh"
 
-# Buscar ionic
 IONIC_CMD=""
 if command -v ionic &> /dev/null; then
     IONIC_CMD="ionic"
@@ -115,7 +208,6 @@ fi
 
 $IONIC_CMD serve --host 0.0.0.0 --port 8100 &
 FRONTEND_PID=$!
-
 sleep 2
 
 echo ""
@@ -124,6 +216,11 @@ echo "  - Backend:  http://$LOCAL_IP:8000"
 echo "  - Frontend: http://$LOCAL_IP:8100"
 echo ""
 echo "Para acceder desde otros dispositivos en la red usa: http://$LOCAL_IP:8100"
+echo ""
+echo "Comandos útiles:"
+echo "  ./start.sh --deploy       → deploy a Vercel"
+echo "  ./start.sh --dni <ID> <V> → asignar DNI en producción"
+echo ""
 echo "Presiona Ctrl+C para detener ambos servidores"
 
 wait $BACKEND_PID $FRONTEND_PID

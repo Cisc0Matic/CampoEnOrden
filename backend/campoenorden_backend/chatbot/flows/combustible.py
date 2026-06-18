@@ -29,7 +29,7 @@ class CombustibleFlow(BaseFlow):
             self.data.update({'modo': 'FOTO', 'vision_data': extracted})
             self._advance_to(2)
             if extracted:
-                return (
+                body = (
                     'Datos extraidos del documento:\n\n'
                     f"Fecha: {extracted.get('fecha', '?')}\n"
                     f"Proveedor: {extracted.get('proveedor', '?')}\n"
@@ -37,14 +37,18 @@ class CombustibleFlow(BaseFlow):
                     f"Litros: {extracted.get('litros', '?')}\n"
                     f"Precio/litro: {extracted.get('precio_litro', '?')}\n"
                     f"Total: ${extracted.get('total', '?')}\n"
-                    f"N documento: {extracted.get('nro_documento', '?')}\n\n"
-                    '1. Confirmar estos datos\n'
-                    '2. Corregir / carga manual'
+                    f"N documento: {extracted.get('nro_documento', '?')}"
                 )
-            return (
-                'No pude leer el documento automaticamente.\n\n'
-                '1. Intentar con otro documento\n'
-                '2. Carga manual'
+                return self._reply_buttons(body, [
+                    {'type': 'reply', 'reply': {'id': '1', 'title': 'Confirmar'}},
+                    {'type': 'reply', 'reply': {'id': '2', 'title': 'Corregir / carga manual'}},
+                ])
+            return self._reply_buttons(
+                'No pude leer el documento automaticamente.',
+                [
+                    {'type': 'reply', 'reply': {'id': '1', 'title': 'Intentar con otro documento'}},
+                    {'type': 'reply', 'reply': {'id': '2', 'title': 'Carga manual'}},
+                ]
             )
 
         return (
@@ -92,22 +96,22 @@ class CombustibleFlow(BaseFlow):
 
     # step_4: select campo
     def step_4(self, message, media_id, mime_type):
-        if message.strip().upper() == 'VARIOS':
+        if message.strip() == '99':
             self.data.update({'campo_id': None, 'campo_nombre': 'Varios'})
             self._advance_to(5)
-            return 'Observacion?\n\n1. Si\n2. No'
+            return self._yes_no_buttons('¿Observación?')
         campos = self._get_campos()
         if not campos:
             self.data.update({'campo_id': None, 'campo_nombre': '-'})
             self._advance_to(5)
-            return 'Observacion?\n\n1. Si\n2. No'
+            return self._yes_no_buttons('¿Observación?')
         n = self._parse_int(message, 1, len(campos))
         if n is None:
             return self._invalid(len(campos))
         c = campos[n - 1]
         self.data.update({'campo_id': c.id, 'campo_nombre': c.nombre})
         self._advance_to(5)
-        return 'Observacion?\n\n1. Si\n2. No'
+        return self._yes_no_buttons('¿Observación?')
 
     # step_5: observacion y/n
     def step_5(self, message, media_id, mime_type):
@@ -172,33 +176,32 @@ class CombustibleFlow(BaseFlow):
 
     def step_24(self, message, media_id, mime_type):
         self.data['nro_documento'] = message.strip().replace('-', '').strip() or ''
-        # Go to maquina selection
         self._advance_to(3)
         return self._ask_maquinaria()
 
-    def _ask_maquinaria(self) -> str:
+    def _ask_maquinaria(self) -> dict:
         maquinaria = self._get_maquinaria()
         if not maquinaria:
             self.data.update({'maquinaria_id': None, 'maquinaria_nombre': 'Sin inventario'})
             self._advance_to(4)
             return self._ask_campo_text()
-        opts = '\n'.join(f'{i+1}. {m.nombre} ({m.tipo})' for i, m in enumerate(maquinaria))
-        return f'A que maquina?\n\n{opts}'
+        rows = [{'id': str(i+1), 'title': f'{m.nombre} ({m.tipo})'} for i, m in enumerate(maquinaria)]
+        return self._interactive_list('¿A qué máquina?', [{'title': 'Maquinaria', 'rows': rows}])
 
-    def _ask_campo(self) -> str:
+    def _ask_campo(self) -> dict:
         return self._ask_campo_text()
 
-    def _ask_campo_text(self) -> str:
+    def _ask_campo_text(self) -> dict:
         campos = self._get_campos()
         if not campos:
             self.data.update({'campo_id': None, 'campo_nombre': '-'})
             self._advance_to(5)
-            return 'Observacion?\n\n1. Si\n2. No'
-        opts = '\n'.join(f'{i+1}. {c.nombre}' for i, c in enumerate(campos))
-        self.data['campos_ids'] = [c.id for c in campos]
-        return f'A que campo?\n\n{opts}\n\nO escribe *VARIOS* si fue para varios campos.'
+            return self._yes_no_buttons('¿Observación?')
+        rows = [{'id': str(i+1), 'title': c.nombre} for i, c in enumerate(campos)]
+        rows.append({'id': '99', 'title': 'Varios'})
+        return self._interactive_list('¿A qué campo?', [{'title': 'Campos', 'rows': rows}])
 
-    def _build_confirmation(self) -> str:
+    def _build_confirmation(self) -> dict:
         d = self.data
         rows = [
             ('Fecha', d.get('fecha', '-')),
@@ -213,7 +216,7 @@ class CombustibleFlow(BaseFlow):
             rows.append(('Observacion', d['observacion']))
         return self._confirmation_block('Confirmar Carga de Combustible', rows)
 
-    def _confirm_save(self) -> str:
+    def _confirm_save(self) -> dict:
         d = self.data
         from chatbot.models import RegistroCombustible, Maquinaria
         from core.models import Campo
@@ -243,11 +246,12 @@ class CombustibleFlow(BaseFlow):
             )
         except Exception as e:
             logger.exception(f'Error saving combustible: {e}')
-            return 'Error al guardar. Por favor intenta de nuevo.'
+            return self._with_menu('Error al guardar. Por favor intenta de nuevo.')
 
-        return (
-            'Combustible registrado correctamente.\n\n'
-            'Escribi *MENU* para volver al inicio.'
+        from chatbot.flows.menu import get_maquinaria_submenu
+        return self._finish_with_submenu(
+            '✅ Combustible registrado correctamente.',
+            get_maquinaria_submenu,
         )
 
     def _run_vision(self, media_id: str, mime_type: str) -> dict:

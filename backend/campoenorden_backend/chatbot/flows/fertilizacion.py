@@ -2,7 +2,7 @@ import logging
 
 from django.utils import timezone
 
-from .base import BaseFlow, CULTIVOS_LIST, CULTIVOS_MENU
+from .base import BaseFlow, CULTIVOS_LIST
 
 logger = logging.getLogger(__name__)
 
@@ -33,7 +33,7 @@ class FertilizacionFlow(BaseFlow):
             return 'Formato incorrecto. Usa DD/MM/AA o escribe HOY.'
         self.data.update({'fecha': fecha.isoformat(), 'productos': []})
         self._advance_to(4)
-        return f'Cultivo?\n\n{CULTIVOS_MENU}'
+        return self._cultivo_list()
 
     def step_4(self, message, media_id, mime_type):
         n = self._parse_int(message, 1, len(CULTIVOS_LIST))
@@ -41,7 +41,12 @@ class FertilizacionFlow(BaseFlow):
             return self._invalid(len(CULTIVOS_LIST))
         self.data['cultivo'] = CULTIVOS_LIST[n - 1]
         self._advance_to(5)
-        return 'Tipo de fertilizacion?\n\n1. Incorporado\n2. Voleo\n3. Aereo\n4. Fertirrigacion'
+        return self._option_list('Tipo de fertilización?', [
+            ('1', 'Incorporado'),
+            ('2', 'Voleo'),
+            ('3', 'Aéreo'),
+            ('4', 'Fertirrigación'),
+        ])
 
     def step_5(self, message, media_id, mime_type):
         entry = _TIPO_FERT.get(message.strip())
@@ -52,7 +57,10 @@ class FertilizacionFlow(BaseFlow):
         if subtipo == 'AEREO':
             self.data['tipo'] = None
             self._advance_to(6)
-            return 'Equipo aereo?\n\n1. Avion\n2. Drone'
+            return self._reply_buttons('Equipo aéreo?', [
+                {'type': 'reply', 'reply': {'id': '1', 'title': 'Avión'}},
+                {'type': 'reply', 'reply': {'id': '2', 'title': 'Dron'}},
+            ])
         self.data['tipo'] = tipo_labor
         self._advance_to(7)
         return self._products_prompt(0)
@@ -67,25 +75,24 @@ class FertilizacionFlow(BaseFlow):
         return self._products_prompt(0)
 
     def step_7(self, message, media_id, mime_type):
-        is_aereo = self.data.get('subtipo_fert') == 'AEREO'
-        if is_aereo:
-            opts = '1. Personal propio\n2. Contratista drone\n3. Contratista avion'
-            max_opt = 3
-        else:
-            opts = '1. Personal propio\n2. Contratista'
-            max_opt = 2
-        return self._products_loop(message, 8, f'Quien realizo?\n\n{opts}')
+        return self._products_loop(message, 8, '¿Quién realizó?')
 
     def step_8(self, message, media_id, mime_type):
         is_aereo = self.data.get('subtipo_fert') == 'AEREO'
         max_opt = 3 if is_aereo else 2
         opt = self._parse_int(message, 1, max_opt)
         if opt is None:
-            return self._invalid(max_opt)
+            if is_aereo:
+                return self._reply_buttons('¿Quién realizó?', [
+                    {'type': 'reply', 'reply': {'id': '1', 'title': 'Personal propio'}},
+                    {'type': 'reply', 'reply': {'id': '2', 'title': 'Contratista drone'}},
+                    {'type': 'reply', 'reply': {'id': '3', 'title': 'Contratista avión'}},
+                ])
+            return self._who_buttons('¿Quién realizó?')
         ejecutor_map = {1: 'PERSONAL_PROPIO', 2: 'CONTRATISTA_DRONE', 3: 'CONTRATISTA_AVION'}
         self.data['ejecutor'] = ejecutor_map.get(opt, 'PERSONAL_PROPIO')
         self._advance_to(9)
-        return 'Observacion?\n\n1. Si\n2. No'
+        return self._yes_no_buttons('¿Observación?')
 
     def step_9(self, message, media_id, mime_type):
         opt = self._parse_int(message, 1, 2)
@@ -93,7 +100,7 @@ class FertilizacionFlow(BaseFlow):
             return self._invalid(2)
         if opt == 1:
             self._advance_to(10)
-            return 'Escribi tu observacion:'
+            return 'Escribí tu observación:'
         self.data['observacion'] = ''
         self._advance_to(11)
         return self._build_confirmation()
@@ -114,7 +121,7 @@ class FertilizacionFlow(BaseFlow):
             return self._cancel()
         return self._invalid(3)
 
-    def _build_confirmation(self) -> str:
+    def _build_confirmation(self) -> dict:
         d = self.data
         prods = d.get('productos', [])
         prods_lines = '\n'.join(
@@ -134,13 +141,14 @@ class FertilizacionFlow(BaseFlow):
         ]
         if d.get('observacion'):
             rows.append(('Observacion', d['observacion']))
-        block = self._confirmation_block('Confirmar Fertilizacion', rows)
-        return block.replace(
-            '*Confirmar Fertilizacion*\n',
-            f'*Confirmar Fertilizacion*\n\n*Productos:*\n{prods_lines}\n',
+        block = self._confirmation_block('Confirmar Fertilización', rows)
+        block['body'] = block['body'].replace(
+            '*Confirmar Fertilización*\n',
+            f'*Confirmar Fertilización*\n\n*Productos:*\n{prods_lines}\n',
         )
+        return block
 
-    def _confirm_save(self) -> str:
+    def _confirm_save(self) -> dict:
         d = self.data
         from core.models import Labor, Lote
         try:
@@ -166,9 +174,10 @@ class FertilizacionFlow(BaseFlow):
             self._save_insumo_usage(labor, d.get('productos', []))
         except Exception as e:
             logger.exception(f'Error saving fertilizacion: {e}')
-            return 'Error al guardar. Por favor intenta de nuevo.'
+            return self._with_menu('Error al guardar. Por favor intenta de nuevo.')
 
-        return (
-            f"Fertilizacion registrada en {d.get('lote_nombre', 'el lote')}.\n\n"
-            'Escribi *MENU* para volver al inicio.'
+        from chatbot.flows.menu import get_labores_submenu
+        return self._finish_with_submenu(
+            f"✅ Fertilización registrada en {d.get('lote_nombre', 'el lote')}.",
+            get_labores_submenu,
         )

@@ -4,5 +4,8 @@
   "version": "1.0.0",
   "private": true,
   "author": "Netlify",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "@netlify/angular-runtime": "4.0.0"
+  }
 }

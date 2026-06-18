@@ -2,6 +2,7 @@ import logging
 
 from .flows import FLOW_REGISTRY, get_flow_class, start_flow
 from .flows.menu import show_main_menu, get_labores_submenu, get_maquinaria_submenu
+from .flows.base import BaseFlow
 from users.models import User
 
 logger = logging.getLogger(__name__)
@@ -14,6 +15,14 @@ def handle_message_router(session, text: str, media_id: str, mime_type: str, wa_
     flow = session.current_flow
     msg = (text or '').strip()
     upper = msg.upper()
+
+    # Soft navigation — go to main menu without resetting user/DNI
+    if upper == 'GO_MENU':
+        session.current_flow = ''
+        session.current_step = 0
+        session.session_data = {}
+        session.save(update_fields=['current_flow', 'current_step', 'session_data', 'last_activity'])
+        return show_main_menu(session.user)
 
     # DNI identification
     if session.session_data.get('awaiting_dni'):
@@ -58,17 +67,17 @@ def _handle_main_menu_nav(session, message: str, user, wa_service) -> str:
     if is_admin:
         opt = _try_int(message, 1, 11)
         if opt == 1:
-            return 'Modulo de Campos (proximamente disponible).\n\nEscribi *MENU* para volver.'
+            return BaseFlow._with_menu('Módulo de Campos — próximamente disponible.')
         if opt == 2:
             return _enter_labores_menu(session)
         if opt == 3:
-            return 'Modulo de ABM de Insumos (proximamente disponible).\n\nEscribi *MENU* para volver.'
+            return BaseFlow._with_menu('Módulo de ABM de Insumos — próximamente disponible.')
         if opt == 4:
-            return 'Modulo de Transporte de Granos (proximamente disponible).\n\nEscribi *MENU* para volver.'
+            return BaseFlow._with_menu('Módulo de Transporte de Granos — próximamente disponible.')
         if opt == 5:
-            return 'Modulo de Comercializacion (proximamente disponible).\n\nEscribi *MENU* para volver.'
+            return BaseFlow._with_menu('Módulo de Comercialización de Granos — próximamente disponible.')
         if opt == 6:
-            return 'Modulo de Informes (proximamente disponible).\n\nEscribi *MENU* para volver.'
+            return BaseFlow._with_menu('Módulo de Informes — próximamente disponible.')
         if opt == 7:
             return _enter_maquinaria_menu(session)
         if opt == 8:
@@ -78,8 +87,8 @@ def _handle_main_menu_nav(session, message: str, user, wa_service) -> str:
         if opt == 10:
             return _get_clima()
         if opt == 11:
-            return 'Hablar con tu asesor (proximamente disponible).\n\nEscribi *MENU* para volver.'
-        return f'Opcion no valida. Escribi un numero del 1 al 11.\n\n{show_main_menu(user)}'
+            return BaseFlow._with_menu('Hablar con tu asesor — próximamente disponible.')
+        return BaseFlow._with_menu('Opción no válida. Seleccioná un número del 1 al 11 del menú que aparece abajo.')
 
     if role == 'OPERARIO':
         opt = _try_int(message, 1, 3)
@@ -89,13 +98,13 @@ def _handle_main_menu_nav(session, message: str, user, wa_service) -> str:
             return start_flow(session, 'combustible', wa_service)
         if opt == 3:
             return start_flow(session, 'mantenimiento', wa_service)
-        return f'Opcion no valida. Escribi un numero del 1 al 3.\n\n{show_main_menu(user)}'
+        return BaseFlow._with_menu('Opción no válida. Seleccioná un número del 1 al 3 del menú que aparece abajo.')
 
     if role == 'CONSULTA':
         opt = _try_int(message, 1, 1)
         if opt == 1:
-            return 'Modulo de Informes (proximamente disponible).\n\nEscribi *MENU* para volver.'
-        return 'Opcion no valida. Escribi 1 para ver informes.'
+            return BaseFlow._with_menu('Módulo de Informes — próximamente disponible.')
+        return BaseFlow._with_menu('Opción no válida. Escribí 1 para ver informes.')
 
     return show_main_menu(user)
 
@@ -107,17 +116,15 @@ def _handle_dni_input(session, dni_input: str) -> str:
 
     user = User.objects.filter(dni=dni).first()
     if not user:
-        return (
+        return BaseFlow._with_menu(
             'DNI no encontrado en el sistema.\n'
-            'Verificá el número o contactá a tu asesor.\n'
-            'Escribí *MENU* para salir.'
+            'Verificá el número o contactá a tu asesor.'
         )
 
     if not user.is_active:
-        return (
+        return BaseFlow._with_menu(
             'Tu usuario está desactivado.\n'
-            'Contactá a tu asesor para reactivarlo.\n'
-            'Escribí *MENU* para salir.'
+            'Contactá a tu asesor para reactivarlo.'
         )
 
     session.user = user
@@ -143,22 +150,36 @@ def _enter_maquinaria_menu(session) -> str:
 
 
 def _handle_labores_menu(session, message: str, wa_service) -> str:
+    upper = (message or '').strip().upper()
+    if upper == 'GO_MENU':
+        return _go_main_menu(session)
     opt = _try_int(message, 1, 4)
     flows = {1: 'pulverizacion', 2: 'fertilizacion', 3: 'siembra', 4: 'cosecha'}
     if opt in flows:
         return start_flow(session, flows[opt], wa_service)
-    return f'Opcion no valida. Escribi un numero del 1 al 4.\n\n{get_labores_submenu()}'
+    return BaseFlow._with_menu('Opción no válida. Seleccioná un número del 1 al 4 del menú que aparece abajo.')
 
 
 def _handle_maquinaria_menu(session, message: str, wa_service) -> str:
+    upper = (message or '').strip().upper()
+    if upper == 'GO_MENU':
+        return _go_main_menu(session)
     opt = _try_int(message, 1, 3)
     if opt == 1:
-        return 'Modulo de Inventario de Maquinaria (proximamente disponible).\n\nEscribi *MENU* para volver.'
+        return BaseFlow._with_menu('Inventario de Maquinaria — próximamente disponible.')
     if opt == 2:
         return start_flow(session, 'combustible', wa_service)
     if opt == 3:
         return start_flow(session, 'mantenimiento', wa_service)
-    return f'Opcion no valida. Escribi un numero del 1 al 3.\n\n{get_maquinaria_submenu()}'
+    return BaseFlow._with_menu('Opción no válida. Seleccioná un número del 1 al 3 del menú que aparece abajo.')
+
+
+def _go_main_menu(session) -> dict:
+    session.current_flow = ''
+    session.current_step = 0
+    session.session_data = {}
+    session.save(update_fields=['current_flow', 'current_step', 'session_data', 'last_activity'])
+    return show_main_menu(session.user)
 
 
 def _try_int(message: str, min_val: int, max_val: int):
@@ -171,24 +192,21 @@ def _try_int(message: str, min_val: int, max_val: int):
     return None
 
 
-def _get_precios_cereales() -> str:
-    return (
-        'Precios BCR (integracion en desarrollo).\n\n'
-        'Pronto vas a poder consultar precios de soja, maiz, trigo y girasol en tiempo real.\n\n'
-        'Escribi *MENU* para volver.'
+def _get_precios_cereales() -> dict:
+    return BaseFlow._with_menu(
+        'Precios BCR — integración en desarrollo.\n\n'
+        'Pronto vas a poder consultar precios de soja, maíz, trigo y girasol en tiempo real.'
     )
 
 
-def _get_dolar() -> str:
-    return (
-        'Dolar y tipo de cambio (integracion en desarrollo).\n\n'
-        'Escribi *MENU* para volver.'
+def _get_dolar() -> dict:
+    return BaseFlow._with_menu(
+        'Dólar y tipo de cambio — integración en desarrollo.'
     )
 
 
-def _get_clima() -> str:
-    return (
-        'Clima y pronostico (integracion en desarrollo).\n\n'
-        'Pronto vas a poder ver el pronostico por coordenadas de tu campo.\n\n'
-        'Escribi *MENU* para volver.'
+def _get_clima() -> dict:
+    return BaseFlow._with_menu(
+        'Clima y pronóstico — integración en desarrollo.\n\n'
+        'Pronto vas a poder ver el pronóstico por coordenadas de tu campo.'
     )

@@ -25,11 +25,15 @@
     </div>
 
     <form *ngIf="!loading" [formGroup]="laborForm" (ngSubmit)="guardar()">
+      <div class="section-header">
+        <ion-icon name="information-circle-outline"></ion-icon>
+        <span>Información general</span>
+      </div>
       <ion-list>
         <ion-item>
           <ion-select label="Lote" labelPlacement="stacked" formControlName="lote" required placeholder="Seleccionar lote">
             <ion-select-option *ngFor="let lote of lotes" [value]="lote.id">
-              {{ lote.campo_nombre }} - {{ lote.nombre }} ({{ lote.cultivo_nombre }})
+              {{ lote.campo_nombre }} — {{ lote.nombre }} ({{ lote.cultivo_nombre }})
             </ion-select-option>
           </ion-select>
         </ion-item>
@@ -55,6 +59,10 @@
         </ion-item>
       </ion-list>
 
+      <div class="section-header">
+        <ion-icon name="camera-outline"></ion-icon>
+        <span>Foto receta</span>
+      </div>
       <div class="foto-section">
         <input
           type="file"
@@ -74,49 +82,71 @@
         <img *ngIf="fotoPreview" [src]="fotoPreview" alt="Preview receta" class="foto-preview" />
       </div>
 
-      <div class="insumos-section" formArrayName="insumosForm">
-        <div class="insumos-header">
-          <ion-label>Insumos aplicados</ion-label>
-          <ion-button fill="clear" size="small" (click)="agregarInsumo()">
-            <ion-icon name="add" slot="start"></ion-icon>
-            Agregar
-          </ion-button>
-        </div>
-
-        <ion-list>
-          <ng-container *ngFor="let insumoGroup of insumosArray.controls; let i = index">
-            <ion-item [formGroupName]="i">
-              <ion-select label="Insumo" labelPlacement="stacked" formControlName="insumo" required placeholder="Seleccionar insumo">
-                <ion-select-option *ngFor="let ins of insumos" [value]="ins.id">
-                  {{ ins.nombre }} ({{ ins.nombre_tipo }})
-                </ion-select-option>
-              </ion-select>
-              <ion-button fill="clear" color="danger" slot="end" (click)="eliminarInsumo(i)">
-                <ion-icon name="close"></ion-icon>
-              </ion-button>
-            </ion-item>
-            <ion-item [formGroupName]="i">
-              <ion-input type="number" label="Total usado" labelPlacement="stacked" formControlName="total_aplicado" placeholder="Ej: 100"></ion-input>
-            </ion-item>
-            <ion-item [formGroupName]="i">
-              <ion-input type="text" label="Unidad" labelPlacement="stacked" formControlName="unidad_dosis" placeholder="Ej: l/ha"></ion-input>
-            </ion-item>
-            <ion-item [formGroupName]="i">
-              <ion-input type="number" label="Precio unitario" labelPlacement="stacked" formControlName="precio_unitario" placeholder="Ej: 4.5"></ion-input>
-            </ion-item>
-            <ion-item [formGroupName]="i">
-              <ion-label>Dosis: {{ insumoGroup.get('dosis_calculada')?.value | number:'1.0-4' }} {{ insumoGroup.get('unidad_dosis')?.value }}/ha</ion-label>
-            </ion-item>
-            <ion-item [formGroupName]="i" lines="none">
-              <ion-label>Costo: {{ insumoGroup.get('costo_total')?.value | number:'1.0-2' }}</ion-label>
-            </ion-item>
-          </ng-container>
-        </ion-list>
+      <div class="section-header">
+        <ion-icon name="flask-outline"></ion-icon>
+        <span>Insumos aplicados</span>
+        <ion-button fill="clear" size="small" slot="end" (click)="agregarInsumo()">
+          <ion-icon name="add" slot="start"></ion-icon>
+          Agregar
+        </ion-button>
       </div>
 
+      <div class="insumos-section" formArrayName="insumosForm">
+        <ng-container *ngFor="let insumoGroup of insumosArray.controls; let i = index">
+          <div class="insumo-card">
+            <div class="insumo-card-header">
+              <span class="insumo-card-title">Insumo #{{ i + 1 }}</span>
+              <ion-button fill="clear" color="danger" size="small" (click)="eliminarInsumo(i)">
+                <ion-icon name="close" slot="icon-only"></ion-icon>
+              </ion-button>
+            </div>
+            <div [formGroupName]="i" class="insumo-card-body">
+              <ion-item class="insumo-select-item">
+                <ion-select label="Insumo" labelPlacement="stacked" formControlName="insumo" required placeholder="Seleccionar insumo">
+                  <ion-select-option *ngFor="let ins of insumos" [value]="ins.id">
+                    {{ ins.nombre }} ({{ ins.nombre_tipo }})
+                  </ion-select-option>
+                </ion-select>
+              </ion-item>
+              <div class="insumo-fields-row">
+                <ion-item class="insumo-field-half">
+                  <ion-input type="number" label="Total usado" labelPlacement="stacked" formControlName="total_aplicado" placeholder="Ej: 100"></ion-input>
+                </ion-item>
+                <ion-item class="insumo-field-half">
+                  <ion-input type="text" label="Unidad" labelPlacement="stacked" formControlName="unidad_dosis" placeholder="Ej: l/ha"></ion-input>
+                </ion-item>
+              </div>
+              <div class="insumo-fields-row">
+                <ion-item class="insumo-field-half">
+                  <ion-input type="number" label="Precio unitario" labelPlacement="stacked" formControlName="precio_unitario" placeholder="Ej: 4.5"></ion-input>
+                </ion-item>
+                <ion-item class="insumo-field-half">
+                  <ion-input type="number" label="Dosis calculada" labelPlacement="stacked" formControlName="dosis_calculada" placeholder="Auto" [readonly]="true"></ion-input>
+                </ion-item>
+              </div>
+              <div class="insumo-totals">
+                <span *ngIf="insumoGroup.get('dosis_calculada')?.value" class="insumo-total-item">
+                  Dosis: {{ insumoGroup.get('dosis_calculada')?.value | number:'1.0-2' }} {{ insumoGroup.get('unidad_dosis')?.value }}/ha
+                </span>
+                <span *ngIf="insumoGroup.get('costo_total')?.value" class="insumo-total-item">
+                  Costo: ${{ insumoGroup.get('costo_total')?.value | number:'1.0-2' }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+        <div *ngIf="insumosArray.controls.length === 0" class="insumos-empty">
+          <span>No hay insumos cargados</span>
+        </div>
+      </div>
+
+      <div class="section-header">
+        <ion-icon name="people-outline"></ion-icon>
+        <span>Responsables y costos</span>
+      </div>
       <ion-list>
         <ion-item>
-          <ion-select label="Contratista" labelPlacement="stacked" formControlName="contratista" placeholder="Seleccionar contratista" class="ceo-inline-select">
+          <ion-select label="Contratista" labelPlacement="stacked" formControlName="contratista" placeholder="Seleccionar contratista">
             <ion-select-option *ngFor="let p of personas" [value]="p.id">{{ p.nombre }} ({{ p.nombre_rol }})</ion-select-option>
           </ion-select>
           <ion-button slot="end" fill="clear" size="small" (click)="abrirCrearContratista()" title="Crear nuevo contratista">
@@ -125,7 +155,7 @@
         </ion-item>
 
         <ion-item>
-          <ion-select label="Responsable" labelPlacement="stacked" formControlName="responsable" placeholder="Seleccionar responsable" class="ceo-inline-select">
+          <ion-select label="Responsable" labelPlacement="stacked" formControlName="responsable" placeholder="Seleccionar responsable">
             <ion-select-option *ngFor="let p of personas" [value]="p.id">{{ p.nombre }} ({{ p.nombre_rol }})</ion-select-option>
           </ion-select>
           <ion-button slot="end" fill="clear" size="small" (click)="abrirCrearResponsable()" title="Crear nuevo responsable">
@@ -145,9 +175,18 @@
         </ion-item>
 
         <ion-item>
-          <ion-input type="number" label="Costo total (calculado)" labelPlacement="stacked" formControlName="costo_total"></ion-input>
+          <ion-label class="costo-total-label">
+            <span class="costo-total-text">Costo total</span>
+            <span class="costo-total-value">{{ laborForm.get('costo_total')?.value | number:'1.0-2' }} {{ laborForm.get('moneda')?.value }}</span>
+          </ion-label>
         </ion-item>
+      </ion-list>
 
+      <div class="section-header">
+        <ion-icon name="document-text-outline"></ion-icon>
+        <span>Estado y observaciones</span>
+      </div>
+      <ion-list>
         <ion-item>
           <ion-select label="Estado" labelPlacement="stacked" formControlName="estado">
             <ion-select-option *ngFor="let e of estados" [value]="e.value">

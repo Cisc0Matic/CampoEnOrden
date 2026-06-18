@@ -1,5 +1,6 @@
 import json
 import logging
+import re
 
 from django.conf import settings
 from django.http import HttpResponse, JsonResponse
@@ -11,6 +12,8 @@ from .models import WhatsAppSession, WhatsAppMessage
 from .services.whatsapp import WhatsAppService
 from .router import handle_message_router
 from users.models import User
+
+_MENU_RE = re.compile(r'\*?MENU\*?', re.IGNORECASE)
 
 logger = logging.getLogger(__name__)
 
@@ -66,14 +69,14 @@ class WhatsAppWebhookView(View):
         except json.JSONDecodeError:
             return HttpResponse(status=400)
 
-        try:
-            for entry in data.get('entry', []):
-                for change in entry.get('changes', []):
-                    value = change.get('value', {})
-                    for msg in value.get('messages', []):
+        for entry in data.get('entry', []):
+            for change in entry.get('changes', []):
+                value = change.get('value', {})
+                for msg in value.get('messages', []):
+                    try:
                         self._process_message(msg)
-        except Exception as e:
-            logger.exception(f'Webhook processing error: {e}')
+                    except Exception as e:
+                        logger.exception(f'Error processing msg {msg.get("id","?")}: {e}')
 
         # Always return 200 so Meta doesn't retry
         return JsonResponse({'status': 'ok'})
@@ -91,6 +94,11 @@ class WhatsAppWebhookView(View):
 
         if msg_type == 'text':
             text = msg.get('text', {}).get('body', '').strip()
+        elif msg_type == 'interactive':
+            interactive = msg.get('interactive', {})
+            list_reply = interactive.get('list_reply', {})
+            button_reply = interactive.get('button_reply', {})
+            text = list_reply.get('id', button_reply.get('id', '')).strip()
         elif msg_type == 'image':
             media_id = msg.get('image', {}).get('id', '')
             mime_type = msg.get('image', {}).get('mime_type', 'image/jpeg')
@@ -105,36 +113,91 @@ class WhatsAppWebhookView(View):
         if not phone:
             return
 
-        session, _ = WhatsAppSession.objects.get_or_create(phone_number=phone)
+        try:
+            session, _ = WhatsAppSession.objects.get_or_create(phone_number=phone)
+        except Exception as e:
+            logger.exception(f'Error getting/creating session for {phone}: {e}')
+            return
 
-        WhatsAppMessage.objects.create(
-            session=session,
-            direction=WhatsAppMessage.DIRECTION_IN,
-            message_type=msg_type,
-            content=text,
-            media_id=media_id,
-            whatsapp_message_id=message_id,
-        )
+        try:
+            WhatsAppMessage.objects.create(
+                session=session,
+                direction=WhatsAppMessage.DIRECTION_IN,
+                message_type=msg_type,
+                content=text,
+                media_id=media_id,
+                whatsapp_message_id=message_id,
+            )
+        except Exception as e:
+            logger.exception(f'Error saving incoming msg {message_id}: {e}')
 
         wa = WhatsAppService()
         if message_id:
-            wa.mark_as_read(message_id)
+            try:
+                wa.mark_as_read(message_id)
+            except Exception:
+                pass
 
         if not session.user:
-            session.session_data['awaiting_dni'] = True
-            session.save(update_fields=['session_data', 'last_activity'])
-            response = (
-                'Bienvenido a Campo en Orden.\n'
-                'Por favor, ingresá tu DNI para identificarte:'
-            )
+            if session.session_data.get('awaiting_dni'):
+                response = handle_message_router(session, text, media_id, mime_type, wa)
+            else:
+                session.session_data['awaiting_dni'] = True
+                session.save(update_fields=['session_data', 'last_activity'])
+                response = (
+                    'Bienvenido a Campo en Orden.\n'
+                    'Por favor, ingresá tu DNI para identificarte:'
+                )
         else:
             response = handle_message_router(session, text, media_id, mime_type, wa)
 
         if response:
-            wa.send_text(_normalize_reply_phone(phone), response)
-            WhatsAppMessage.objects.create(
-                session=session,
-                direction=WhatsAppMessage.DIRECTION_OUT,
-                message_type='text',
-                content=response,
-            )
+            reply_phone = _normalize_reply_phone(phone)
+            if isinstance(response, dict):
+                if response.get('sections'):
+                    wa.send_interactive_list(
+                        reply_phone,
+                        body=response.get('body', ''),
+                        sections=response['sections'],
+                        header=response.get('header', ''),
+                        footer=response.get('footer', ''),
+                        button_text=response.get('button_text', 'Ver opciones'),
+                    )
+                elif response.get('buttons'):
+                    wa.send_reply_buttons(
+                        reply_phone,
+                        body=response.get('body', ''),
+                        buttons=response['buttons'],
+                        header=response.get('header', ''),
+                        footer=response.get('footer', ''),
+                    )
+                else:
+                    text_response = str(response)
+                    wa.send_text(reply_phone, text_response)
+                try:
+                    WhatsAppMessage.objects.create(
+                        session=session,
+                        direction=WhatsAppMessage.DIRECTION_OUT,
+                        message_type='interactive',
+                        content=response.get('body', ''),
+                    )
+                except Exception:
+                    pass
+            else:
+                text_response = response if isinstance(response, str) else str(response)
+                if _MENU_RE.search(text_response):
+                    clean = _MENU_RE.sub('').replace('  ', ' ').replace('\n\n\n', '\n\n').strip()
+                    wa.send_reply_buttons(clean.rstrip('.'), [
+                        {'type': 'reply', 'reply': {'id': 'GO_MENU', 'title': '📋 Menú principal'}},
+                    ])
+                else:
+                    wa.send_text(reply_phone, text_response)
+                try:
+                    WhatsAppMessage.objects.create(
+                        session=session,
+                        direction=WhatsAppMessage.DIRECTION_OUT,
+                        message_type='text',
+                        content=text_response,
+                    )
+                except Exception:
+                    pass

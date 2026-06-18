@@ -40,6 +40,8 @@ def _debug(request):
             'WHATSAPP_PHONE_NUMBER_ID': bool(settings.WHATSAPP_PHONE_NUMBER_ID),
             'WHATSAPP_WEBHOOK_VERIFY_TOKEN': settings.WHATSAPP_WEBHOOK_VERIFY_TOKEN,
             'WHATSAPP_APP_SECRET': bool(settings.WHATSAPP_APP_SECRET),
+            'FACEBOOK_APP_ID': bool(settings.FACEBOOK_APP_ID),
+            'FACEBOOK_APP_SECRET': bool(settings.FACEBOOK_APP_SECRET),
             'DEBUG': settings.DEBUG,
         },
         'token_check': {},

@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(vercel env *)",
+      "Bash(vercel logs *)",
+      "Bash(vercel deploy *)",
+      "Bash(python -c ' *)",
+      "Bash(venv/bin/pip install *)",
+      "Bash(DJANGO_SETTINGS_MODULE=campoenorden_backend.settings.base python manage.py check)",
+      "Bash(venv/bin/python -m django check --settings=campoenorden_backend.settings.base)",
+      "Bash(venv/bin/python *)",
+      "Bash(curl -s http://localhost:8001/api/chatbot/sim/)",
+      "Bash(python3 -m json.tool)",
+      "Bash(curl -s -X POST http://localhost:8001/api/chatbot/sim/ -H 'Content-Type: application/json' -d '{\"phone\": \"5491112345678\", \"text\": \"HOLA\"}')",
+      "Bash(curl -s -X POST http://localhost:8001/api/chatbot/sim/ -H 'Content-Type: application/json' -d '{\"phone\": \"5491112345678\", \"text\": \"2\"}')",
+      "Bash(curl -s -X POST http://localhost:8001/api/chatbot/sim/ -H 'Content-Type: application/json' -d '{\"phone\": \"5491112345678\", \"text\": \"1\"}')",
+      "Bash(pkill -f \"runserver 8001\")",
+      "Bash(pkill -f \"ngrok\")",
+      "Bash(/tmp/cloudflared tunnel *)",
+      "Bash(echo \"cloudflared PID: $!\")",
+      "Bash(cd *)"
+    ]
+  }
+}

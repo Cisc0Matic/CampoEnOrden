@@ -50,10 +50,10 @@ class MantenimientoFlow(BaseFlow):
                 '1. Service\n2. Rep. mecanica\n3. Electrica\n'
                 '4. Neumaticos\n5. Chapa y pintura\n6. Otro'
             )
-        opts = '\n'.join(f'{i+1}. {m.nombre} ({m.tipo})' for i, m in enumerate(maquinaria))
+        rows = [{'id': str(i+1), 'title': f'{m.nombre} ({m.tipo})'} for i, m in enumerate(maquinaria)]
         self.data['maquinas_ids'] = [m.id for m in maquinaria]
         self._advance_to(1)
-        return f'A que maquina?\n\n{opts}'
+        return self._interactive_list('¿A qué máquina?', [{'title': 'Maquinaria', 'rows': rows}])
 
     # step_1: process maquina → ask tipo
     def step_1(self, message, media_id, mime_type):
@@ -65,11 +65,8 @@ class MantenimientoFlow(BaseFlow):
         m = Maquinaria.objects.get(id=maquinas_ids[n - 1])
         self.data.update({'maquinaria_id': m.id, 'maquinaria_nombre': m.nombre})
         self._advance_to(2)
-        return (
-            'Tipo de mantenimiento?\n\n'
-            '1. Service\n2. Rep. mecanica\n3. Electrica\n'
-            '4. Neumaticos\n5. Chapa y pintura\n6. Otro'
-        )
+        rows = [{'id': k, 'title': _TIPO_DISPLAY[v]} for k, v in _TIPO_MAP.items()]
+        return self._interactive_list('Tipo de mantenimiento?', [{'title': 'Tipo', 'rows': rows}])
 
     # step_2: process tipo → ask carga mode
     def step_2(self, message, media_id, mime_type):
@@ -78,11 +75,10 @@ class MantenimientoFlow(BaseFlow):
             return self._invalid(6)
         self.data['tipo'] = tipo
         self._advance_to(3)
-        return (
-            'Como queris cargar?\n\n'
-            '1. Foto o PDF de la factura\n'
-            '2. Carga manual'
-        )
+        return self._reply_buttons('¿Cómo querés cargar?', [
+            {'type': 'reply', 'reply': {'id': '1', 'title': 'Foto o PDF'}},
+            {'type': 'reply', 'reply': {'id': '2', 'title': 'Carga manual'}},
+        ])
 
     # step_3: carga mode
     def step_3(self, message, media_id, mime_type):
@@ -105,7 +101,7 @@ class MantenimientoFlow(BaseFlow):
         self.data['vision_data'] = extracted
         self._advance_to(5)
         if extracted:
-            return (
+            return self._confirm_buttons(
                 'Datos extraidos de la factura:\n\n'
                 f"Fecha: {extracted.get('fecha', '?')}\n"
                 f"Taller: {extracted.get('taller', '?')}\n"
@@ -113,21 +109,21 @@ class MantenimientoFlow(BaseFlow):
                 f"Descripcion: {extracted.get('descripcion', '?')}\n"
                 f"Repuestos: {extracted.get('repuestos', '?')}\n"
                 f"Total: ${extracted.get('total', '?')}\n"
-                f"N factura: {extracted.get('nro_factura', '?')}\n\n"
-                '1. Confirmar estos datos\n'
-                '2. Corregir / carga manual'
+                f"N factura: {extracted.get('nro_factura', '?')}"
             )
-        return (
-            'No pude leer la factura automaticamente.\n\n'
-            '1. Intentar con otro documento\n'
-            '2. Carga manual'
+        return self._reply_buttons(
+            'No pude leer la factura automaticamente.',
+            [
+                {'type': 'reply', 'reply': {'id': '1', 'title': 'Intentar con otro'}},
+                {'type': 'reply', 'reply': {'id': '2', 'title': 'Carga manual'}},
+            ]
         )
 
     # step_5: confirm/correct vision data
     def step_5(self, message, media_id, mime_type):
-        opt = self._parse_int(message, 1, 2)
+        opt = self._parse_int(message, 1, 3)
         if opt is None:
-            return self._invalid(2)
+            return self._invalid(3)
         if opt == 1:
             v = self.data.get('vision_data', {})
             self.data.update({
@@ -140,10 +136,16 @@ class MantenimientoFlow(BaseFlow):
                 'nro_factura': v.get('nro_factura', ''),
             })
             self._advance_to(6)
-            return 'Quien realizo el trabajo?\n\n1. Personal propio\n2. Taller mecanico\n3. Concesionario oficial'
-        self.data['modo'] = 'MANUAL'
-        self._advance_to(30)
-        return 'Fecha del trabajo? (DD/MM/AA o HOY)'
+            return self._reply_buttons('¿Quién realizó el trabajo?', [
+                {'type': 'reply', 'reply': {'id': '1', 'title': 'Personal propio'}},
+                {'type': 'reply', 'reply': {'id': '2', 'title': 'Taller'}},
+                {'type': 'reply', 'reply': {'id': '3', 'title': 'Concesionario'}},
+            ])
+        if opt == 2:
+            self.data['modo'] = 'MANUAL'
+            self._advance_to(30)
+            return 'Fecha del trabajo? (DD/MM/AA o HOY)'
+        return self._cancel()
 
     # step_6: quien realizó
     def step_6(self, message, media_id, mime_type):
@@ -156,13 +158,13 @@ class MantenimientoFlow(BaseFlow):
             return 'Nombre del taller / concesionario:'
         self.data['taller'] = ''
         self._advance_to(8)
-        return 'El pago ya fue realizado?\n\n1. Si — registrar pago\n2. No — queda pendiente'
+        return self._yes_no_buttons('¿El pago ya fue realizado?')
 
     # step_7: taller name
     def step_7(self, message, media_id, mime_type):
         self.data['taller'] = message.strip()
         self._advance_to(8)
-        return 'El pago ya fue realizado?\n\n1. Si — registrar pago\n2. No — queda pendiente'
+        return self._yes_no_buttons('¿El pago ya fue realizado?')
 
     # step_8: pago realizado?
     def step_8(self, message, media_id, mime_type):
@@ -172,10 +174,11 @@ class MantenimientoFlow(BaseFlow):
         self.data['pago_realizado'] = (opt == 1)
         if opt == 1:
             self._advance_to(9)
-            return 'Como se pago?\n\n1. Cheque\n2. Transferencia\n3. Tarjeta\n4. Efectivo'
+            options = [(k, title) for k, (_, title) in _PAGO_MAP.items()]
+            return self._option_list('¿Cómo se pagó?', options)
         self.data['metodo_pago'] = ''
         self._advance_to(10)
-        return 'Observacion?\n\n1. Si\n2. No'
+        return self._yes_no_buttons('¿Observación?')
 
     # step_9: metodo pago
     def step_9(self, message, media_id, mime_type):
@@ -184,7 +187,7 @@ class MantenimientoFlow(BaseFlow):
             return self._invalid(4)
         self.data['metodo_pago'] = entry[0]
         self._advance_to(10)
-        return 'Observacion?\n\n1. Si\n2. No'
+        return self._yes_no_buttons('¿Observación?')
 
     # step_10: observacion y/n
     def step_10(self, message, media_id, mime_type):
@@ -244,9 +247,12 @@ class MantenimientoFlow(BaseFlow):
             if val is None:
                 return 'Ingresa un numero valido o escribe - para omitir.'
             self.data['total'] = val
-        # Continue to quien realizó
         self._advance_to(6)
-        return 'Quien realizo el trabajo?\n\n1. Personal propio\n2. Taller mecanico\n3. Concesionario oficial'
+        return self._reply_buttons('¿Quién realizó el trabajo?', [
+            {'type': 'reply', 'reply': {'id': '1', 'title': 'Personal propio'}},
+            {'type': 'reply', 'reply': {'id': '2', 'title': 'Taller'}},
+            {'type': 'reply', 'reply': {'id': '3', 'title': 'Concesionario'}},
+        ])
 
     def _build_confirmation(self) -> str:
         d = self.data
@@ -272,7 +278,7 @@ class MantenimientoFlow(BaseFlow):
             rows.append(('Observacion', d['observacion']))
         return self._confirmation_block('Confirmar Mantenimiento', rows)
 
-    def _confirm_save(self) -> str:
+    def _confirm_save(self) -> dict:
         d = self.data
         from chatbot.models import RegistroMantenimiento, Maquinaria
         try:
@@ -301,11 +307,12 @@ class MantenimientoFlow(BaseFlow):
             )
         except Exception as e:
             logger.exception(f'Error saving mantenimiento: {e}')
-            return 'Error al guardar. Por favor intenta de nuevo.'
+            return self._with_menu('Error al guardar. Por favor intenta de nuevo.')
 
-        return (
-            f"Mantenimiento registrado para {d.get('maquinaria_nombre', 'la maquina')}.\n\n"
-            'Escribi *MENU* para volver al inicio.'
+        from chatbot.flows.menu import get_maquinaria_submenu
+        return self._finish_with_submenu(
+            f"✅ Mantenimiento registrado para {d.get('maquinaria_nombre', 'la máquina')}.",
+            get_maquinaria_submenu,
         )
 
     def _run_vision(self, media_id: str, mime_type: str) -> dict:

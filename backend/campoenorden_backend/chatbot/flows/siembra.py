@@ -2,7 +2,7 @@ import logging
 
 from django.utils import timezone
 
-from .base import BaseFlow, CULTIVOS_LIST, CULTIVOS_MENU
+from .base import BaseFlow, CULTIVOS_LIST
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +17,10 @@ class SiembraFlow(BaseFlow):
         return self._step_process_campo_ask_lote(message)
 
     def step_2(self, message, media_id, mime_type):
-        return self._step_process_lote(message, 3, 'Fecha? (DD/MM/AA o HOY)')
+        result = self._step_process_lote(message, 3, 'Fecha? (DD/MM/AA o HOY)')
+        if isinstance(result, dict):
+            return result
+        return result
 
     def step_3(self, message, media_id, mime_type):
         fecha = self._parse_date(message)
@@ -25,7 +28,7 @@ class SiembraFlow(BaseFlow):
             return 'Formato incorrecto. Usa DD/MM/AA o escribe HOY.'
         self.data['fecha'] = fecha.isoformat()
         self._advance_to(4)
-        return f'Cultivo a sembrar?\n\n{CULTIVOS_MENU}'
+        return self._cultivo_list('Cultivo a sembrar?')
 
     def step_4(self, message, media_id, mime_type):
         n = self._parse_int(message, 1, len(CULTIVOS_LIST))
@@ -75,7 +78,7 @@ class SiembraFlow(BaseFlow):
             self.data['kg_semilla_ha'] = kg_ha
         self._advance_to(9)
         kg_info = f"Kg semilla/ha calculado: {self.data.get('kg_semilla_ha', '-')}\n\n" if self.data.get('kg_semilla_ha') else ''
-        return f'{kg_info}Curasemillas e inoculante?\n\n1. Si\n2. No'
+        return self._yes_no_buttons(f'{kg_info}¿Curasemillas e inoculante?')
 
     # step_9: curasemillas?
     def step_9(self, message, media_id, mime_type):
@@ -89,7 +92,7 @@ class SiembraFlow(BaseFlow):
             return self._products_prompt(0) + '\n(Curasemillas e inoculante)'
         # Skip to fertilizacion en siembra
         self._advance_to(12)
-        return 'Fertilizacion en siembra?\n\n1. Si\n2. No'
+        return self._yes_no_buttons('¿Fertilización en siembra?')
 
     # step_10: curasemillas product loop
     def step_10(self, message, media_id, mime_type):
@@ -97,7 +100,7 @@ class SiembraFlow(BaseFlow):
         if message.strip().upper() == 'LISTO':
             self.data['productos_cs'] = self.data.get('productos_cs', [])
             self._advance_to(12)
-            return 'Fertilizacion en siembra?\n\n1. Si\n2. No'
+            return self._yes_no_buttons('¿Fertilización en siembra?')
         try:
             prod = parse_product(message)
             prods = self.data.get('productos_cs', [])
@@ -119,14 +122,14 @@ class SiembraFlow(BaseFlow):
             self._advance_to(13)
             return self._products_prompt(0) + '\n(Fertilizante en siembra)'
         self._advance_to(15)
-        return 'Quien realizo?\n\n1. Personal propio\n2. Contratista'
+        return self._who_buttons('¿Quién realizó la siembra?')
 
     # step_13: fertilizante en siembra product loop
     def step_13(self, message, media_id, mime_type):
         from .base import parse_product
         if message.strip().upper() == 'LISTO':
             self._advance_to(15)
-            return 'Quien realizo?\n\n1. Personal propio\n2. Contratista'
+            return self._who_buttons('¿Quién realizó la siembra?')
         try:
             prod = parse_product(message)
             prods = self.data.get('productos_fert', [])
@@ -144,7 +147,7 @@ class SiembraFlow(BaseFlow):
             return self._invalid(2)
         self.data['ejecutor'] = 'PERSONAL_PROPIO' if opt == 1 else 'CONTRATISTA'
         self._advance_to(16)
-        return 'Observacion?\n\n1. Si\n2. No'
+        return self._yes_no_buttons('¿Observación?')
 
     # step_16: observacion y/n
     def step_16(self, message, media_id, mime_type):
@@ -201,7 +204,7 @@ class SiembraFlow(BaseFlow):
             rows.append(('Observacion', d['observacion']))
         return self._confirmation_block('Confirmar Siembra', rows)
 
-    def _confirm_save(self) -> str:
+    def _confirm_save(self) -> dict:
         d = self.data
         from core.models import Labor, Lote
         try:
@@ -231,9 +234,10 @@ class SiembraFlow(BaseFlow):
             self._save_insumo_usage(labor, all_prods)
         except Exception as e:
             logger.exception(f'Error saving siembra: {e}')
-            return 'Error al guardar. Por favor intenta de nuevo.'
+            return self._with_menu('Error al guardar. Por favor intenta de nuevo.')
 
-        return (
-            f"Siembra registrada en {d.get('lote_nombre', 'el lote')}.\n\n"
-            'Escribi *MENU* para volver al inicio.'
+        from chatbot.flows.menu import get_labores_submenu
+        return self._finish_with_submenu(
+            f"✅ Siembra registrada en {d.get('lote_nombre', 'el lote')}.",
+            get_labores_submenu,
         )

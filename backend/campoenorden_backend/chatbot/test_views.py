@@ -149,6 +149,12 @@ class _FakeWhatsAppService:
     def send_text(self, to, text):
         return {}
 
+    def send_interactive_list(self, to, body, sections, header='', footer='', button_text='Ver opciones'):
+        return {}
+
+    def send_reply_buttons(self, to, body, buttons, header='', footer=''):
+        return {}
+
     def get_media_url(self, media_id):
         return ''
 

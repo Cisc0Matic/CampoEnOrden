@@ -7,6 +7,7 @@ export interface Labor {
   fecha: string;
   lote: number;
   lote_nombre: string;
+  campo_nombre: string;
   hectareas: number;
   precio_por_ha: number;
   moneda: string;

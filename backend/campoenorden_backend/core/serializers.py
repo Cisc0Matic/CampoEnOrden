@@ -100,7 +100,8 @@ class LaborInsumoSerializer(serializers.ModelSerializer):
 class LaborSerializer(serializers.ModelSerializer):
     tipo_display = serializers.CharField(source='get_tipo_display', read_only=True)
     estado_display = serializers.CharField(source='get_estado_display', read_only=True)
-    lote_nombre = serializers.CharField(source='lote.campo.nombre', read_only=True)
+    lote_nombre = serializers.CharField(source='lote.nombre', read_only=True)
+    campo_nombre = serializers.CharField(source='lote.campo.nombre', read_only=True)
     contratista_nombre = serializers.CharField(source='contratista.nombre', read_only=True, default=None)
     responsable_nombre = serializers.CharField(source='responsable.nombre', read_only=True, default=None)
     cargada_por_nombre = serializers.CharField(source='cargada_por.username', read_only=True, default=None)

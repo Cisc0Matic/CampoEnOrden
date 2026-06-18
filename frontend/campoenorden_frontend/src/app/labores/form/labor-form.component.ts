@@ -210,8 +210,8 @@ export class LaborFormComponent implements OnInit {
       total_aplicado: [insumo?.total_aplicado || 0, Validators.min(0)],
       unidad_dosis: [insumo?.unidad_dosis || 'l/ha'],
       precio_unitario: [insumo?.precio_unitario || 0, Validators.min(0)],
-      dosis_calculada: [{ value: insumo?.dosis_calculada || 0, disabled: true }],
-      costo_total: [{ value: insumo?.costo_total || 0, disabled: true }]
+      dosis_calculada: [insumo?.dosis_calculada || 0],
+      costo_total: [insumo?.costo_total || 0]
     });
     this.insumosArray.push(insumoGroup);
     this.setupInsumoAutoCalc(insumoGroup);

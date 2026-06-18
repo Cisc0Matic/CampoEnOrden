@@ -2,7 +2,7 @@ import logging
 
 from django.utils import timezone
 
-from .base import BaseFlow, CULTIVOS_LIST, CULTIVOS_MENU
+from .base import BaseFlow, CULTIVOS_LIST
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +17,10 @@ class CosechaFlow(BaseFlow):
         return self._step_process_campo_ask_lote(message)
 
     def step_2(self, message, media_id, mime_type):
-        return self._step_process_lote(message, 3, 'Fecha? (DD/MM/AA o HOY)')
+        result = self._step_process_lote(message, 3, '')
+        if isinstance(result, dict):
+            return result
+        return 'Fecha? (DD/MM/AA o HOY)'
 
     def step_3(self, message, media_id, mime_type):
         fecha = self._parse_date(message)
@@ -25,7 +28,7 @@ class CosechaFlow(BaseFlow):
             return 'Formato incorrecto. Usa DD/MM/AA o escribe HOY.'
         self.data['fecha'] = fecha.isoformat()
         self._advance_to(4)
-        return f'Cultivo cosechado?\n\n{CULTIVOS_MENU}'
+        return self._cultivo_list('Cultivo cosechado?')
 
     def step_4(self, message, media_id, mime_type):
         n = self._parse_int(message, 1, len(CULTIVOS_LIST))
@@ -33,14 +36,11 @@ class CosechaFlow(BaseFlow):
             return self._invalid(len(CULTIVOS_LIST))
         self.data['cultivo'] = CULTIVOS_LIST[n - 1]
         self._advance_to(5)
-        return (
-            'Como queris cargar la cosecha?\n\n'
-            '1. Foto del monitor\n'
-            '2. Foto monitor + mapa de rendimiento\n'
-            '3. Carga manual'
+        return self._option_list(
+            'Como querés cargar la cosecha?',
+            [('1', 'Foto del monitor'), ('2', 'Foto + mapa'), ('3', 'Carga manual')]
         )
 
-    # step_5: process modo selection
     def step_5(self, message, media_id, mime_type):
         modo_map = {'1': 'FOTO', '2': 'FOTO_MAPA', '3': 'MANUAL'}
         modo = modo_map.get(message.strip())
@@ -52,7 +52,6 @@ class CosechaFlow(BaseFlow):
             return 'Envia la foto del monitor de la cosechadora.'
         return 'Kg secos cosechados (total del lote):\nEj: 276500'
 
-    # step_6: receive image OR kg_seco
     def step_6(self, message, media_id, mime_type):
         modo = self.data.get('modo', 'MANUAL')
 
@@ -63,25 +62,27 @@ class CosechaFlow(BaseFlow):
             self.data['vision_data'] = extracted
             self._advance_to(7)
             if extracted:
-                resumen = (
-                    'Datos extraidos del monitor:\n\n'
+                return self._reply_buttons(
+                    'Datos extraídos del monitor:\n\n'
                     f"Kg secos: {extracted.get('kg_seco', '?')}\n"
-                    f"Kg humedos: {extracted.get('kg_humedo', '?')}\n"
+                    f"Kg húmedos: {extracted.get('kg_humedo', '?')}\n"
                     f"Humedad: {extracted.get('humedad_pct', '?')}%\n"
-                    f"Hectareas: {extracted.get('hectareas', self.data.get('hectareas', '?'))}\n"
-                    f"Total kg: {extracted.get('total_kg', '?')}\n\n"
-                    '1. Confirmar estos datos\n'
-                    '2. Corregir / carga manual'
+                    f"Hectáreas: {extracted.get('hectareas', self.data.get('hectareas', '?'))}\n"
+                    f"Total kg: {extracted.get('total_kg', '?')}",
+                    [
+                        {'type': 'reply', 'reply': {'id': '1', 'title': 'Confirmar'}},
+                        {'type': 'reply', 'reply': {'id': '2', 'title': 'Corregir / manual'}},
+                    ]
                 )
             else:
-                resumen = (
-                    'No pude leer el monitor automaticamente.\n\n'
-                    '1. Intentar con otra foto\n'
-                    '2. Carga manual'
+                return self._reply_buttons(
+                    'No pude leer el monitor automáticamente.',
+                    [
+                        {'type': 'reply', 'reply': {'id': '1', 'title': 'Otra foto'}},
+                        {'type': 'reply', 'reply': {'id': '2', 'title': 'Carga manual'}},
+                    ]
                 )
-            return resumen
 
-        # MANUAL mode: process kg_seco
         val = self._parse_float(message)
         if val is None:
             return 'Ingresa un numero valido (Ej: 276500).'
@@ -89,7 +90,6 @@ class CosechaFlow(BaseFlow):
         self._advance_to(7)
         return f'Hectareas cosechadas:\nEj: {self.data.get("hectareas", "52.5")}'
 
-    # step_7: confirm vision OR process ha
     def step_7(self, message, media_id, mime_type):
         modo = self.data.get('modo', 'MANUAL')
 
@@ -107,13 +107,11 @@ class CosechaFlow(BaseFlow):
                     'total_kg': v.get('total_kg') or v.get('kg_seco'),
                 })
                 self._advance_to(10)
-                return 'Quien realizo la cosecha?\n\n1. Personal propio\n2. Contratista'
-            # Switch to manual
+                return self._who_buttons('¿Quién realizó la cosecha?')
             self.data['modo'] = 'MANUAL'
             self._advance_to(6)
             return 'Kg secos cosechados (total del lote):\nEj: 276500'
 
-        # MANUAL: process ha
         val = self._parse_float(message)
         if val is None:
             return 'Ingresa un numero valido (Ej: 52.5).'
@@ -121,7 +119,6 @@ class CosechaFlow(BaseFlow):
         self._advance_to(8)
         return 'Humedad % al momento de cosecha:\nEj: 13.5'
 
-    # step_8: MANUAL — process humedad
     def step_8(self, message, media_id, mime_type):
         val = self._parse_float(message)
         if val is None:
@@ -130,25 +127,22 @@ class CosechaFlow(BaseFlow):
         self._advance_to(9)
         return 'Total kg secos cosechados (con descuento de humedad):\nEj: 276236'
 
-    # step_9: MANUAL — process total kg
     def step_9(self, message, media_id, mime_type):
         val = self._parse_float(message)
         if val is None:
             return 'Ingresa un numero valido.'
         self.data['total_kg'] = val
         self._advance_to(10)
-        return 'Quien realizo la cosecha?\n\n1. Personal propio\n2. Contratista'
+        return self._who_buttons('¿Quién realizó la cosecha?')
 
-    # step_10: quien realizó
     def step_10(self, message, media_id, mime_type):
         opt = self._parse_int(message, 1, 2)
         if opt is None:
             return self._invalid(2)
         self.data['ejecutor'] = 'PERSONAL_PROPIO' if opt == 1 else 'CONTRATISTA'
         self._advance_to(11)
-        return 'Observacion?\n\n1. Si\n2. No'
+        return self._yes_no_buttons('¿Observación?')
 
-    # step_11: observacion y/n
     def step_11(self, message, media_id, mime_type):
         opt = self._parse_int(message, 1, 2)
         if opt is None:
@@ -160,13 +154,11 @@ class CosechaFlow(BaseFlow):
         self._advance_to(13)
         return self._build_confirmation()
 
-    # step_12: observacion text
     def step_12(self, message, media_id, mime_type):
         self.data['observacion'] = message.strip()
         self._advance_to(13)
         return self._build_confirmation()
 
-    # step_13: final confirmation
     def step_13(self, message, media_id, mime_type):
         opt = self._parse_int(message, 1, 3)
         if opt == 1:
@@ -200,7 +192,7 @@ class CosechaFlow(BaseFlow):
         ha = float(self.data.get('ha_cosecha') or self.data.get('hectareas') or 1)
         return round(total_kg / ha / 100, 2) if ha > 0 else 0
 
-    def _build_confirmation(self) -> str:
+    def _build_confirmation(self) -> dict:
         d = self.data
         total_kg = d.get('total_kg') or d.get('kg_seco') or 0
         qq_ha = self._calc_qq_ha()
@@ -219,7 +211,7 @@ class CosechaFlow(BaseFlow):
             rows.append(('Observacion', d['observacion']))
         return self._confirmation_block('Confirmar Cosecha', rows)
 
-    def _confirm_save(self) -> str:
+    def _confirm_save(self) -> dict:
         d = self.data
         from core.models import Labor, Lote
         try:
@@ -255,11 +247,12 @@ class CosechaFlow(BaseFlow):
             )
         except Exception as e:
             logger.exception(f'Error saving cosecha: {e}')
-            return 'Error al guardar. Por favor intenta de nuevo.'
+            return self._with_menu('Error al guardar. Por favor intenta de nuevo.')
 
         qq_ha_val = self._calc_qq_ha()
-        return (
-            f"Cosecha registrada en {d.get('lote_nombre', 'el lote')}.\n"
-            f"Total: {d.get('total_kg', d.get('kg_seco', 0))} kg | Rinde: {qq_ha_val} qq/ha\n\n"
-            'Escribi *MENU* para volver al inicio.'
+        from chatbot.flows.menu import get_labores_submenu
+        return self._finish_with_submenu(
+            f"✅ Cosecha registrada en {d.get('lote_nombre', 'el lote')}.\n"
+            f"Total: {d.get('total_kg', d.get('kg_seco', 0))} kg | Rinde: {qq_ha_val} qq/ha",
+            get_labores_submenu,
         )
