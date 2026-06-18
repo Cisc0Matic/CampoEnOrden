@@ -52,6 +52,59 @@ class WhatsAppService:
             logger.exception(f'WhatsApp send_text error: {e}')
             return {}
 
+    def send_interactive_list(self, to: str, body: str, sections: list[dict],
+                               header: str = '', footer: str = '',
+                               button_text: str = 'Ver opciones') -> dict:
+        interactive: dict = {
+            'type': 'list',
+            'body': {'text': body},
+            'action': {
+                'button': button_text,
+                'sections': sections,
+            },
+        }
+        if header:
+            interactive['header'] = {'type': 'text', 'text': header}
+        if footer:
+            interactive['footer'] = {'text': footer}
+        return self._send_interactive(to, interactive)
+
+    def send_reply_buttons(self, to: str, body: str, buttons: list[dict],
+                            header: str = '', footer: str = '') -> dict:
+        interactive: dict = {
+            'type': 'button',
+            'body': {'text': body},
+            'action': {'buttons': buttons},
+        }
+        if header:
+            interactive['header'] = {'type': 'text', 'text': header}
+        if footer:
+            interactive['footer'] = {'text': footer}
+        return self._send_interactive(to, interactive)
+
+    def _send_interactive(self, to: str, interactive: dict) -> dict:
+        url = f'{_GRAPH_BASE}/{self.phone_number_id}/messages'
+        payload = {
+            'messaging_product': 'whatsapp',
+            'recipient_type': 'individual',
+            'to': to,
+            'type': 'interactive',
+            'interactive': interactive,
+        }
+        try:
+            resp = requests.post(
+                url, json=payload, headers=self._headers(),
+                params={'appsecret_proof': self._proof()} if self._app_secret else {},
+                timeout=15,
+            )
+            data = resp.json()
+            if 'error' in data:
+                logger.error(f'WhatsApp interactive API error: {data["error"]}')
+            return data
+        except Exception as e:
+            logger.exception(f'WhatsApp interactive error: {e}')
+            return {}
+
     def get_media_url(self, media_id: str) -> str:
         url = f'{_GRAPH_BASE}/{media_id}'
         params = {'appsecret_proof': self._proof()} if self._app_secret else {}
@@ -94,6 +147,25 @@ class WhatsAppService:
             )
         except Exception:
             pass
+
+    def verify_token(self) -> dict:
+        """Check if the current token is valid by fetching the phone number info."""
+        url = f'{_GRAPH_BASE}/{self.phone_number_id}'
+        params = {'appsecret_proof': self._proof()} if self._app_secret else {}
+        try:
+            resp = requests.get(
+                url,
+                headers={'Authorization': f'Bearer {self.access_token}'},
+                params=params,
+                timeout=10,
+            )
+            data = resp.json()
+            return {
+                'valid': 'error' not in data,
+                'data': data,
+            }
+        except Exception as e:
+            return {'valid': False, 'error': str(e)}
 
     @staticmethod
     def verify_signature(payload: bytes, signature_header: str) -> bool:
