@@ -23,11 +23,12 @@ def _normalize_phone(phone: str) -> str:
 
 
 def _normalize_reply_phone(phone: str) -> str:
-    """Argentina móvil: WhatsApp usa 549XXXXXXXXXX (13 dígitos) pero la API acepta 54XXXXXXXXXX (12 dígitos).
-    En cuentas de prueba el whitelist suele tener el formato sin el 9 extra."""
+    """Argentina móvil: WhatsApp envía 549XXXXXXXXXX (13 dígitos). Meta espera el formato
+    con 15 (ej: 5435115XXXXXXX)."""
     import re
-    if re.match(r'^549\d{10}$', phone):
-        return '54' + phone[3:]
+    m = re.match(r'^54(9)(\d{2,4})(\d{7,8})$', phone)
+    if m:
+        return '54' + m.group(2) + '15' + m.group(3)
     return phone
 
 
@@ -139,14 +140,15 @@ class WhatsAppWebhookView(View):
                 pass
 
         if not session.user:
-            if session.session_data.get('awaiting_dni'):
+            user = _find_user(phone)
+            if user:
+                session.user = user
+                session.save(update_fields=['user', 'last_activity'])
                 response = handle_message_router(session, text, media_id, mime_type, wa)
             else:
-                session.session_data['awaiting_dni'] = True
-                session.save(update_fields=['session_data', 'last_activity'])
                 response = (
-                    'Bienvenido a Campo en Orden.\n'
-                    'Por favor, ingresá tu DNI para identificarte:'
+                    'Tu número no está registrado en Campo en Orden.\n'
+                    'Contactá a tu asesor para que te habilite el acceso.'
                 )
         else:
             response = handle_message_router(session, text, media_id, mime_type, wa)

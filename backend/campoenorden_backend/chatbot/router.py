@@ -3,7 +3,6 @@ import logging
 from .flows import FLOW_REGISTRY, get_flow_class, start_flow
 from .flows.menu import show_main_menu, get_labores_submenu, get_maquinaria_submenu
 from .flows.base import BaseFlow
-from users.models import User
 
 logger = logging.getLogger(__name__)
 
@@ -16,31 +15,13 @@ def handle_message_router(session, text: str, media_id: str, mime_type: str, wa_
     msg = (text or '').strip()
     upper = msg.upper()
 
-    # Soft navigation — go to main menu without resetting user/DNI
-    if upper == 'GO_MENU':
+    # GO_MENU / global reset — keep user, just return to main menu
+    if upper in _RESET_WORDS or upper == 'GO_MENU':
         session.current_flow = ''
         session.current_step = 0
         session.session_data = {}
         session.save(update_fields=['current_flow', 'current_step', 'session_data', 'last_activity'])
         return show_main_menu(session.user)
-
-    # DNI identification
-    if session.session_data.get('awaiting_dni'):
-        return _handle_dni_input(session, msg)
-
-    # Global reset
-    if upper in _RESET_WORDS:
-        session.current_flow = ''
-        session.current_step = 0
-        session.session_data = {}
-        session.user = None
-        session.save(update_fields=['current_flow', 'current_step', 'session_data', 'user', 'last_activity'])
-        session.session_data['awaiting_dni'] = True
-        session.save(update_fields=['session_data'])
-        return (
-            'Bienvenido a Campo en Orden.\n'
-            'Por favor, ingresá tu DNI para identificarte:'
-        )
 
     # Active data-entry flow
     if flow and flow in FLOW_REGISTRY:
@@ -109,30 +90,6 @@ def _handle_main_menu_nav(session, message: str, user, wa_service) -> str:
     return show_main_menu(user)
 
 
-def _handle_dni_input(session, dni_input: str) -> str:
-    dni = dni_input.strip()
-    if not dni:
-        return 'Por favor, ingresá tu DNI:'
-
-    user = User.objects.filter(dni=dni).first()
-    if not user:
-        return BaseFlow._with_menu(
-            'DNI no encontrado en el sistema.\n'
-            'Verificá el número o contactá a tu asesor.'
-        )
-
-    if not user.is_active:
-        return BaseFlow._with_menu(
-            'Tu usuario está desactivado.\n'
-            'Contactá a tu asesor para reactivarlo.'
-        )
-
-    session.user = user
-    session.session_data.pop('awaiting_dni', None)
-    session.save(update_fields=['user', 'session_data', 'last_activity'])
-    return show_main_menu(user)
-
-
 def _enter_labores_menu(session) -> str:
     session.current_flow = 'labores_menu'
     session.current_step = 0
@@ -150,9 +107,6 @@ def _enter_maquinaria_menu(session) -> str:
 
 
 def _handle_labores_menu(session, message: str, wa_service) -> str:
-    upper = (message or '').strip().upper()
-    if upper == 'GO_MENU':
-        return _go_main_menu(session)
     opt = _try_int(message, 1, 4)
     flows = {1: 'pulverizacion', 2: 'fertilizacion', 3: 'siembra', 4: 'cosecha'}
     if opt in flows:
@@ -161,9 +115,6 @@ def _handle_labores_menu(session, message: str, wa_service) -> str:
 
 
 def _handle_maquinaria_menu(session, message: str, wa_service) -> str:
-    upper = (message or '').strip().upper()
-    if upper == 'GO_MENU':
-        return _go_main_menu(session)
     opt = _try_int(message, 1, 3)
     if opt == 1:
         return BaseFlow._with_menu('Inventario de Maquinaria — próximamente disponible.')
@@ -172,14 +123,6 @@ def _handle_maquinaria_menu(session, message: str, wa_service) -> str:
     if opt == 3:
         return start_flow(session, 'mantenimiento', wa_service)
     return BaseFlow._with_menu('Opción no válida. Seleccioná un número del 1 al 3 del menú que aparece abajo.')
-
-
-def _go_main_menu(session) -> dict:
-    session.current_flow = ''
-    session.current_step = 0
-    session.session_data = {}
-    session.save(update_fields=['current_flow', 'current_step', 'session_data', 'last_activity'])
-    return show_main_menu(session.user)
 
 
 def _try_int(message: str, min_val: int, max_val: int):

@@ -166,7 +166,7 @@ class BaseFlow:
         return self._reply_buttons(body, [
             {'type': 'reply', 'reply': {'id': '1', 'title': '✅ Confirmar'}},
             {'type': 'reply', 'reply': {'id': '2', 'title': '🔄 Corregir'}},
-            {'type': 'reply', 'reply': {'id': 'GO_MENU', 'title': '📋 Menú'}},
+            {'type': 'reply', 'reply': {'id': 'CANCELAR', 'title': '❌ Cancelar'}},
         ])
 
     def _option_list(self, body: str, options: list[tuple], section_title: str = 'Opciones') -> dict:
