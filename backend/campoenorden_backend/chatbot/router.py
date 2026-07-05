@@ -1,7 +1,7 @@
 import logging
 
 from .flows import FLOW_REGISTRY, get_flow_class, start_flow
-from .flows.menu import show_main_menu, get_labores_submenu, get_maquinaria_submenu
+from .flows.menu import show_main_menu, get_labores_submenu, get_maquinaria_submenu, get_campos_submenu
 from .flows.base import BaseFlow
 
 logger = logging.getLogger(__name__)
@@ -33,6 +33,8 @@ def handle_message_router(session, text: str, media_id: str, mime_type: str, wa_
         return _handle_labores_menu(session, msg, wa_service)
     if flow == 'maquinaria_menu':
         return _handle_maquinaria_menu(session, msg, wa_service)
+    if flow == 'campos_menu':
+        return _handle_campos_menu(session, msg, wa_service)
 
     # No active flow → main menu navigation
     return _handle_main_menu_nav(session, msg, user, wa_service)
@@ -48,7 +50,7 @@ def _handle_main_menu_nav(session, message: str, user, wa_service) -> str:
     if is_admin:
         opt = _try_int(message, 1, 11)
         if opt == 1:
-            return BaseFlow._with_menu('Módulo de Campos — próximamente disponible.')
+            return _enter_campos_menu(session)
         if opt == 2:
             return _enter_labores_menu(session)
         if opt == 3:
@@ -90,6 +92,39 @@ def _handle_main_menu_nav(session, message: str, user, wa_service) -> str:
     return show_main_menu(user)
 
 
+# ── Campos menu ───────────────────────────────────────────────────────────────
+
+def _enter_campos_menu(session) -> dict:
+    session.current_flow = 'campos_menu'
+    session.current_step = 0
+    session.session_data = {}
+    session.save(update_fields=['current_flow', 'current_step', 'session_data', 'last_activity'])
+    return get_campos_submenu()
+
+
+def _handle_campos_menu(session, message: str, wa_service) -> str:
+    upper = (message or '').strip().upper()
+
+    if upper == 'CAMPOS_VER':
+        from .flows.campos import ver_todos_los_campos
+        session.current_flow = ''
+        session.save(update_fields=['current_flow', 'last_activity'])
+        text = ver_todos_los_campos()
+        if not text:
+            return BaseFlow._with_menu('No hay campos registrados en el sistema.')
+        return BaseFlow._with_menu(text)
+
+    if upper == 'CAMPOS_LOTES':
+        return start_flow(session, 'campos_lotes', wa_service)
+
+    if upper in ('CAMPOS_ALTA', 'CAMPOS_CONTRATO', 'CAMPOS_ALQUILER'):
+        return BaseFlow._with_menu('Esta función está en desarrollo. Pronto disponible.')
+
+    return BaseFlow._with_menu('Opción no reconocida. Usá el menú de arriba.')
+
+
+# ── Labores menu ──────────────────────────────────────────────────────────────
+
 def _enter_labores_menu(session) -> str:
     session.current_flow = 'labores_menu'
     session.current_step = 0
@@ -98,20 +133,22 @@ def _enter_labores_menu(session) -> str:
     return get_labores_submenu()
 
 
-def _enter_maquinaria_menu(session) -> str:
-    session.current_flow = 'maquinaria_menu'
-    session.current_step = 0
-    session.session_data = {}
-    session.save(update_fields=['current_flow', 'current_step', 'session_data', 'last_activity'])
-    return get_maquinaria_submenu()
-
-
 def _handle_labores_menu(session, message: str, wa_service) -> str:
     opt = _try_int(message, 1, 4)
     flows = {1: 'pulverizacion', 2: 'fertilizacion', 3: 'siembra', 4: 'cosecha'}
     if opt in flows:
         return start_flow(session, flows[opt], wa_service)
     return BaseFlow._with_menu('Opción no válida. Seleccioná un número del 1 al 4 del menú que aparece abajo.')
+
+
+# ── Maquinaria menu ───────────────────────────────────────────────────────────
+
+def _enter_maquinaria_menu(session) -> str:
+    session.current_flow = 'maquinaria_menu'
+    session.current_step = 0
+    session.session_data = {}
+    session.save(update_fields=['current_flow', 'current_step', 'session_data', 'last_activity'])
+    return get_maquinaria_submenu()
 
 
 def _handle_maquinaria_menu(session, message: str, wa_service) -> str:
@@ -125,6 +162,29 @@ def _handle_maquinaria_menu(session, message: str, wa_service) -> str:
     return BaseFlow._with_menu('Opción no válida. Seleccioná un número del 1 al 3 del menú que aparece abajo.')
 
 
+# ── External data ─────────────────────────────────────────────────────────────
+
+def _get_precios_cereales() -> dict:
+    from .services.external_apis import get_precios_cereales_text
+    text = get_precios_cereales_text()
+    return BaseFlow._with_menu(text)
+
+
+def _get_dolar() -> dict:
+    from .services.external_apis import get_dolar_text
+    text = get_dolar_text()
+    return BaseFlow._with_menu(text)
+
+
+def _get_clima() -> dict:
+    return BaseFlow._with_menu(
+        'Clima y pronóstico — integración en desarrollo.\n\n'
+        'Pronto vas a poder ver el pronóstico por coordenadas de tu campo.'
+    )
+
+
+# ── Helpers ───────────────────────────────────────────────────────────────────
+
 def _try_int(message: str, min_val: int, max_val: int):
     try:
         v = int((message or '').strip())
@@ -133,23 +193,3 @@ def _try_int(message: str, min_val: int, max_val: int):
     except (ValueError, TypeError):
         pass
     return None
-
-
-def _get_precios_cereales() -> dict:
-    return BaseFlow._with_menu(
-        'Precios BCR — integración en desarrollo.\n\n'
-        'Pronto vas a poder consultar precios de soja, maíz, trigo y girasol en tiempo real.'
-    )
-
-
-def _get_dolar() -> dict:
-    return BaseFlow._with_menu(
-        'Dólar y tipo de cambio — integración en desarrollo.'
-    )
-
-
-def _get_clima() -> dict:
-    return BaseFlow._with_menu(
-        'Clima y pronóstico — integración en desarrollo.\n\n'
-        'Pronto vas a poder ver el pronóstico por coordenadas de tu campo.'
-    )

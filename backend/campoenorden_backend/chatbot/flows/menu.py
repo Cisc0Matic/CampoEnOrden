@@ -98,6 +98,36 @@ def get_labores_submenu():
     }
 
 
+def get_campos_submenu():
+    return {
+        'body': '*Campos* — ¿Qué querés hacer?',
+        'button_text': 'Ver opciones',
+        'sections': [
+            {
+                'title': 'Consultas',
+                'rows': [
+                    {'id': 'CAMPOS_VER', 'title': 'Ver mis campos'},
+                    {'id': 'CAMPOS_LOTES', 'title': 'Ver lotes de un campo'},
+                ],
+            },
+            {
+                'title': 'Gestión (próximamente)',
+                'rows': [
+                    {'id': 'CAMPOS_ALTA', 'title': 'Dar de alta un campo'},
+                    {'id': 'CAMPOS_CONTRATO', 'title': 'Contratos de arrendamiento'},
+                    {'id': 'CAMPOS_ALQUILER', 'title': 'Registrar pago de alquiler'},
+                ],
+            },
+            {
+                'title': 'Navegación',
+                'rows': [
+                    {'id': 'GO_MENU', 'title': '📋 Menú principal'},
+                ],
+            },
+        ],
+    }
+
+
 def get_maquinaria_submenu():
     return {
         'body': '*Maquinaria y Rodados*',
