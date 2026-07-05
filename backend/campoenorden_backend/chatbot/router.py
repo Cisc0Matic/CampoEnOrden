@@ -154,7 +154,7 @@ def _enter_maquinaria_menu(session) -> str:
 def _handle_maquinaria_menu(session, message: str, wa_service) -> str:
     opt = _try_int(message, 1, 3)
     if opt == 1:
-        return BaseFlow._with_menu('Inventario de Maquinaria — próximamente disponible.')
+        return start_flow(session, 'maquinaria_inventario', wa_service)
     if opt == 2:
         return start_flow(session, 'combustible', wa_service)
     if opt == 3:

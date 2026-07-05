@@ -5,6 +5,7 @@ from .cosecha import CosechaFlow
 from .combustible import CombustibleFlow
 from .mantenimiento import MantenimientoFlow
 from .campos import CamposFlow
+from .maquinaria_inventario import MaquinariaInventarioFlow
 
 FLOW_REGISTRY = {
     'pulverizacion': PulverizacionFlow,
@@ -14,6 +15,7 @@ FLOW_REGISTRY = {
     'combustible': CombustibleFlow,
     'mantenimiento': MantenimientoFlow,
     'campos_lotes': CamposFlow,
+    'maquinaria_inventario': MaquinariaInventarioFlow,
 }
 
 

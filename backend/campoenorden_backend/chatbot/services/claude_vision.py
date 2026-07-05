@@ -49,6 +49,20 @@ Extrae los datos en formato JSON exacto:
 }
 Devuelve SOLO el JSON sin explicaciones."""
 
+_TITULO_MAQUINARIA_PROMPT = """Analiza este título o documentación de vehículo o maquinaria agrícola.
+Extrae los datos en formato JSON exacto:
+{
+  "tipo": "<uno de: TRACTOR, COSECHADORA, PULVERIZADORA, SEMBRADORA, CAMION, CAMIONETA, DRONE, AVION, OTRO>",
+  "marca": "<marca o null>",
+  "modelo": "<modelo o null>",
+  "ano": <año numérico entero o null>,
+  "nro_serie": "<número de serie o null>",
+  "dominio": "<patente o dominio o null>",
+  "titular": "<nombre del titular registral o null>",
+  "hp": <potencia en HP número entero o null>
+}
+Devuelve SOLO el JSON sin explicaciones."""
+
 
 def _parse_json_response(text: str) -> dict:
     text = text.strip()
@@ -119,3 +133,10 @@ class ClaudeVisionService:
         else:
             content = _image_content(file_bytes, mime_type)
         return self._ask(content, _MANTENIMIENTO_PROMPT)
+
+    def analyze_titulo_maquinaria(self, file_bytes: bytes, mime_type: str) -> dict:
+        if mime_type == 'application/pdf':
+            content = _pdf_content(file_bytes)
+        else:
+            content = _image_content(file_bytes, mime_type)
+        return self._ask(content, _TITULO_MAQUINARIA_PROMPT)
