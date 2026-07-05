@@ -22,6 +22,54 @@ def _normalize_phone(phone: str) -> str:
     return ''.join(c for c in phone if c.isdigit())
 
 
+def _not_registered_response() -> dict:
+    return {
+        'body': (
+            'Tu número no está registrado en Campo en Orden.\n\n'
+            'Si ya tenés acceso, ingresá tu DNI para identificarte:'
+        ),
+        'buttons': [
+            {'type': 'reply', 'reply': {'id': 'REINTENTAR', 'title': '🔄 Volver a intentar'}},
+        ],
+    }
+
+
+def _handle_dni_fallback(session, text: str) -> dict:
+    upper = (text or '').strip().upper()
+
+    # Reintentar / keywords → re-check phone in case the user was just registered
+    if upper in ('REINTENTAR', 'GO_MENU', 'MENU', 'HOLA', 'INICIO', 'START', '/START', 'CANCELAR', ''):
+        user = _find_user(session.phone_number)
+        if user:
+            session.user = user
+            session.session_data.pop('awaiting_dni', None)
+            session.save(update_fields=['user', 'session_data', 'last_activity'])
+            from .flows.menu import show_main_menu
+            return show_main_menu(user)
+        return _not_registered_response()
+
+    # Treat input as DNI
+    dni = text.strip()
+    user = User.objects.filter(dni=dni, is_active=True).first()
+    if not user:
+        return {
+            'body': (
+                f'DNI *{dni}* no encontrado en el sistema.\n\n'
+                'Verificá el número o contactá a tu asesor.\n\n'
+                'Ingresá tu DNI:'
+            ),
+            'buttons': [
+                {'type': 'reply', 'reply': {'id': 'REINTENTAR', 'title': '🔄 Volver a intentar'}},
+            ],
+        }
+
+    session.user = user
+    session.session_data.pop('awaiting_dni', None)
+    session.save(update_fields=['user', 'session_data', 'last_activity'])
+    from .flows.menu import show_main_menu
+    return show_main_menu(user)
+
+
 def _normalize_reply_phone(phone: str) -> str:
     """Argentina móvil: WhatsApp envía 549XXXXXXXXXX (13 dígitos). Meta espera el formato
     con 15 (ej: 5435115XXXXXXX)."""
@@ -140,16 +188,18 @@ class WhatsAppWebhookView(View):
                 pass
 
         if not session.user:
-            user = _find_user(phone)
-            if user:
-                session.user = user
-                session.save(update_fields=['user', 'last_activity'])
-                response = handle_message_router(session, text, media_id, mime_type, wa)
+            if session.session_data.get('awaiting_dni'):
+                response = _handle_dni_fallback(session, text)
             else:
-                response = (
-                    'Tu número no está registrado en Campo en Orden.\n'
-                    'Contactá a tu asesor para que te habilite el acceso.'
-                )
+                user = _find_user(phone)
+                if user:
+                    session.user = user
+                    session.save(update_fields=['user', 'last_activity'])
+                    response = handle_message_router(session, text, media_id, mime_type, wa)
+                else:
+                    session.session_data['awaiting_dni'] = True
+                    session.save(update_fields=['session_data', 'last_activity'])
+                    response = _not_registered_response()
         else:
             response = handle_message_router(session, text, media_id, mime_type, wa)
 
