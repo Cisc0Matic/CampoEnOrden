@@ -1,6 +1,6 @@
 import logging
 
-from .flows import FLOW_REGISTRY, get_flow_class, start_flow
+from .flows import FLOW_REGISTRY, get_flow_class, start_flow, stash_active_flow, pop_resume, FLOW_LABELS
 from .flows.menu import show_main_menu, get_labores_submenu, get_maquinaria_submenu, get_campos_submenu
 from .flows.base import BaseFlow
 
@@ -15,13 +15,17 @@ def handle_message_router(session, text: str, media_id: str, mime_type: str, wa_
     msg = (text or '').strip()
     upper = msg.upper()
 
-    # GO_MENU / global reset — keep user, just return to main menu
+    # GO_MENU / global reset — keep user, just return to main menu.
+    # Si hay un flujo de carga en curso se guarda para poder retomarlo.
     if upper in _RESET_WORDS or upper == 'GO_MENU':
+        if flow and flow in FLOW_REGISTRY:
+            stash_active_flow(session)
+        else:
+            session.session_data = {}
         session.current_flow = ''
         session.current_step = 0
-        session.session_data = {}
         session.save(update_fields=['current_flow', 'current_step', 'session_data', 'last_activity'])
-        return show_main_menu(session.user)
+        return show_main_menu(session.user, session)
 
     # Active data-entry flow
     if flow and flow in FLOW_REGISTRY:
@@ -43,6 +47,10 @@ def handle_message_router(session, text: str, media_id: str, mime_type: str, wa_
 def _handle_main_menu_nav(session, message: str, user, wa_service) -> str:
     if not user:
         return show_main_menu(None)
+
+    upper = (message or '').strip().upper()
+    if upper == 'RETOMAR':
+        return _handle_resume(session, wa_service)
 
     role = user.role
     is_admin = role in ('ADMIN_PRINCIPAL', 'ADMIN_EMPRESA', 'PRODUCTOR')
@@ -89,7 +97,44 @@ def _handle_main_menu_nav(session, message: str, user, wa_service) -> str:
             return BaseFlow._with_menu('Módulo de Informes — próximamente disponible.')
         return BaseFlow._with_menu('Opción no válida. Escribí 1 para ver informes.')
 
-    return show_main_menu(user)
+    return show_main_menu(user, session)
+
+
+# ── Retomar carga pendiente ───────────────────────────────────────────────────
+
+def _handle_resume(session, wa_service) -> dict:
+    resume = (session.session_data or {}).get('_resume')
+    if not resume or resume.get('flow') not in FLOW_REGISTRY:
+        pop_resume(session)
+        return BaseFlow._with_menu('No hay ninguna carga pendiente por retomar.')
+
+    flow_name = resume['flow']
+    session.current_flow = flow_name
+    session.current_step = resume.get('step', 0)
+    session.session_data.pop('_resume', None)
+    session.save(update_fields=['current_flow', 'current_step', 'session_data', 'last_activity'])
+
+    prompt = (resume.get('prompt') or '').strip()
+    if not prompt:
+        from chatbot.models import WhatsAppMessage
+        last_out = WhatsAppMessage.objects.filter(
+            session=session, direction=WhatsAppMessage.DIRECTION_OUT
+        ).order_by('-id').first()
+        prompt = (last_out.content or '').strip() if last_out else ''
+    if not prompt:
+        prompt = 'Continuá desde donde quedaste.'
+
+    label = FLOW_LABELS.get(flow_name, flow_name)
+    return {
+        'body': (
+            f'🔁 Retomamos la carga de *{label}*.\n\n'
+            f'📌 {prompt}\n\n'
+            'Respondé con la opción correspondiente o escribí *MENU* para volver.'
+        ),
+        'buttons': [
+            {'type': 'reply', 'reply': {'id': 'MENU', 'title': '📋 Menú principal'}},
+        ],
+    }
 
 
 # ── Campos menu ───────────────────────────────────────────────────────────────

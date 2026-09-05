@@ -70,12 +70,14 @@ class BaseFlow:
         self.session.save(update_fields=['session_data', 'last_activity'])
 
     def _go_to_menu(self):
+        from chatbot.flows import FLOW_REGISTRY, stash_active_flow
         from chatbot.flows.menu import show_main_menu
+        if self.session.current_flow in FLOW_REGISTRY:
+            stash_active_flow(self.session)
         self.session.current_flow = ''
         self.session.current_step = 0
-        self.session.session_data = {}
         self.session.save(update_fields=['current_flow', 'current_step', 'session_data', 'last_activity'])
-        return show_main_menu(self.session.user)
+        return show_main_menu(self.session.user, self.session)
 
     def _cancel(self) -> dict:
         self.session.current_flow = ''

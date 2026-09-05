@@ -34,6 +34,22 @@ def _not_registered_response() -> dict:
     }
 
 
+def _link_telefono(session, user) -> str:
+    """Guarda el número de WhatsApp en el perfil del usuario (para que el chatbot
+    lo reconozca por número en próximos mensajes). No pisa el número si ya
+    pertenece a otro usuario activo."""
+    phone = _normalize_phone(session.phone_number or '')
+    if not phone or not user or user.telefono:
+        return ''
+    for u in User.objects.filter(is_active=True).exclude(pk=user.pk).exclude(telefono__isnull=True).exclude(telefono=''):
+        up = _normalize_phone(u.telefono)
+        if up == phone or (len(up) >= 10 and len(phone) >= 10 and up[-10:] == phone[-10:]):
+            return ''
+    user.telefono = session.phone_number
+    user.save(update_fields=['telefono'])
+    return '✅ Tu número de WhatsApp quedó vinculado a tu cuenta.\n\n'
+
+
 def _handle_dni_fallback(session, text: str) -> dict:
     upper = (text or '').strip().upper()
 
@@ -45,7 +61,7 @@ def _handle_dni_fallback(session, text: str) -> dict:
             session.session_data.pop('awaiting_dni', None)
             session.save(update_fields=['user', 'session_data', 'last_activity'])
             from .flows.menu import show_main_menu
-            return show_main_menu(user)
+            return show_main_menu(user, session)
         return _not_registered_response()
 
     # Treat input as DNI
@@ -67,7 +83,13 @@ def _handle_dni_fallback(session, text: str) -> dict:
     session.session_data.pop('awaiting_dni', None)
     session.save(update_fields=['user', 'session_data', 'last_activity'])
     from .flows.menu import show_main_menu
-    return show_main_menu(user)
+    ack = _link_telefono(session, user)
+    menu = show_main_menu(user, session)
+    if isinstance(menu, dict):
+        menu['body'] = ack + menu['body'] if ack else menu['body']
+    elif isinstance(menu, str):
+        menu = ack + menu if ack else menu
+    return menu
 
 
 def _normalize_reply_phone(phone: str) -> str:
@@ -195,6 +217,7 @@ class WhatsAppWebhookView(View):
                 if user:
                     session.user = user
                     session.save(update_fields=['user', 'last_activity'])
+                    _link_telefono(session, user)
                     response = handle_message_router(session, text, media_id, mime_type, wa)
                 else:
                     session.session_data['awaiting_dni'] = True
