@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://campoenorden-api.vercel.app/api'
+  apiUrl: 'https://pam-prefix-effectively-macro.trycloudflare.com/api'
 };

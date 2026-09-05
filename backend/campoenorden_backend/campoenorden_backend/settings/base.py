@@ -234,6 +234,9 @@ FACEBOOK_APP_SECRET = os.environ.get('FACEBOOK_APP_SECRET', os.environ.get('WHAT
 # Anthropic (Claude Vision)
 ANTHROPIC_API_KEY = os.environ.get('ANTHROPIC_API_KEY', '')
 
+# Debug endpoint gate (producción): requiere header X-Debug-Key == este valor
+DEBUG_API_KEY = os.environ.get('DEBUG_API_KEY', '')
+
 # CORS settings
 # CORS_ALLOWED_ORIGINS = [
 #     "http://localhost:8100", # Frontend development server

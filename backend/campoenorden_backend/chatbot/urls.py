@@ -14,6 +14,8 @@ if settings.DEBUG:
         path('sim/', SimulatorView.as_view(), name='chatbot_simulator'),
     ]
 
+import hmac
+
 from django.http import JsonResponse
 from django.db import connection
 from .models import WhatsAppSession
@@ -32,6 +34,9 @@ def _health(request):
     }, status=status)
 
 def _debug(request):
+    key = request.headers.get('X-Debug-Key') or request.GET.get('debug_key', '')
+    if not settings.DEBUG_API_KEY or not key or not hmac.compare_digest(key, settings.DEBUG_API_KEY):
+        return JsonResponse({'error': 'forbidden'}, status=403)
     phone = request.GET.get('phone', '')
     action = request.GET.get('action', '')
     info = {

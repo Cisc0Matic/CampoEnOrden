@@ -1,0 +1,49 @@
+services:
+  db:
+    image: postgres:15
+    container_name: campoenorden-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: campoenorden
+      POSTGRES_PASSWORD: "${PGPASSWORD:?Definir PGPASSWORD en el .env del stack}"
+      POSTGRES_DB: campoenorden
+    volumes:
+      - campoenorden_pgdata:/var/lib/postgresql/data
+      - ./data/migrate:/migrate:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U campoenorden -d campoenorden"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    networks:
+      - campoenorden
+
+  backend:
+    build:
+      context: "${CAMPOENORDEN_REPO:-/home/francisco/campoenorden}"
+      dockerfile: deploy/docker/backend.Dockerfile
+    image: campoenorden-backend:local
+    container_name: campoenorden-backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DJANGO_SETTINGS_MODULE: campoenorden_backend.settings.production
+      PGHOST: db
+      PGPORT: "5432"
+    ports:
+      - "127.0.0.1:${BACKEND_PORT:-8000}:8000"
+    volumes:
+      - ${CAMPOENORDEN_REPO:-/home/francisco/campoenorden}/backend/campoenorden_backend/.env:/app/backend/campoenorden_backend/.env:ro
+      - ${CAMPOENORDEN_REPO:-/home/francisco/campoenorden}/backend/campoenorden_backend/staticfiles:/app/backend/campoenorden_backend/staticfiles
+      - ${CAMPOENORDEN_REPO:-/home/francisco/campoenorden}/backend/campoenorden_backend/media:/app/backend/campoenorden_backend/media
+    networks:
+      - campoenorden
+
+volumes:
+  campoenorden_pgdata:
+
+networks:
+  campoenorden:
+    name: campoenorden

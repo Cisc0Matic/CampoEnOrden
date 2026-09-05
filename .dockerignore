@@ -1,0 +1,19 @@
+# Build context excludes (deploy/docker build del backend)
+**/.git
+**/.venv
+**/venv
+**/env
+**/.env
+**/*.sqlite3
+**/db.sqlite3
+**/staticfiles
+**/media
+**/logs
+**/__pycache__
+**/*.pyc
+**/node_modules
+**/.next
+**/dist
+**/www
+**/server_out.txt
+**/server_err.txt
