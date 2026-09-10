@@ -31,7 +31,8 @@ class User(AbstractUser):
 
     def save(self, *args, **kwargs):
         if not self.pk:
-            self.role = self.base_role
+            if self.role is None:
+                self.role = self.base_role
             if not self.fecha_alta:
                 self.fecha_alta = timezone.now()
         super().save(*args, **kwargs)
@@ -80,6 +81,70 @@ class Invitacion(models.Model):
             token=secrets.token_urlsafe(32),
             expires_at=_expires(48),
         )
+
+
+class UserAuditLog(models.Model):
+    """Bitácora de acciones administrativas del panel de administración."""
+
+    actor = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='audit_logs_actor'
+    )
+    action = models.CharField(max_length=50)
+    target_type = models.CharField(max_length=30, blank=True, null=True)
+    target_id = models.CharField(max_length=50, blank=True, null=True)
+    target_desc = models.CharField(max_length=255, blank=True, null=True)
+    payload = models.JSONField(default=dict, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Bitácora de acción"
+        verbose_name_plural = "Bitácoras de acciones"
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.actor} -> {self.action} ({self.target_desc})"
+
+
+class Pago(models.Model):
+    """Pagos (manuales) que las empresas realizan a CampoEnOrden por el servicio."""
+
+    class Concepto(models.TextChoices):
+        MATRICULA = "MATRICULA", "Matrícula"
+        MENSUALIDAD = "MENSUALIDAD", "Mensualidad"
+        SERVICIO = "SERVICIO", "Servicio especial"
+        OTRO = "OTRO", "Otro"
+
+    class Estado(models.TextChoices):
+        RECIBIDO = "RECIBIDO", "Recibido"
+        PENDIENTE = "PENDIENTE", "Pendiente"
+        ANULADO = "ANULADO", "Anulado"
+
+    empresa = models.ForeignKey(
+        'core.Persona', on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='pagos_plataforma'
+    )
+    concepto = models.CharField(max_length=20, choices=Concepto.choices, default=Concepto.MENSUALIDAD)
+    monto = models.DecimalField(max_digits=12, decimal_places=2)
+    moneda = models.CharField(max_length=10, default="USD")
+    fecha = models.DateField()
+    metodo = models.CharField(max_length=50, blank=True, null=True)
+    estado = models.CharField(max_length=20, choices=Estado.choices, default=Estado.RECIBIDO)
+    referencia = models.CharField(max_length=100, blank=True, null=True)
+    observaciones = models.TextField(blank=True, null=True)
+    registrado_por = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='pagos_registrados'
+    )
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Pago a CampoEnOrden"
+        verbose_name_plural = "Pagos a CampoEnOrden"
+        ordering = ['-fecha', '-id']
+
+    def __str__(self):
+        return f"{self.empresa} - {self.get_concepto_display()} - {self.monto} {self.moneda}"
 
 
 class PasswordResetToken(models.Model):

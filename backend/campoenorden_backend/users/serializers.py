@@ -4,7 +4,7 @@ from django.utils import timezone
 from rest_framework import serializers
 
 from core.models import Persona
-from .models import Invitacion, EmailVerificationToken, PasswordResetToken, User
+from .models import Invitacion, EmailVerificationToken, PasswordResetToken, Pago, User, UserAuditLog
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -117,9 +117,13 @@ class UpdateProfileSerializer(serializers.ModelSerializer):
 
 class InviteUserSerializer(serializers.Serializer):
     INVITABLE_ROLES = [User.Role.OPERARIO, User.Role.CONSULTA, User.Role.PRODUCTOR]
+    INVITABLE_ROLES_PRINCIPAL = [
+        User.Role.OPERARIO, User.Role.CONSULTA, User.Role.PRODUCTOR, User.Role.ADMIN_EMPRESA
+    ]
 
     email = serializers.EmailField()
-    role = serializers.ChoiceField(choices=INVITABLE_ROLES)
+    role = serializers.ChoiceField(choices=INVITABLE_ROLES_PRINCIPAL)
+    empresa_id = serializers.IntegerField(required=False, allow_null=True)
     dni = serializers.CharField(max_length=20, required=False, allow_blank=True, default='')
 
     def validate_email(self, value):
@@ -140,6 +144,9 @@ class InviteUserSerializer(serializers.Serializer):
 
 class AdminCreateUserSerializer(serializers.Serializer):
     CREATABLE_ROLES = [User.Role.OPERARIO, User.Role.CONSULTA, User.Role.PRODUCTOR]
+    CREATABLE_ROLES_PRINCIPAL = [
+        User.Role.OPERARIO, User.Role.CONSULTA, User.Role.PRODUCTOR, User.Role.ADMIN_EMPRESA
+    ]
 
     username = serializers.CharField(max_length=150)
     email = serializers.EmailField()
@@ -147,7 +154,8 @@ class AdminCreateUserSerializer(serializers.Serializer):
     last_name = serializers.CharField(max_length=150, required=False, allow_blank=True, default='')
     dni = serializers.CharField(max_length=20, required=False, allow_blank=True, default='')
     password = serializers.CharField(write_only=True)
-    role = serializers.ChoiceField(choices=CREATABLE_ROLES)
+    role = serializers.ChoiceField(choices=CREATABLE_ROLES_PRINCIPAL)
+    empresa_id = serializers.IntegerField(required=False, allow_null=True)
 
     def validate_username(self, value):
         if User.objects.filter(username=value).exists():
@@ -269,3 +277,80 @@ class AdminPasswordResetSerializer(serializers.Serializer):
     def validate_new_password(self, value):
         validate_password(value)
         return value
+
+
+class AdminUpdateUserSerializer(serializers.ModelSerializer):
+    """PATCH de un usuario desde el panel de administración (rol/empresa/activo/datos)."""
+
+    class Meta:
+        model = User
+        fields = ['role', 'empresa', 'is_active', 'first_name', 'last_name', 'email', 'dni', 'telefono']
+        read_only_fields = []
+
+    def validate_email(self, value):
+        if User.objects.exclude(pk=self.instance.pk).filter(email=value).exists():
+            raise serializers.ValidationError("Ya existe una cuenta con ese email.")
+        return value
+
+
+class EmpresaSerializer(serializers.ModelSerializer):
+    """Persona de tipo EMPRESA (compañía cliente de CampoEnOrden)."""
+
+    usuarios_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Persona
+        fields = ['id', 'nombre', 'tipo', 'rol', 'documento', 'direccion', 'telefono', 'email', 'observaciones', 'activo', 'usuarios_count']
+        read_only_fields = ['id', 'tipo']
+
+    def get_usuarios_count(self, obj):
+        return User.objects.filter(empresa=obj).count()
+
+    def validate(self, attrs):
+        attrs['tipo'] = Persona.TipoPersona.EMPRESA
+        return attrs
+
+
+class InviteListSerializer(serializers.ModelSerializer):
+    role_display = serializers.CharField(source='get_role_display', read_only=True)
+    empresa_nombre = serializers.CharField(source='empresa.nombre', read_only=True, default=None)
+
+    class Meta:
+        model = Invitacion
+        fields = [
+            'id', 'email', 'role', 'role_display', 'empresa', 'empresa_nombre',
+            'created_by', 'created_at', 'expires_at', 'accepted_at',
+        ]
+        read_only_fields = fields
+
+
+class AuditLogSerializer(serializers.ModelSerializer):
+    actor_username = serializers.SerializerMethodField()
+
+    class Meta:
+        model = UserAuditLog
+        fields = ['id', 'actor', 'actor_username', 'action', 'target_type', 'target_id', 'target_desc', 'payload', 'created_at']
+        read_only_fields = fields
+
+    def get_actor_username(self, obj):
+        return obj.actor.username if obj.actor else None
+
+
+class PagoSerializer(serializers.ModelSerializer):
+    empresa_nombre = serializers.CharField(source='empresa.nombre', read_only=True, default=None)
+    concepto_display = serializers.CharField(source='get_concepto_display', read_only=True)
+    estado_display = serializers.CharField(source='get_estado_display', read_only=True)
+    registrado_por_username = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Pago
+        fields = [
+            'id', 'empresa', 'empresa_nombre', 'concepto', 'concepto_display',
+            'monto', 'moneda', 'fecha', 'metodo', 'estado', 'estado_display',
+            'referencia', 'observaciones', 'registrado_por', 'registrado_por_username',
+            'fecha_creacion',
+        ]
+        read_only_fields = ['id', 'registrado_por', 'fecha_creacion']
+
+    def get_registrado_por_username(self, obj):
+        return obj.registrado_por.username if obj.registrado_por else None

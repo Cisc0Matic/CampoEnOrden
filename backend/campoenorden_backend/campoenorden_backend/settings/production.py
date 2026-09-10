@@ -15,8 +15,12 @@ FRONTEND_URL = os.environ.get('FRONTEND_URL', 'https://campoenorden.netlify.app'
 CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOWED_ORIGINS = os.environ.get(
     'CORS_ALLOWED_ORIGINS',
-    'https://campoenorden.netlify.app,http://localhost:8100',
+    'https://campoenorden.netlify.app,https://campoenorden-admin.netlify.app,http://localhost:8100',
 ).split(',')
+# Previews/deploys temporales de Netlify (xxx--<hash>.netlify.app)
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r'^https://[\w-]+\.netlify\.app$',
+]
 
 DATABASES = {
     'default': {
