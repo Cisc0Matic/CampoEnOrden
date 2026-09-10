@@ -31,3 +31,10 @@ Thumbs.db
 # Local Netlify folder
 .netlify
 .env*
+
+# Documentos locales
+*.docx
+DEPLOY_COMPLETO.md
+
+# Config local de herramientas
+.claude/
