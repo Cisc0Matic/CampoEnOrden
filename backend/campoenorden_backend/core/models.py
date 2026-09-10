@@ -19,6 +19,10 @@ class Persona(models.Model):
     nombre = models.CharField(max_length=255)
     tipo = models.CharField(max_length=20, choices=TipoPersona.choices, default=TipoPersona.PERSONA)
     rol = models.CharField(max_length=30, choices=Rol.choices, blank=True, null=True)
+    empresa = models.ForeignKey(
+        'self', on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='personas_empresa'
+    )
     documento = models.CharField(max_length=50, blank=True, null=True)
     cuil = models.CharField(max_length=20, blank=True, null=True)
     direccion = models.CharField(max_length=255, blank=True, null=True)

@@ -26,6 +26,10 @@ class User(AbstractUser):
         'core.Persona', on_delete=models.SET_NULL, null=True, blank=True,
         related_name='usuarios'
     )
+    persona = models.OneToOneField(
+        'core.Persona', on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='auth_user'
+    )
     permisos_especiales = models.JSONField(default=dict, blank=True)
     fecha_alta = models.DateTimeField(blank=True, null=True)
 
@@ -36,6 +40,26 @@ class User(AbstractUser):
             if not self.fecha_alta:
                 self.fecha_alta = timezone.now()
         super().save(*args, **kwargs)
+
+    def vincular_productor(self):
+        """Crea y vincula la Persona rol PRODUCTOR del usuario productor."""
+        if self.role != self.Role.PRODUCTOR:
+            return None
+        if self.persona_id:
+            return self.persona
+        from core.models import Persona
+        persona = Persona.objects.create(
+            nombre=self.get_full_name() or self.username,
+            tipo=Persona.TipoPersona.PERSONA,
+            rol=Persona.Rol.PRODUCTOR,
+            documento=self.dni or None,
+            email=self.email or None,
+            telefono=self.telefono or None,
+            empresa=self.empresa,
+        )
+        self.persona = persona
+        self.save(update_fields=['persona'])
+        return persona
 
 
 class EmailVerificationToken(models.Model):

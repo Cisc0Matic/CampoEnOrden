@@ -64,10 +64,14 @@ class CamposFlow(BaseFlow):
         return self._finish_with_submenu('\n'.join(lines), get_campos_submenu)
 
 
-def ver_todos_los_campos() -> str:
+def ver_todos_los_campos(session=None) -> str:
     """Returns a formatted text with all campos and their total area."""
     from core.models import Campo, Campana, Lote
-    campos = list(Campo.objects.order_by('nombre'))
+    from core.scoping import filtro_campo
+    qs = Campo.objects.all()
+    if session is not None and getattr(session, 'user', None):
+        qs = qs.filter(filtro_campo(session.user))
+    campos = list(qs.order_by('nombre'))
     if not campos:
         return None
 

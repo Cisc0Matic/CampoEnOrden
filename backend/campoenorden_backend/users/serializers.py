@@ -10,6 +10,7 @@ from .models import Invitacion, EmailVerificationToken, PasswordResetToken, Pago
 class UserSerializer(serializers.ModelSerializer):
     role_display = serializers.CharField(source='get_role_display', read_only=True)
     empresa_nombre = serializers.CharField(source='empresa.nombre', read_only=True)
+    persona_nombre = serializers.CharField(source='persona.nombre', read_only=True)
 
     class Meta:
         model = User
@@ -17,6 +18,7 @@ class UserSerializer(serializers.ModelSerializer):
             'id', 'username', 'email', 'first_name', 'last_name',
             'role', 'role_display', 'dni', 'telefono',
             'empresa', 'empresa_nombre', 'permisos_especiales',
+            'persona', 'persona_nombre',
             'fecha_alta', 'is_active',
         ]
         read_only_fields = ['id', 'fecha_alta']
@@ -227,6 +229,8 @@ class AcceptInvitationSerializer(serializers.Serializer):
         )
         inv.accepted_at = timezone.now()
         inv.save(update_fields=['accepted_at'])
+        if user.role == User.Role.PRODUCTOR:
+            user.vincular_productor()
         return user
 
 

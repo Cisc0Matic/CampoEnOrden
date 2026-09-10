@@ -164,6 +164,9 @@ class UserListView(APIView):
     def get(self, request):
         if request.user.role == User.Role.ADMIN_PRINCIPAL:
             qs = User.objects.select_related('empresa').all()
+            emp = request.query_params.get('empresa', '')
+            if emp.isdigit():
+                qs = qs.filter(empresa_id=int(emp))
         else:
             qs = User.objects.select_related('empresa').filter(empresa=request.user.empresa)
         return Response(UserSerializer(qs, many=True).data)
@@ -252,6 +255,8 @@ class AdminCreateUserView(APIView):
         )
         if user.email:
             send_admin_created_account_email(user, plain_password)
+        if role == User.Role.PRODUCTOR:
+            user.vincular_productor()
         log_action(
             request.user, 'CREATE_USER',
             target_type='user', target_id=user.id, target_desc=user.username,
@@ -325,6 +330,8 @@ class AdminUserDetailView(APIView):
 
         changed = {k: v for k, v in data.items()}
         serializer.save()
+        if user.role == User.Role.PRODUCTOR:
+            user.vincular_productor()
         log_action(
             request.user, 'UPDATE_USER',
             target_type='user', target_id=user.id, target_desc=user.username,
@@ -351,6 +358,44 @@ class EmpresaListView(APIView):
             target_type='empresa', target_id=empresa.id, target_desc=empresa.nombre,
         )
         return Response(EmpresaSerializer(empresa).data, status=status.HTTP_201_CREATED)
+
+
+class EmpresaDetailView(APIView):
+    """Detalle y edición de una empresa (Persona tipo EMPRESA). Solo ADMIN_PRINCIPAL."""
+
+    permission_classes = [IsAdminPrincipal]
+
+    EDITABLES = ['nombre', 'documento', 'direccion', 'telefono', 'email', 'observaciones', 'activo']
+
+    def get_object(self, pk):
+        try:
+            return Persona.objects.get(pk=pk, tipo=Persona.TipoPersona.EMPRESA)
+        except (Persona.DoesNotExist, ValueError):
+            return None
+
+    def get(self, request, pk):
+        empresa = self.get_object(pk)
+        if empresa is None:
+            return Response({"detail": "Empresa no encontrada."}, status=404)
+        return Response(EmpresaSerializer(empresa).data)
+
+    def patch(self, request, pk):
+        empresa = self.get_object(pk)
+        if empresa is None:
+            return Response({"detail": "Empresa no encontrada."}, status=404)
+        serializer = EmpresaSerializer(empresa, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        changed = {k: v for k, v in serializer.validated_data.items() if k in self.EDITABLES}
+        if changed:
+            for k, v in changed.items():
+                setattr(empresa, k, v)
+            empresa.save(update_fields=list(changed.keys()))
+            log_action(
+                request.user, 'UPDATE_EMPRESA',
+                target_type='empresa', target_id=empresa.id, target_desc=empresa.nombre,
+                payload={k: str(v) for k, v in changed.items()},
+            )
+        return Response(EmpresaSerializer(empresa).data)
 
 
 class InviteListView(APIView):

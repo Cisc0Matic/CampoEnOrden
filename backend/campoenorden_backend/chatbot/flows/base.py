@@ -182,7 +182,12 @@ class BaseFlow:
 
     def _get_campos(self):
         from core.models import Campo
-        return list(Campo.objects.all().order_by('nombre'))
+        from core.scoping import filtro_campo
+        return list(
+            Campo.objects
+            .filter(filtro_campo(self.session.user))
+            .order_by('nombre')
+        )
 
     def _step_ask_campo(self):
         campos = self._get_campos()

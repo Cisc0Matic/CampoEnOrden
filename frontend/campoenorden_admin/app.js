@@ -14,6 +14,10 @@ const ROLES = {
 };
 const ESTADOS_PAGO = ["RECIBIDO", "PENDIENTE", "ANULADO"];
 const CONCEPTOS_PAGO = ["MATRICULA", "MENSUALIDAD", "SERVICIO", "OTRO"];
+const TIPOS_LABOR = ["SIEMBRA", "PULVERIZACION_TERRESTRE", "PULVERIZACION_DRONES", "PULVERIZACION_AEREA", "FERTILIZACION_TERRESTRE", "FERTILIZACION_DRONES", "COSECHA", "OTRA"];
+const ESTADOS_LABOR = ["CARGADA", "PENDIENTE_REVISION", "REVISADA", "APROBADA", "PENDIENTE_FACTURA", "FACTURADA", "COBRADA"];
+const ESTADOS_CONTRATO = ["ACTIVO", "VENCIDO", "PENDIENTE", "RENOVADO"];
+const ROLES_PERSONA = ["PRODUCTOR", "DUENO", "ARRENDATARIO", "CONTRATISTA", "CHOFER", "ADMINISTRADOR", "RESPONSABLE_CARGA", "BENEFICIARIO"];
 
 const $ = (id) => document.getElementById(id);
 
@@ -114,7 +118,8 @@ const routes = {
 function router() {
   const hash = location.hash || "#/login";
   if (!state.token && hash !== "#/login") { location.hash = "#/login"; return; }
-  const fn = routes[hash] || renderNotFound;
+  const mEmp = hash.match(/^#\/empresa\/(\d+)(?:\/tab\/(\w+))?$/);
+  const fn = routes[hash] || (mEmp ? () => renderEmpresaDetalle(Number(mEmp[1]), mEmp[2] || "resumen") : renderNotFound);
   fn();
   document.querySelectorAll(".nav a").forEach((a) => a.classList.toggle("active", a.getAttribute("href") === hash));
 }
@@ -149,6 +154,7 @@ function openModal(title, fields, initial = {}, onSubmit) {
       input = document.createElement(f.type === "textarea" ? "textarea" : "input");
       input.type = f.type === "textarea" ? undefined : (f.type || "text");
       input.value = val ?? "";
+      if (f.type === "checkbox") input.checked = !!val;
     }
     input.dataset.field = f.key;
     if (f.required) input.required = true;
@@ -352,9 +358,9 @@ function drawUsers() {
   });
 }
 
-function modalCrearUsuario() {
+function modalCrearUsuario(empresaId) {
   if (!state.empresas.length) { toast("Primero creá al menos una empresa.", "warn"); location.hash = "#/empresas"; return; }
-  openModal("Crear usuario", [
+  const fields = [
     { key: "username", label: "Usuario", required: true },
     { key: "email", label: "Email", type: "email", required: true },
     { key: "password", label: "Contraseña inicial", type: "password", required: true },
@@ -362,12 +368,17 @@ function modalCrearUsuario() {
     { key: "last_name", label: "Apellido" },
     { key: "role", label: "Rol", type: "select", required: true,
       options: ["ADMIN_EMPRESA", "OPERARIO", "CONSULTA", "PRODUCTOR"].map((r) => ({ value: r, label: ROLES[r].label })) },
-    { key: "empresa_id", label: "Empresa", type: "select", required: true,
-      options: state.empresas.map((e) => ({ value: e.id, label: e.nombre })) },
-  ], {}, async (d) => {
+  ];
+  if (!empresaId) {
+    fields.push({ key: "empresa_id", label: "Empresa", type: "select", required: true,
+      options: state.empresas.map((e) => ({ value: e.id, label: e.nombre })) });
+  }
+  openModal("Crear usuario", fields, {}, async (d) => {
+    if (empresaId) d.empresa_id = empresaId;
     const created = await api("/api/users/create/", { method: "POST", body: JSON.stringify(d) });
     toast("Usuario " + created.username + " creado.");
-    await loadAll(); drawUsers();
+    if (empresaId) renderEmpresaDetalle(empresaId, "usuarios");
+    else { await loadAll(); drawUsers(); }
   });
 }
 
@@ -386,7 +397,7 @@ function modalInvitar() {
   });
 }
 
-function modalEditarUsuario(u) {
+function modalEditarUsuario(u, after) {
   const esOtroPrincipal = u.role === "ADMIN_PRINCIPAL" && u.id !== state.user.id;
   if (esOtroPrincipal) { toast("No podés modificar a otro ADMIN_PRINCIPAL.", "err"); return; }
   const rolesEditable = u.role === "ADMIN_PRINCIPAL" ? [u.role] : ["OPERARIO", "CONSULTA", "PRODUCTOR", "ADMIN_EMPRESA"];
@@ -407,7 +418,7 @@ function modalEditarUsuario(u) {
     body.role = d.role; body.empresa = d.empresa; body.is_active = !!d.is_active;
     await api(`/api/users/${u.id}/`, { method: "PATCH", body: JSON.stringify(body) });
     toast(u.username + " actualizado.");
-    await loadAll(); drawUsers();
+    if (after) await after(); else { await loadAll(); drawUsers(); }
   });
 }
 
@@ -433,17 +444,29 @@ async function renderEmpresas() {
 }
 function drawEmpresas() {
   $("emp-table").innerHTML = state.empresas.length
-    ? `<table><thead><tr><th>Nombre</th><th>Empleados</th><th>Contacto</th><th>Email</th><th>Estado</th></tr></thead><tbody>
+    ? `<table><thead><tr><th>Nombre</th><th>Empleados</th><th>Contacto</th><th>Email</th><th>Estado</th><th></th></tr></thead><tbody>
         ${state.empresas.map((e) => `
-          <tr>
+          <tr data-id="${e.id}" style="cursor:pointer">
             <td><b>${esc(e.nombre)}</b></td>
             <td>${e.usuarios_count ?? 0}</td>
             <td>${esc(e.telefono || "—")}</td>
             <td>${esc(e.email || "—")}</td>
             <td><span class="badge ${e.activo ? "badge-green" : "badge-gray"}">${e.activo ? "Activa" : "Inactiva"}</span></td>
+            <td style="white-space:nowrap">
+              <button class="btn btn-primary btn-sm" data-go="${e.id}">Ingresar</button>
+            </td>
           </tr>`).join("")}
       </tbody></table>`
     : '<div class="empty">No hay empresas registradas.</div>';
+  $("emp-table").querySelectorAll("tr[data-id]").forEach((tr) => {
+    tr.addEventListener("click", (ev) => {
+      if (ev.target.closest("button")) return;
+      location.hash = "#/empresa/" + tr.dataset.id;
+    });
+  });
+  $("emp-table").querySelectorAll("button[data-go]").forEach((b) => {
+    b.onclick = () => { location.hash = "#/empresa/" + b.dataset.go; };
+  });
 }
 function modalNuevaEmpresa() {
   openModal("Nueva empresa", [
@@ -454,6 +477,308 @@ function modalNuevaEmpresa() {
     const created = await api("/api/users/empresas/", { method: "POST", body: JSON.stringify(d) });
     toast("Empresa " + created.nombre + " creada.");
     await loadEmpresas(); drawEmpresas(); await loadAll();
+  });
+}
+
+/* ── Detalle de empresa (dashboard / empleados / productores / campos / labores) ── */
+const EMP_TABS = [
+  ["resumen", "Resumen"],
+  ["usuarios", "Empleados"],
+  ["productores", "Productores"],
+  ["campos", "Campos"],
+  ["labores", "Labores"],
+];
+
+async function renderEmpresaDetalle(id, tab) {
+  let emp;
+  try { emp = await api("/api/users/empresas/" + id + "/"); }
+  catch (e) { shell(`<div class="page-head"><h1 class="page-title">Empresa</h1></div><div class="empty">${esc(e.message)}</div>`); return; }
+  if (!EMP_TABS.some(([k]) => k === tab)) tab = "resumen";
+  shell(`
+    <div class="page-head" style="align-items:flex-start">
+      <div>
+        <a href="#/empresas" style="color:var(--muted);font-size:13px;text-decoration:none">&larr; Empresas</a>
+        <h1 class="page-title">${esc(emp.nombre)}</h1>
+        <p class="page-sub">
+          ${esc(emp.direccion || "")}${emp.direccion && (emp.email || emp.telefono) ? " · " : ""}
+          ${esc(emp.email || "")}${emp.email && emp.telefono ? " · " : ""}
+          ${esc(emp.telefono || "")}
+          <span class="badge ${emp.activo ? "badge-green" : "badge-gray"}" style="margin-left:6px">${emp.activo ? "Activa" : "Inactiva"}</span>
+        </p>
+      </div>
+      <div class="toolbar"><button class="btn btn-ghost" id="btn-edit-emp">Datos de la empresa</button></div>
+    </div>
+    <div class="tabs" style="display:flex;gap:4px;border-bottom:1px solid var(--border);margin-bottom:16px">
+      ${EMP_TABS.map(([k, l]) => `<button class="tab-btn ${k === tab ? "tab-active" : ""}" data-t="${k}" style="padding:9px 14px;border:0;cursor:pointer;border-radius:8px 8px 0 0;background:${k === tab ? "var(--accent)" : "transparent"};color:${k === tab ? "#fff" : "var(--muted)"};font-weight:600">${l}</button>`).join("")}
+    </div>
+    <div id="emp-tab" data-emp="${id}" data-tab="${tab}"><div class="empty">Cargando…</div></div>`);
+  $("btn-edit-emp").onclick = () => modalEditarEmpresa(emp);
+  document.querySelectorAll(".tab-btn").forEach((b) => {
+    b.onclick = () => { location.hash = `#/empresa/${id}/tab/${b.dataset.t}`; };
+  });
+  await empTabContent(id, tab);
+}
+
+async function empTabContent(id, tab) {
+  const host = $("emp-tab");
+  if (!host) return;
+  try {
+    if (tab === "resumen") await empTabResumen(host, id);
+    else if (tab === "usuarios") await empTabUsuarios(host, id);
+    else if (tab === "productores") await empTabProductores(host, id);
+    else if (tab === "campos") await empTabCampos(host, id);
+    else if (tab === "labores") await empTabLabores(host, id);
+  } catch (e) { host.innerHTML = `<div class="empty">${esc(e.message)}</div>`; }
+}
+
+/* Resumen: KPIs del dashboard acotado a la empresa */
+async function empTabResumen(host, id) {
+  const d = await api(`/api/core/dashboard/?empresa=${id}`);
+  const kpi = (label, value, note) => `<div class="kpi"><div class="kpi-label">${label}</div><div class="kpi-value">${value}</div><div class="kpi-note">${note || ""}</div></div>`;
+  const fmtCosto = (v) => "$" + Number(v || 0).toLocaleString("es-AR", { maximumFractionDigits: 2 });
+  host.innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px">
+      ${kpi("Campos activos", d.campos_activos, "con contrato ACTIVO")}
+      ${kpi("Hectáreas totales", Number(d.hectareas_totales || 0).toLocaleString("es-AR"), "cargadas al sistema")}
+      ${kpi("Hectáreas trabajadas", Number(d.hectareas_trabajadas || 0).toLocaleString("es-AR"), "superficie trabajada")}
+      ${kpi("Labores cargadas", d.labores_cargadas, "total de labores")}
+      ${kpi("Costos totales", fmtCosto(d.costos_totales), "labores + fletes")}
+      ${kpi("Costo por ha", fmtCosto(d.costos_por_ha), "costo por hectárea trabajada")}
+      ${kpi("Documentos pendientes", d.documentos_pendientes, "en estado PENDIENTE")}
+    </div>
+    ${d.alertas && d.alertas.length ? `<div class="panel" style="margin-top:16px"><div class="panel-head"><h2 class="panel-title">Alertas</h2></div><div class="panel-body">${d.alertas.map((a) => `<div>⚠️ ${esc(a)}</div>`).join("")}</div></div>` : ""}`;
+}
+
+/* Empleados: usuarios de la empresa */
+async function empTabUsuarios(host, id) {
+  const users = await api(`/api/users/list/?empresa=${id}`) || [];
+  host.innerHTML = `
+    <div class="page-head" style="padding:0 0 12px">
+      <p class="page-sub">${users.length} cuenta${users.length === 1 ? "" : "s"} en esta empresa</p>
+      <button class="btn btn-primary" id="btn-emp-user">+ Crear usuario</button>
+    </div>
+    <div class="panel"><div class="panel-body">${users.length ? `<table><thead><tr><th>Cuenta</th><th>Nombre</th><th>Rol</th><th>Estado</th><th></th></tr></thead><tbody>
+      ${users.map((u) => `<tr>
+        <td>${activeDot(u)}<b>${esc(u.username)}</b><br><span style="color:var(--muted);font-size:12px">${esc(u.email || "")}</span></td>
+        <td>${esc(u.first_name || "")} ${esc(u.last_name || "")}</td>
+        <td>${roleBadge(u.role)}</td>
+        <td><span class="badge ${u.is_active ? "badge-green" : "badge-gray"}">${u.is_active ? "Activo" : "Inactivo"}</span></td>
+        <td style="white-space:nowrap">
+          <button class="btn btn-ghost btn-sm" data-u="${u.id}" data-cmd="edit">Editar</button>
+          <button class="btn btn-ghost btn-sm" data-u="${u.id}" data-cmd="reset">Reset clave</button>
+        </td>
+      </tr>`).join("")}
+    </tbody></table>` : '<div class="empty">No hay usuarios en esta empresa todavía.</div>'}</div></div>`;
+  $("btn-emp-user").onclick = () => modalCrearUsuario(id);
+  host.querySelectorAll("button[data-cmd]").forEach((b) => {
+    b.onclick = () => {
+      const u = users.find((x) => x.id === Number(b.dataset.u));
+      if (!u) return;
+      if (b.dataset.cmd === "edit") modalEditarUsuario(u, () => renderEmpresaDetalle(id, "usuarios"));
+      else modalResetClave(u);
+    };
+  });
+}
+
+/* Productores / Personas de la empresa */
+async function empTabProductores(host, id) {
+  const personas = await api(`/api/core/personas/?empresa=${id}`) || [];
+  const orden = ROLES_PERSONA;
+  personas.sort((a, b) => (orden.indexOf(a.rol) - orden.indexOf(b.rol)) || a.nombre.localeCompare(b.nombre));
+  host.innerHTML = `
+    <div class="page-head" style="padding:0 0 12px">
+      <p class="page-sub">${personas.length} persona${personas.length === 1 ? "" : "s"} vinculadas (productores, contratistas, choferes…)</p>
+      <button class="btn btn-primary" id="btn-emp-persona">+ Nueva persona</button>
+    </div>
+    <div class="panel"><div class="panel-body">${personas.length ? `<table><thead><tr><th>Nombre</th><th>Rol</th><th>Documento</th><th>Teléfono</th><th>Email</th><th></th></tr></thead><tbody>
+      ${personas.map((p) => `<tr>
+        <td><b>${esc(p.nombre)}</b></td>
+        <td><span class="badge badge-green">${esc(p.nombre_rol || p.rol || "—")}</span></td>
+        <td>${esc(p.documento || "—")}</td>
+        <td>${esc(p.telefono || "—")}</td>
+        <td>${esc(p.email || "—")}</td>
+        <td style="white-space:nowrap">
+          <button class="btn btn-ghost btn-sm" data-p="${p.id}" data-cmd="edit">Editar</button>
+          <button class="btn btn-danger btn-sm" data-p="${p.id}" data-cmd="del">Eliminar</button>
+        </td>
+      </tr>`).join("")}
+    </tbody></table>` : '<div class="empty">No hay personas vinculadas a esta empresa. Creá un productor para empezar.</div>'}</div></div>`;
+  $("btn-emp-persona").onclick = () => modalNuevaPersonaEmpresa(id, null, personas);
+  host.querySelectorAll("button[data-cmd]").forEach((b) => {
+    b.onclick = () => {
+      const p = personas.find((x) => x.id === Number(b.dataset.p));
+      if (!p) return;
+      if (b.dataset.cmd === "edit") modalNuevaPersonaEmpresa(id, p, personas);
+      else if (confirmar("Eliminar a " + p.nombre + "?")) {
+        api(`/api/core/personas/${p.id}/`, { method: "DELETE" }).then(() => {
+          toast("Persona eliminada."); renderEmpresaDetalle(id, "productores");
+        }).catch((e) => toast(e.message, "err"));
+      }
+    };
+  });
+}
+
+function modalNuevaPersonaEmpresa(id, persona, personas) {
+  const camposPersona = [
+    { key: "nombre", label: "Nombre", required: true, value: persona?.nombre },
+    { key: "rol", label: "Rol", type: "select", required: true,
+      options: ROLES_PERSONA.map((r) => ({ value: r, label: r })),
+      value: persona?.rol || "PRODUCTOR" },
+    { key: "documento", label: "DNI / documento", value: persona?.documento },
+    { key: "cuil", label: "CUIL", value: persona?.cuil },
+    { key: "telefono", label: "Teléfono", value: persona?.telefono },
+    { key: "email", label: "Email", type: "email", value: persona?.email },
+    { key: "direccion", label: "Dirección", value: persona?.direccion },
+    { key: "observaciones", label: "Observaciones", type: "textarea", value: persona?.observaciones },
+    { key: "activo", label: "Activo", type: "checkbox", value: persona ? !!persona.activo : true },
+  ];
+  openModal(persona ? "Editar " + persona.nombre : "Nueva persona", camposPersona, {}, async (d) => {
+    const body = { ...d, tipo: "PERSONA", empresa: id };
+    if (!persona) body.activo = d.activo;
+    if (persona) {
+      await api(`/api/core/personas/${persona.id}/`, { method: "PATCH", body });
+    } else {
+      await api("/api/core/personas/", { method: "POST", body });
+    }
+    toast(persona ? "Persona actualizada." : "Persona creada.");
+    renderEmpresaDetalle(id, "productores");
+  });
+}
+
+/* Campos de la empresa */
+async function empTabCampos(host, id) {
+  const [campos, personas] = await Promise.all([
+    api(`/api/core/campos/?empresa=${id}`) || [],
+    api(`/api/core/personas/?empresa=${id}`) || [],
+  ]);
+  const productores = personas.filter((p) => p.rol === "PRODUCTOR");
+  host.innerHTML = `
+    <div class="page-head" style="padding:0 0 12px">
+      <p class="page-sub">${campos.length} campo${campos.length === 1 ? "" : "s"} de esta empresa</p>
+      <button class="btn btn-primary" id="btn-emp-campo">+ Nuevo campo</button>
+    </div>
+    <div class="panel"><div class="panel-body">${campos.length ? `<table><thead><tr><th>Nombre</th><th>Productor</th><th>Ubicación</th><th>Superficie</th><th>Estado</th><th></th></tr></thead><tbody>
+      ${campos.map((c) => `<tr>
+        <td><b>${esc(c.nombre)}</b></td>
+        <td>${esc(c.productor_nombre || "—")}</td>
+        <td>${esc(c.localidad || c.ubicacion || "—")}</td>
+        <td>${Number(c.superficie_total || 0).toLocaleString("es-AR")} ha</td>
+        <td><span class="badge badge-green">${esc(c.estado_contrato_display || c.estado_contrato)}</span></td>
+        <td style="white-space:nowrap">
+          <button class="btn btn-ghost btn-sm" data-c="${c.id}" data-cmd="edit">Editar</button>
+          <button class="btn btn-danger btn-sm" data-c="${c.id}" data-cmd="del">Eliminar</button>
+        </td>
+      </tr>`).join("")}
+    </tbody></table>` : '<div class="empty">Esta empresa todavía no tiene campos. Asignale un productor y creá el primer campo.</div>'}</div></div>`;
+  $("btn-emp-campo").onclick = () => modalCampoEmpresa(id, null, productores);
+  host.querySelectorAll("button[data-cmd]").forEach((b) => {
+    b.onclick = () => {
+      const c = campos.find((x) => x.id === Number(b.dataset.c));
+      if (!c) return;
+      if (b.dataset.cmd === "edit") modalCampoEmpresa(id, c, productores);
+      else if (confirmar("Eliminar el campo " + c.nombre + "?")) {
+        api(`/api/core/campos/${c.id}/`, { method: "DELETE" }).then(() => {
+          toast("Campo eliminado."); renderEmpresaDetalle(id, "campos");
+        }).catch((e) => toast(e.message, "err"));
+      }
+    };
+  });
+}
+
+function modalCampoEmpresa(id, campo, productores) {
+  if (!campo && !productores.length) {
+    toast("Creá primero un productor para esta empresa (el campo necesita uno).", "warn");
+    return;
+  }
+  const prodOptions = productores.map((p) => ({ value: p.id, label: p.nombre }));
+  openModal(campo ? "Editar " + campo.nombre : "Nuevo campo", [
+    { key: "nombre", label: "Nombre", required: true, value: campo?.nombre },
+    { key: "productor", label: "Productor", type: "select",
+      options: prodOptions, value: campo?.productor },
+    { key: "ubicacion", label: "Ubicación", value: campo?.ubicacion },
+    { key: "localidad", label: "Localidad", value: campo?.localidad },
+    { key: "provincia", label: "Provincia", value: campo?.provincia },
+    { key: "superficie_total", label: "Superficie total (ha)", type: "number", value: campo?.superficie_total },
+    { key: "superficie_trabajada", label: "Superficie trabajada (ha)", type: "number", value: campo?.superficie_trabajada },
+    { key: "estado_contrato", label: "Estado de contrato", type: "select", required: true,
+      options: ESTADOS_CONTRATO.map((e) => ({ value: e, label: e })), value: campo?.estado_contrato || "ACTIVO" },
+    { key: "observaciones", label: "Observaciones", type: "textarea", value: campo?.observaciones },
+  ], {}, async (d) => {
+    d.productor = d.productor || null;
+    if (campo) await api(`/api/core/campos/${campo.id}/`, { method: "PATCH", body: JSON.stringify(d) });
+    else await api("/api/core/campos/", { method: "POST", body: JSON.stringify(d) });
+    toast(campo ? "Campo actualizado." : "Campo creado.");
+    renderEmpresaDetalle(id, "campos");
+  });
+}
+
+/* Labores de la empresa */
+async function empTabLabores(host, id) {
+  const labores = await api(`/api/core/labores/?empresa=${id}`) || [];
+  host.innerHTML = `
+    <div class="page-head" style="padding:0 0 12px">
+      <p class="page-sub">${labores.length} labor${labores.length === 1 ? "" : "es"} de la empresa</p>
+    </div>
+    <div class="panel"><div class="panel-body">${labores.length ? `<table><thead><tr><th>Fecha</th><th>Tipo</th><th>Campo / Lote</th><th>Estado</th><th>Ha</th><th>Costo</th><th></th></tr></thead><tbody>
+      ${labores.map((l) => `<tr>
+        <td class="mono">${fmtFecha(l.fecha)}</td>
+        <td>${esc(l.tipo_display || l.tipo)}</td>
+        <td><b>${esc(l.campo_nombre || "—")}</b> · ${esc(l.lote_nombre || "")}</td>
+        <td><span class="badge badge-amber">${esc(l.estado_display || l.estado)}</span></td>
+        <td>${Number(l.hectareas || 0).toLocaleString("es-AR")}</td>
+        <td class="mono">$${Number(l.costo_total || 0).toLocaleString("es-AR", { maximumFractionDigits: 2 })}</td>
+        <td style="white-space:nowrap">
+          <button class="btn btn-ghost btn-sm" data-l="${l.id}" data-cmd="edit">Editar</button>
+          <button class="btn btn-danger btn-sm" data-l="${l.id}" data-cmd="del">Eliminar</button>
+        </td>
+      </tr>`).join("")}
+    </tbody></table>` : '<div class="empty">No hay labores para esta empresa todavía.</div>'}</div></div>`;
+  host.querySelectorAll("button[data-cmd]").forEach((b) => {
+    b.onclick = () => {
+      const l = labores.find((x) => x.id === Number(b.dataset.l));
+      if (!l) return;
+      if (b.dataset.cmd === "edit") modalLaborEmpresa(id, l);
+      else if (confirmar("Eliminar la labor del " + fmtFecha(l.fecha) + "?")) {
+        api(`/api/core/labores/${l.id}/`, { method: "DELETE" }).then(() => {
+          toast("Labor eliminada."); renderEmpresaDetalle(id, "labores");
+        }).catch((e) => toast(e.message, "err"));
+      }
+    };
+  });
+}
+
+function modalLaborEmpresa(id, l) {
+  openModal("Editar labor " + l.lote_nombre + " (" + (l.tipo_display || l.tipo) + ")", [
+    { key: "fecha", label: "Fecha", type: "date", value: l.fecha },
+    { key: "tipo", label: "Tipo", type: "select", required: true,
+      options: TIPOS_LABOR.map((t) => ({ value: t, label: t })), value: l.tipo },
+    { key: "estado", label: "Estado", type: "select", required: true,
+      options: ESTADOS_LABOR.map((e) => ({ value: e, label: e.replace("_", " ") })), value: l.estado },
+    { key: "hectareas", label: "Hectáreas", type: "number", value: l.hectareas },
+    { key: "precio_por_ha", label: "Precio por ha", type: "number", value: l.precio_por_ha },
+    { key: "moneda", label: "Moneda", value: l.moneda || "USD" },
+    { key: "qq_ha", label: "Rendimiento (qq/ha)", type: "number", value: l.qq_ha },
+    { key: "observaciones", label: "Observaciones", type: "textarea", value: l.observaciones },
+  ], {}, async (d) => {
+    await api(`/api/core/labores/${l.id}/`, { method: "PATCH", body: JSON.stringify(d) });
+    toast("Labor actualizada.");
+    renderEmpresaDetalle(id, "labores");
+  });
+}
+
+function modalEditarEmpresa(emp) {
+  openModal("Datos de " + emp.nombre, [
+    { key: "nombre", label: "Nombre de la empresa", required: true, value: emp.nombre },
+    { key: "documento", label: "Documento / CUIT", value: emp.documento },
+    { key: "direccion", label: "Dirección", value: emp.direccion },
+    { key: "telefono", label: "Teléfono", value: emp.telefono },
+    { key: "email", label: "Email", type: "email", value: emp.email },
+    { key: "observaciones", label: "Observaciones", type: "textarea", value: emp.observaciones },
+    { key: "activo", label: "Empresa activa", type: "checkbox", value: !!emp.activo },
+  ], {}, async (d) => {
+    await api(`/api/users/empresas/${emp.id}/`, { method: "PATCH", body: JSON.stringify(d) });
+    toast("Empresa actualizada.");
+    renderEmpresaDetalle(emp.id, "resumen");
   });
 }
 

@@ -12,6 +12,21 @@ from .models import (
     Labor, LaborInsumo, Flete, Documento, Parametro
 )
 from .filters import LaborFilter
+from .scoping import (
+    filtro_campo, filtro_lote, filtro_via_campo, filtro_persona,
+    filtro_documento, puede_ver_campo
+)
+
+
+def _empresa_param(request):
+    """Devuelve `?empresa=` para acotar datos (solo lo usa ADMIN_PRINCIPAL)."""
+    from users.models import User
+    if request.user.role != User.Role.ADMIN_PRINCIPAL:
+        return None
+    raw = request.query_params.get('empresa', '')
+    if raw.isdigit():
+        return int(raw)
+    return None
 from .serializers import (
     CampoSerializer, PersonaSerializer, CampanaSerializer, LoteSerializer,
     CultivoSerializer, InsumoSerializer, ProductoPrecioSerializer,
@@ -26,6 +41,26 @@ class PersonaViewSet(viewsets.ModelViewSet):
     serializer_class = PersonaSerializer
     search_fields = ['nombre', 'documento', 'cuil']
     filterset_fields = ['tipo', 'rol', 'activo']
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        return queryset.filter(
+            filtro_persona(self.request.user, empresa_id=_empresa_param(self.request))
+        ).distinct()
+
+    def perform_create(self, serializer):
+        data = serializer.validated_data
+        user = self.request.user
+        if user.role != 'ADMIN_PRINCIPAL' and not data.get('empresa') and user.empresa_id:
+            data['empresa'] = user.empresa
+        serializer.save()
+
+    def perform_update(self, serializer):
+        user = self.request.user
+        data = serializer.validated_data
+        if user.role != 'ADMIN_PRINCIPAL' and user.empresa_id:
+            data['empresa'] = user.empresa
+        serializer.save()
 
 
 class CampanaViewSet(viewsets.ModelViewSet):
@@ -63,7 +98,7 @@ class CampoViewSet(viewsets.ModelViewSet):
     filterset_fields = ['estado_contrato']
 
     def get_queryset(self):
-        queryset = super().get_queryset()
+        queryset = super().get_queryset().filter(filtro_campo(self.request.user, empresa_id=_empresa_param(self.request)))
         include_stats = self.request.query_params.get('include_stats', False)
         if include_stats:
             queryset = queryset.annotate(
@@ -75,7 +110,7 @@ class CampoViewSet(viewsets.ModelViewSet):
         response = super().list(request, *args, **kwargs)
         if request.query_params.get('include_stats'):
             for campo in response.data:
-                campo_obj = self.queryset.get(pk=campo['id'])
+                campo_obj = self.get_queryset().get(pk=campo['id'])
                 campo['margen'] = float(campo_obj.margen or 0)
                 campo['documentos_count'] = campo_obj.documentos.count()
                 campo['locadores_nombres'] = ', '.join(campo_obj.locadores.values_list('nombre', flat=True)[:3])
@@ -88,6 +123,9 @@ class LoteViewSet(viewsets.ModelViewSet):
     serializer_class = LoteSerializer
     filterset_fields = ['campo', 'campana', 'cultivo', 'activo']
 
+    def get_queryset(self):
+        return super().get_queryset().filter(filtro_lote(self.request.user, empresa_id=_empresa_param(self.request)))
+
 
 class LaborViewSet(viewsets.ModelViewSet):
     queryset = Labor.objects.select_related(
@@ -96,6 +134,11 @@ class LaborViewSet(viewsets.ModelViewSet):
     ).prefetch_related('insumos__insumo').all()
     serializer_class = LaborSerializer
     filterset_class = LaborFilter
+
+    def get_queryset(self):
+        return super().get_queryset().filter(
+            filtro_via_campo(self.request.user, empresa_id=_empresa_param(self.request))
+        )
 
     def perform_create(self, serializer):
         insumos_data = self.request.data.get('insumos', [])
@@ -110,11 +153,21 @@ class FleteViewSet(viewsets.ModelViewSet):
     serializer_class = FleteSerializer
     filterset_fields = ['estado', 'chofer', 'lote']
 
+    def get_queryset(self):
+        return super().get_queryset().filter(
+            filtro_via_campo(self.request.user, empresa_id=_empresa_param(self.request))
+        )
+
 
 class DocumentoViewSet(viewsets.ModelViewSet):
     queryset = Documento.objects.all()
     serializer_class = DocumentoSerializer
     filterset_fields = ['tipo', 'estado', 'campo', 'titular', 'labor', 'flete']
+
+    def get_queryset(self):
+        return super().get_queryset().filter(
+            filtro_documento(self.request.user, empresa_id=_empresa_param(self.request))
+        )
 
     def perform_create(self, serializer):
         archivo = self.request.FILES.get('archivo')
@@ -157,22 +210,28 @@ def provincias_view(request):
 
 @api_view(['GET'])
 def dashboard(request):
-    campos_activos = Campo.objects.filter(estado_contrato='ACTIVO').count()
-    hectareas_totales = Campo.objects.aggregate(
+    emp = _empresa_param(request)
+    q_campo = filtro_campo(request.user, empresa_id=emp)
+    q_labor = filtro_via_campo(request.user, empresa_id=emp)
+    q_flete = filtro_via_campo(request.user, empresa_id=emp)
+    q_doc = filtro_documento(request.user, empresa_id=emp)
+
+    campos_activos = Campo.objects.filter(q_campo, estado_contrato='ACTIVO').count()
+    hectareas_totales = Campo.objects.filter(q_campo).aggregate(
         total=Coalesce(Sum('superficie_total'), Value(0, output_field=DecimalField()))
     )['total']
-    hectareas_trabajadas = Campo.objects.aggregate(
+    hectareas_trabajadas = Campo.objects.filter(q_campo).aggregate(
         total=Coalesce(Sum('superficie_trabajada'), Value(0, output_field=DecimalField()))
     )['total']
-    labors_count = Labor.objects.count()
+    labors_count = Labor.objects.filter(q_labor).count()
 
-    costos_labores = Labor.objects.aggregate(
+    costos_labores = Labor.objects.filter(q_labor).aggregate(
         total=Coalesce(Sum('costo_total'), Value(0, output_field=DecimalField()))
     )['total']
-    costos_fletes_corto = Flete.objects.aggregate(
+    costos_fletes_corto = Flete.objects.filter(q_flete).aggregate(
         total=Coalesce(Sum('flete_corto'), Value(0, output_field=DecimalField()))
     )['total']
-    costos_fletes_largo = Flete.objects.aggregate(
+    costos_fletes_largo = Flete.objects.filter(q_flete).aggregate(
         total=Coalesce(Sum('flete_largo'), Value(0, output_field=DecimalField()))
     )['total']
     costos_fletes = costos_fletes_corto + costos_fletes_largo
@@ -183,14 +242,14 @@ def dashboard(request):
     else:
         costos_por_ha = 0
 
-    documentos_pendientes = Documento.objects.filter(estado='PENDIENTE').count()
+    documentos_pendientes = Documento.objects.filter(q_doc, estado='PENDIENTE').count()
 
     alertas = []
-    campos_vencidos = Campo.objects.filter(estado_contrato='VENCIDO')
+    campos_vencidos = Campo.objects.filter(q_campo, estado_contrato='VENCIDO')
     if campos_vencidos.exists():
         alertas.append(f"{campos_vencidos.count()} campo(s) con contrato vencido(s)")
 
-    docs_vencidos = Documento.objects.filter(estado='VENCIDO')
+    docs_vencidos = Documento.objects.filter(q_doc, estado='VENCIDO')
     if docs_vencidos.exists():
         alertas.append(f"{docs_vencidos.count()} documento(s) vencido(s)")
 
@@ -214,6 +273,9 @@ def indicadores_campo(request, campo_id):
     except Campo.DoesNotExist:
         return Response({'error': 'Campo no encontrado'}, status=status.HTTP_404_NOT_FOUND)
 
+    if not puede_ver_campo(request.user, campo):
+        return Response({'error': 'Campo no encontrado'}, status=status.HTTP_404_NOT_FOUND)
+
     costos_labores = Labor.objects.filter(lote__campo=campo).aggregate(
         total=Coalesce(Sum('costo_total'), 0)
     )['total']
@@ -235,7 +297,7 @@ def margen_view(request):
     lote_id = request.query_params.get('lote')
     campana_id = request.query_params.get('campana')
 
-    labores_qs = Labor.objects.all()
+    labores_qs = Labor.objects.filter(filtro_via_campo(request.user, empresa_id=_empresa_param(request)))
     if campo_id:
         labores_qs = labores_qs.filter(lote__campo_id=campo_id)
     if lote_id:
@@ -258,7 +320,7 @@ def margen_view(request):
     )['total']
 
     ingresos = 0
-    lotes_qs = Lote.objects.all()
+    lotes_qs = Lote.objects.filter(filtro_lote(request.user, empresa_id=_empresa_param(request)))
     if campo_id:
         lotes_qs = lotes_qs.filter(campo_id=campo_id)
     if lote_id:
@@ -318,13 +380,13 @@ def margen_view(request):
 
 @api_view(['GET'])
 def lista_campos(request):
-    campos = Campo.objects.all()
+    campos = Campo.objects.filter(filtro_campo(request.user, empresa_id=_empresa_param(request)))
     return Response(CampoSerializer(campos, many=True).data)
 
 
 @api_view(['GET'])
 def lista_lotes(request):
-    lotes = Lote.objects.select_related('campo', 'campana', 'cultivo').all()
+    lotes = Lote.objects.select_related('campo', 'campana', 'cultivo').filter(filtro_lote(request.user, empresa_id=_empresa_param(request)))
     return Response(LoteSerializer(lotes, many=True).data)
 
 
@@ -333,17 +395,17 @@ def lista_labores(request):
     labores = Labor.objects.select_related(
         'lote__campo', 'contratista', 'responsable',
         'cargada_por', 'revisada_por', 'sub_tipo_otra'
-    ).prefetch_related('insumos__insumo').all()
+    ).prefetch_related('insumos__insumo').filter(filtro_via_campo(request.user, empresa_id=_empresa_param(request)))
     return Response(LaborSerializer(labores, many=True).data)
 
 
 @api_view(['GET'])
 def lista_fletes(request):
-    fletes = Flete.objects.select_related('chofer', 'lote__campo').all()
+    fletes = Flete.objects.select_related('chofer', 'lote__campo').filter(filtro_via_campo(request.user, empresa_id=_empresa_param(request)))
     return Response(FleteSerializer(fletes, many=True).data)
 
 
 @api_view(['GET'])
 def lista_documentos(request):
-    documentos = Documento.objects.select_related('campo', 'titular').all()
+    documentos = Documento.objects.select_related('campo', 'titular').filter(filtro_documento(request.user, empresa_id=_empresa_param(request)))
     return Response(DocumentoSerializer(documentos, many=True).data)

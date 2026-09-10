@@ -154,7 +154,7 @@ def _handle_campos_menu(session, message: str, wa_service) -> str:
         from .flows.campos import ver_todos_los_campos
         session.current_flow = ''
         session.save(update_fields=['current_flow', 'last_activity'])
-        text = ver_todos_los_campos()
+        text = ver_todos_los_campos(session)
         if not text:
             return BaseFlow._with_menu('No hay campos registrados en el sistema.')
         return BaseFlow._with_menu(text)
