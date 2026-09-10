@@ -7,6 +7,16 @@ def _sin_acceso():
     return Q(pk__in=[])
 
 
+def _productor_empresa(prefijo, empresa_id):
+    """Campos del tenant `empresa_id`, por el vínculo del productor a la empresa
+    o por la convención histórica de usar la propia persona-empresa como productor."""
+    p = f'{prefijo}__' if prefijo else ''
+    return (
+        Q(**{f'{p}productor__empresa_id': empresa_id})
+        | Q(**{f'{p}productor_id': empresa_id})
+    )
+
+
 def filtro_campo(user, empresa_id=None):
     """Condición para filtrar consultas directas sobre `Campo`.
 
@@ -15,14 +25,14 @@ def filtro_campo(user, empresa_id=None):
     """
     if user.role == User.Role.ADMIN_PRINCIPAL:
         if empresa_id:
-            return Q(productor__empresa_id=empresa_id)
+            return _productor_empresa('', empresa_id)
         return Q()
     if user.role == User.Role.PRODUCTOR:
         if user.persona_id:
             return Q(productor_id=user.persona_id)
         return _sin_acceso()
     if user.empresa_id:
-        return Q(productor__empresa_id=user.empresa_id)
+        return _productor_empresa('', user.empresa_id)
     return _sin_acceso()
 
 
@@ -30,14 +40,14 @@ def filtro_lote(user, empresa_id=None):
     """Condición para filtrar `Lote` (referencia directa a `Campo`)."""
     if user.role == User.Role.ADMIN_PRINCIPAL:
         if empresa_id:
-            return Q(campo__productor__empresa_id=empresa_id)
+            return _productor_empresa('campo', empresa_id)
         return Q()
     if user.role == User.Role.PRODUCTOR:
         if user.persona_id:
             return Q(campo__productor_id=user.persona_id)
         return _sin_acceso()
     if user.empresa_id:
-        return Q(campo__productor__empresa_id=user.empresa_id)
+        return _productor_empresa('campo', user.empresa_id)
     return _sin_acceso()
 
 
@@ -49,14 +59,14 @@ def filtro_via_campo(user, prefijo='lote__campo', empresa_id=None):
     """
     if user.role == User.Role.ADMIN_PRINCIPAL:
         if empresa_id:
-            return Q(**{f'{prefijo}__productor__empresa_id': empresa_id})
+            return _productor_empresa(prefijo, empresa_id)
         return Q()
     if user.role == User.Role.PRODUCTOR:
         if user.persona_id:
             return Q(**{f'{prefijo}__productor_id': user.persona_id})
         return _sin_acceso()
     if user.empresa_id:
-        return Q(**{f'{prefijo}__productor__empresa_id': user.empresa_id})
+        return _productor_empresa(prefijo, user.empresa_id)
     return _sin_acceso()
 
 
@@ -78,7 +88,8 @@ def filtro_documento(user, empresa_id=None):
 def _personas_de_empresa(e):
     """Personas que pertenecen a la empresa `e` o intervienen en sus datos."""
     return Q(id=e) | Q(empresa_id=e) | Q(campos_productor__productor__empresa_id=e) | \
-        Q(campos_arrendatario__productor__empresa_id=e) | Q(campos_dueño__productor__empresa_id=e) | \
+        Q(campos_productor__productor_id=e) | Q(campos_arrendatario__productor__empresa_id=e) | \
+        Q(campos_dueño__productor__empresa_id=e) | \
         Q(labores_realizadas__lote__campo__productor__empresa_id=e) | \
         Q(labores_responsable__lote__campo__productor__empresa_id=e)
 
@@ -109,7 +120,7 @@ def puede_ver_campo(user, campo):
         return bool(user.persona_id and campo.productor_id == user.persona_id)
     if user.empresa_id:
         return bool(
-            campo.productor_id
-            and campo.productor.empresa_id == user.empresa_id
+            (campo.productor_id and campo.productor.empresa_id == user.empresa_id)
+            or campo.productor_id == user.empresa_id
         )
     return False

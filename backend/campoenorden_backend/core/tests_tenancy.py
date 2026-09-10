@@ -38,6 +38,13 @@ class TenancySmokeTest(TestCase):
         Labor.objects.create(lote=self.lote_a, tipo='COSECHA', fecha='2026-01-01', hectareas=5, precio_por_ha=100)
         Labor.objects.create(lote=lote_b, tipo='SIEMBRA', fecha='2026-01-02', hectareas=5, precio_por_ha=100)
 
+        # Convención de los datos históricos: la persona-empresa actúa como productor
+        # (sin empresa seteada en la persona), y hay campos huérfanos sin productor.
+        self.campo_c = Campo.objects.create(nombre='Campo C', productor=self.empresa_a, superficie_total=50)
+        self.campo_orfano = Campo.objects.create(nombre='Campo Huérfano', superficie_total=60)
+        self.lote_c = Lote.objects.create(nombre='Lote C', campo=self.campo_c, campana=campana, superficie=7)
+        Labor.objects.create(lote=self.lote_c, tipo='SIEMBRA', fecha='2026-01-03', hectareas=3, precio_por_ha=200)
+
     def _auth(self, user):
         client = APIClient()
         client.force_authenticate(user=user)
@@ -50,11 +57,30 @@ class TenancySmokeTest(TestCase):
     def test_principal_ve_todo(self):
         res = self._auth(self.principal).get('/api/core/campos/')
         self.assertEqual(res.status_code, 200)
-        self.assertEqual(len(res.json()), 2)
+        self.assertEqual({c['id'] for c in res.json()}, {self.campo_a.id, self.campo_b.id, self.campo_c.id, self.campo_orfano.id})
 
     def test_admin_empresa_solo_sus_campos(self):
         res = self._auth(self.admin_a).get('/api/core/campos/')
-        self.assertEqual([c['id'] for c in res.json()], [self.campo_a.id])
+        self.assertEqual(sorted(c['id'] for c in res.json()), sorted([self.campo_a.id, self.campo_c.id]))
+
+    def test_empresa_ve_campo_con_productor_igual_a_la_empresa(self):
+        # Convención histórica: empresa-como-productor, sin persona.empresa seteada.
+        res = self._auth(self.admin_a).get('/api/core/campos/')
+        ids = [c['id'] for c in res.json()]
+        self.assertIn(self.campo_c.id, ids)
+        self.assertNotIn(self.campo_b.id, ids)
+        self.assertNotIn(self.campo_orfano.id, ids)
+        lotes = self._auth(self.admin_a).get('/api/core/lotes/').json()
+        self.assertEqual([l['id'] for l in lotes], [self.lote_a.id, self.lote_c.id])
+
+    def test_campo_orfano_oculto_para_empresa(self):
+        res = self._auth(self.admin_a).get(f'/api/core/campos/?empresa={self.empresa_a.id}')
+        self.assertNotIn(self.campo_orfano.id, [c['id'] for c in res.json()])
+
+    def test_labor_productor_empresa_visible(self):
+        res = self._auth(self.admin_a).get('/api/core/labores/')
+        cods = [l['lote'] for l in res.json()]
+        self.assertIn(self.lote_c.id, cods)
 
     def test_productor_solo_sus_campos(self):
         res = self._auth(self.prod_a_user).get('/api/core/campos/')
@@ -99,13 +125,13 @@ class TenancySmokeTest(TestCase):
 
     def test_principal_puede_acotar_por_empresa(self):
         res = self._auth(self.principal).get(f'/api/core/campos/?empresa={self.empresa_a.id}')
-        self.assertEqual([c['id'] for c in res.json()], [self.campo_a.id])
+        self.assertEqual({c['id'] for c in res.json()}, {self.campo_a.id, self.campo_c.id})
         res = self._auth(self.principal).get(f'/api/core/campos/?empresa={self.empresa_b.id}')
         self.assertEqual([c['id'] for c in res.json()], [self.campo_b.id])
 
     def test_empresa_no_puede_escapar_scope_con_parametro(self):
         res = self._auth(self.admin_a).get(f'/api/core/campos/?empresa={self.empresa_b.id}')
-        self.assertEqual([c['id'] for c in res.json()], [self.campo_a.id])
+        self.assertEqual(sorted(c['id'] for c in res.json()), sorted([self.campo_a.id, self.campo_c.id]))
 
     def test_dashboard_acotado_por_empresa(self):
         res = self._auth(self.principal).get(f'/api/core/dashboard/?empresa={self.empresa_b.id}')
