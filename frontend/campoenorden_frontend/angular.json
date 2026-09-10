@@ -36,7 +36,8 @@
                 "output": "./svg"
               },
               "src/manifest.json",
-              "src/_redirects"
+              "src/_redirects",
+              "src/landing.html"
             ],
             "styles": [
               "src/global.scss",

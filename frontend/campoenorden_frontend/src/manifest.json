@@ -7,8 +7,8 @@
   "display": "standalone",
   "orientation": "portrait-primary",
   "scope": "/",
-  "start_url": "/",
-  "id": "/",
+  "start_url": "/login",
+  "id": "/login",
   "icons": [
     {
       "src": "assets/icon/favicon.svg",
