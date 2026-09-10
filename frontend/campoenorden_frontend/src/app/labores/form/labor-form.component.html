@@ -92,7 +92,7 @@
       </div>
 
       <div class="insumos-section" formArrayName="insumosForm">
-        <ng-container *ngFor="let insumoGroup of insumosArray.controls; let i = index">
+        <ng-container *ngFor="let insumoGroup of insumosArray.controls; let i = index; trackBy: insumoTrackBy">
           <div class="insumo-card">
             <div class="insumo-card-header">
               <span class="insumo-card-title">Insumo #{{ i + 1 }}</span>

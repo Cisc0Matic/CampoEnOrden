@@ -17,7 +17,6 @@ import { CrearPersonaModalComponent } from '../../shared/components/crear-person
 })
 export class LaborFormComponent implements OnInit {
   laborForm: FormGroup;
-  insumosForm: FormArray;
   isEdit = false;
   laborId: string | null = null;
   loading = false;
@@ -53,9 +52,9 @@ export class LaborFormComponent implements OnInit {
       contratista: [null],
       responsable: [null],
       costo_total: [{ value: 0, disabled: true }],
-      observaciones: ['']
+      observaciones: [''],
+      insumosForm: this.fb.array([])
     });
-    this.insumosForm = this.fb.array([]);
   }
 
   ngOnInit() {
@@ -200,7 +199,7 @@ export class LaborFormComponent implements OnInit {
   }
 
   get insumosArray(): FormArray {
-    return this.insumosForm;
+    return this.laborForm.get('insumosForm') as FormArray;
   }
 
   agregarInsumo(insumo?: any) {
@@ -248,6 +247,10 @@ export class LaborFormComponent implements OnInit {
 
   eliminarInsumo(index: number) {
     this.insumosArray.removeAt(index);
+  }
+
+  insumoTrackBy(index: number): number {
+    return index;
   }
 
   guardar() {
