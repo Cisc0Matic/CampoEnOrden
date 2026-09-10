@@ -4,6 +4,7 @@ import { IonicModule, ToastController, ModalController } from '@ionic/angular';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { ActivatedRoute, Router } from '@angular/router';
+import { forkJoin } from 'rxjs';
 import { TIPOS_LABOR, ESTADOS_LABOR, getEstadoColor } from '../../models/interfaces';
 import { CrearPersonaModalComponent } from '../../shared/components/crear-persona-modal/crear-persona-modal.component';
 
@@ -84,29 +85,27 @@ export class LaborFormComponent implements OnInit {
 
   cargarDatos() {
     this.loading = true;
-    this.api.get<any[]>('core/lotes/').subscribe({
-      next: (lotes) => {
+    forkJoin({
+      lotes: this.api.get<any[]>('core/lotes/'),
+      personas: this.api.get<any[]>('core/personas/'),
+      insumos: this.api.get<any[]>('core/insumos/'),
+      tipos: this.api.get<any[]>('core/tipos-labor-personalizado/')
+    }).subscribe({
+      next: ({ lotes, personas, insumos, tipos }) => {
         this.lotes = lotes || [];
-        this.cargarPersonas();
-        this.api.get<any[]>('core/insumos/').subscribe({
-          next: (insumos) => {
-            this.insumos = insumos || [];
-            this.api.get<any[]>('core/tipos-labor-personalizado/').subscribe({
-              next: (tipos) => {
-                this.tiposLaborPersonalizado = tipos || [];
-                if (this.isEdit && this.laborId) {
-                  this.cargarLabor();
-                } else {
-                  this.loading = false;
-                }
-              },
-              error: () => this.loading = false
-            });
-          },
-          error: () => this.loading = false
-        });
+        this.personas = personas || [];
+        this.insumos = insumos || [];
+        this.tiposLaborPersonalizado = tipos || [];
+        if (this.isEdit && this.laborId) {
+          this.cargarLabor();
+        } else {
+          this.loading = false;
+        }
       },
-      error: () => this.loading = false
+      error: () => {
+        this.loading = false;
+        this.error = 'Error al cargar datos';
+      }
     });
   }
 

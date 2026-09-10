@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable, of, BehaviorSubject, throwError } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { catchError, tap } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
+import { DataStoreService } from './data-store.service';
 
 interface PendingRequest {
   method: string;
@@ -20,7 +21,7 @@ export class ApiService {
   private syncInProgress = new BehaviorSubject<boolean>(false);
   private storage: any = null;
 
-  constructor(private http: HttpClient) {
+  constructor(private http: HttpClient, private dataStore: DataStoreService) {
     this.loadPendingRequests();
     this.setupAutoSync();
   }
@@ -101,7 +102,12 @@ export class ApiService {
     await this.savePendingRequests();
   }
 
-  get<T>(path: string, options?: { params?: HttpParams | { [param: string]: string | string[] } }): Observable<any> {
+  get<T>(path: string, options?: { params?: HttpParams | { [param: string]: string | string[] } }): Observable<T> {
+    const key = this.cacheKey(path, options?.params);
+    return this.dataStore.stream(key, () => this.fetchGet<T>(path, options)) as unknown as Observable<T>;
+  }
+
+  private fetchGet<T>(path: string, options?: { params?: HttpParams | { [param: string]: string | string[] } }): Observable<T> {
     const httpOptions: any = { headers: this.getHeaders() };
     if (options?.params) {
       httpOptions.params = options.params;
@@ -123,7 +129,8 @@ export class ApiService {
         catchError((error) => {
           this.queueRequest('POST', path, body);
           return of({ success: true, offline: true } as T);
-        })
+        }),
+        tap((res) => { if (!this.isOfflineResult(res)) this.invalidateForWrite(path); })
       );
     }
     
@@ -131,7 +138,8 @@ export class ApiService {
       catchError((error) => {
         this.queueRequest('POST', path, body);
         return of({ success: true, offline: true } as T);
-      })
+      }),
+      tap((res) => { if (!this.isOfflineResult(res)) this.invalidateForWrite(path); })
     );
   }
 
@@ -144,7 +152,8 @@ export class ApiService {
         catchError((error) => {
           this.queueRequest('PUT', path, body);
           return of({ success: true, offline: true } as T);
-        })
+        }),
+        tap((res) => { if (!this.isOfflineResult(res)) this.invalidateForWrite(path); })
       );
     }
     
@@ -152,7 +161,8 @@ export class ApiService {
       catchError((error) => {
         this.queueRequest('PUT', path, body);
         return of({ success: true, offline: true } as T);
-      })
+      }),
+      tap((res) => { if (!this.isOfflineResult(res)) this.invalidateForWrite(path); })
     );
   }
 
@@ -161,8 +171,38 @@ export class ApiService {
       catchError((error) => {
         this.queueRequest('DELETE', path);
         return of({ success: true, offline: true } as T);
-      })
+      }),
+      tap((res) => { if (!this.isOfflineResult(res)) this.invalidateForWrite(path); })
     );
+  }
+
+  private cacheKey(path: string, params?: HttpParams | { [param: string]: string | string[] }): string {
+    if (!params) return path;
+    if (params instanceof HttpParams) return `${path}?${params.toString()}`;
+    try {
+      const sorted: { [key: string]: string | string[] } = {};
+      for (const key of Object.keys(params).sort()) {
+        sorted[key] = params[key];
+      }
+      return `${path}?${JSON.stringify(sorted)}`;
+    } catch {
+      return path;
+    }
+  }
+
+  private isOfflineResult(res: any): boolean {
+    return !!res && res.offline === true;
+  }
+
+  private invalidateForWrite(path: string): void {
+    const segments = path.split('/').filter(Boolean);
+    const coreIdx = segments.indexOf('core');
+    const resource = coreIdx >= 0 && segments[coreIdx + 1] ? segments[coreIdx + 1] : null;
+    if (resource) {
+      this.dataStore.invalidatePrefix(`core/${resource}`);
+    }
+    this.dataStore.invalidatePrefix('core/dashboard');
+    this.dataStore.invalidatePrefix('core/campos');
   }
 
   get isOnline(): boolean {

@@ -4,6 +4,7 @@ import { IonicModule, ToastController } from '@ionic/angular';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { ActivatedRoute, Router } from '@angular/router';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-flete-form',
@@ -65,22 +66,23 @@ export class FleteFormComponent implements OnInit {
 
   cargarDatos() {
     this.loading = true;
-    this.api.get<any[]>('core/lotes/').subscribe({
-      next: (lotes) => {
+    forkJoin({
+      lotes: this.api.get<any[]>('core/lotes/'),
+      personas: this.api.get<any[]>('core/personas/')
+    }).subscribe({
+      next: ({ lotes, personas }) => {
         this.lotes = lotes || [];
-        this.api.get<any[]>('core/personas/').subscribe({
-          next: (personas) => {
-            this.personas = personas || [];
-            if (this.isEdit && this.fleteId) {
-              this.cargarFlete();
-            } else {
-              this.loading = false;
-            }
-          },
-          error: () => this.loading = false
-        });
+        this.personas = personas || [];
+        if (this.isEdit && this.fleteId) {
+          this.cargarFlete();
+        } else {
+          this.loading = false;
+        }
       },
-      error: () => this.loading = false
+      error: () => {
+        this.loading = false;
+        this.error = 'Error al cargar datos';
+      }
     });
   }
 

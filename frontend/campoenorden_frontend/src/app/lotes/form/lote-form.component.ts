@@ -4,6 +4,7 @@ import { IonicModule, ToastController, ModalController } from '@ionic/angular';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { ActivatedRoute, Router } from '@angular/router';
+import { forkJoin } from 'rxjs';
 import { CampanaFormComponent } from '../../ajustes/form/campana-form.component';
 import { CultivoFormComponent } from '../../ajustes/form/cultivo-form.component';
 
@@ -60,29 +61,23 @@ export class LoteFormComponent implements OnInit {
 
   cargarDatos() {
     this.loading = true;
-    this.api.get<any[]>('core/campos/').subscribe({
-      next: (campos) => {
+    forkJoin({
+      campos: this.api.get<any[]>('core/campos/'),
+      campanas: this.api.get<any[]>('core/campanas/'),
+      cultivos: this.api.get<any[]>('core/cultivos/')
+    }).subscribe({
+      next: ({ campos, campanas, cultivos }) => {
         this.campos = campos || [];
-        this.api.get<any[]>('core/campanas/').subscribe({
-          next: (campanas) => {
-            this.campanas = campanas || [];
-            this.api.get<any[]>('core/cultivos/').subscribe({
-              next: (cultivos) => {
-                this.cultivos = cultivos || [];
-                if (this.isEdit && this.loteId) {
-                  this.cargarLote();
-                } else {
-                  if (this.preSelectedCampoId !== null) {
-                    this.loteForm.patchValue({ campo: this.preSelectedCampoId });
-                  }
-                  this.loading = false;
-                }
-              },
-              error: () => this.loading = false
-            });
-          },
-          error: () => this.loading = false
-        });
+        this.campanas = campanas || [];
+        this.cultivos = cultivos || [];
+        if (this.isEdit && this.loteId) {
+          this.cargarLote();
+        } else {
+          if (this.preSelectedCampoId !== null) {
+            this.loteForm.patchValue({ campo: this.preSelectedCampoId });
+          }
+          this.loading = false;
+        }
       },
       error: () => this.loading = false
     });

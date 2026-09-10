@@ -4,6 +4,8 @@ import { NavController } from '@ionic/angular';
 import { Storage } from '@ionic/storage-angular';
 import { firstValueFrom } from 'rxjs';
 import { environment } from 'src/environments/environment';
+import { DataStoreService } from './data-store.service';
+import { setToken } from './token-store';
 
 export interface UserProfile {
   id: number;
@@ -50,6 +52,7 @@ export class AuthService {
     private http: HttpClient,
     private storage: Storage,
     private navCtrl: NavController,
+    private dataStore: DataStoreService,
   ) {}
 
   async init(): Promise<void> {
@@ -110,6 +113,7 @@ export class AuthService {
       }
     } catch {}
     await this._clearSession();
+    this.dataStore.invalidateAll();
     this.navCtrl.navigateRoot('/login');
   }
 
@@ -187,7 +191,7 @@ export class AuthService {
   // ─── Privados ─────────────────────────────────────────────────────────────
 
   private async _saveSession(access: string, refresh: string, username: string): Promise<void> {
-    localStorage.setItem('jwt_token', access);
+    setToken(access);
     await this.storage.set('jwt_token', access);
     await this.storage.set('refresh_token', refresh);
     await this.storage.set('username', username);
@@ -195,7 +199,7 @@ export class AuthService {
   }
 
   private async _clearSession(): Promise<void> {
-    localStorage.removeItem('jwt_token');
+    setToken(null);
     await this.storage.remove('jwt_token');
     await this.storage.remove('refresh_token');
     await this.storage.remove('username');

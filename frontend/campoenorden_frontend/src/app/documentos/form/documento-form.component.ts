@@ -4,6 +4,7 @@ import { IonicModule, ToastController } from '@ionic/angular';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { ActivatedRoute, Router } from '@angular/router';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-documento-form',
@@ -68,34 +69,27 @@ export class DocumentoFormComponent implements OnInit {
 
   cargarDatos() {
     this.loading = true;
-    this.api.get<any[]>('core/campos/').subscribe({
-      next: (campos) => {
+    forkJoin({
+      campos: this.api.get<any[]>('core/campos/'),
+      personas: this.api.get<any[]>('core/personas/'),
+      lotes: this.api.get<any[]>('core/lotes/'),
+      fletes: this.api.get<any[]>('core/fletes/')
+    }).subscribe({
+      next: ({ campos, personas, lotes, fletes }) => {
         this.campos = campos || [];
-        this.api.get<any[]>('core/personas/').subscribe({
-          next: (personas) => {
-            this.personas = personas || [];
-            this.api.get<any[]>('core/lotes/').subscribe({
-              next: (lotes) => {
-                this.lotes = lotes || [];
-                this.api.get<any[]>('core/fletes/').subscribe({
-                  next: (fletes) => {
-                    this.fletes = fletes || [];
-                    if (this.isEdit && this.documentoId) {
-                      this.cargarDocumento();
-                    } else {
-                      this.loading = false;
-                    }
-                  },
-                  error: () => this.loading = false
-                });
-              },
-              error: () => this.loading = false
-            });
-          },
-          error: () => this.loading = false
-        });
+        this.personas = personas || [];
+        this.lotes = lotes || [];
+        this.fletes = fletes || [];
+        if (this.isEdit && this.documentoId) {
+          this.cargarDocumento();
+        } else {
+          this.loading = false;
+        }
       },
-      error: () => this.loading = false
+      error: () => {
+        this.loading = false;
+        this.error = 'Error al cargar datos';
+      }
     });
   }
 
