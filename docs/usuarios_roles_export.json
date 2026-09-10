@@ -1,0 +1,61 @@
+{
+  "roles": [
+    {
+      "clave": "ADMIN_PRINCIPAL",
+      "label": "Admin Principal",
+      "descripcion": "Control total: gestiona usuarios, empresas, roles y toda la plataforma"
+    },
+    {
+      "clave": "ADMIN_EMPRESA",
+      "label": "Admin de Empresa",
+      "descripcion": "Administra usuarios y datos de su propia empresa"
+    },
+    {
+      "clave": "OPERARIO",
+      "label": "Operario",
+      "descripcion": "Rol base por defecto; usuario de campo que interactua via chatbot"
+    },
+    {
+      "clave": "CONSULTA",
+      "label": "Usuario de Consulta",
+      "descripcion": "Acceso de solo lectura/consulta"
+    },
+    {
+      "clave": "PRODUCTOR",
+      "label": "Cliente / Productor",
+      "descripcion": "Cliente productor; interactua con chatbot para cargas/remitos"
+    }
+  ],
+  "usuarios": [
+    {
+      "id": 5,
+      "username": "admin",
+      "nombre": "",
+      "email": "admin@campoenorden.local",
+      "rol": "Admin Principal",
+      "rol_key": "ADMIN_PRINCIPAL",
+      "activo": true,
+      "dni": null,
+      "telefono": null,
+      "empresa": null,
+      "fecha_alta": "2026-09-04 21:52:37.534054+00:00",
+      "staff": true,
+      "superuser": true
+    },
+    {
+      "id": 6,
+      "username": "empresa_test",
+      "nombre": "German",
+      "email": "campoenorden2026+empresa@gmail.com",
+      "rol": "Admin de Empresa",
+      "rol_key": "ADMIN_EMPRESA",
+      "activo": true,
+      "dni": null,
+      "telefono": null,
+      "empresa": "Campo barr",
+      "fecha_alta": "2026-09-05 15:49:16.770121+00:00",
+      "staff": false,
+      "superuser": false
+    }
+  ]
+}
