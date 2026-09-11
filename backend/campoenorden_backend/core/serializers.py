@@ -94,7 +94,7 @@ class LaborInsumoSerializer(serializers.ModelSerializer):
     class Meta:
         model = LaborInsumo
         fields = '__all__'
-        read_only_fields = ['dosis_calculada', 'costo_total']
+        read_only_fields = ['labor', 'dosis_calculada', 'costo_total']
 
 
 class LaborSerializer(serializers.ModelSerializer):
@@ -124,14 +124,19 @@ class LaborSerializer(serializers.ModelSerializer):
             return obj.foto_receta.url
         return None
 
+    def _asignar_insumos(self, labor, insumos_data):
+        for insumo_data in insumos_data:
+            ser = LaborInsumoSerializer(data=insumo_data, context=self.context)
+            ser.is_valid(raise_exception=True)
+            LaborInsumo.objects.create(labor=labor, **ser.validated_data)
+
     def create(self, validated_data):
         request = self.context.get('request')
         insumos_data = self.context.get('insumos', [])
         if request and hasattr(request, 'user'):
             validated_data['cargada_por'] = request.user
         labor = Labor.objects.create(**validated_data)
-        for insumo_data in insumos_data:
-            LaborInsumo.objects.create(labor=labor, **insumo_data)
+        self._asignar_insumos(labor, insumos_data)
         return labor
 
     def update(self, instance, validated_data):
@@ -146,10 +151,9 @@ class LaborSerializer(serializers.ModelSerializer):
                 instance.fecha_revision = datetime.datetime.now()
         instance.save()
 
-        if insumos_data:
+        if 'insumos' in self.context:
             instance.insumos.all().delete()
-            for insumo_data in insumos_data:
-                LaborInsumo.objects.create(labor=instance, **insumo_data)
+            self._asignar_insumos(instance, insumos_data)
         return instance
 
 

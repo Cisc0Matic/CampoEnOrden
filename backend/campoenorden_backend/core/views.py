@@ -141,10 +141,11 @@ class LaborViewSet(viewsets.ModelViewSet):
         )
 
     def perform_create(self, serializer):
-        insumos_data = self.request.data.get('insumos', [])
+        serializer.context['insumos'] = self.request.data.get('insumos', [])
         serializer.save()
 
     def perform_update(self, serializer):
+        serializer.context['insumos'] = self.request.data.get('insumos', [])
         serializer.save()
 
 

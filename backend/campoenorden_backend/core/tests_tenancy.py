@@ -3,7 +3,7 @@ from rest_framework import status
 from rest_framework.test import APIClient
 
 from users.models import User
-from core.models import Persona, Campo, Lote, Campana, Labor
+from core.models import Persona, Campo, Lote, Campana, Labor, Insumo
 
 
 class TenancySmokeTest(TestCase):
@@ -157,3 +157,41 @@ class TenancySmokeTest(TestCase):
         )
         self.assertEqual(res.status_code, 201)
         self.assertEqual(res.json().get('empresa'), self.empresa_a.id)
+
+    def test_labor_insumos_se_persisten_al_crear_y_reemplazan_al_editar(self):
+        insumo = Insumo.objects.create(nombre='Glifo 48', tipo='HERBICIDA', unidad='L')
+        client = self._auth(self.prod_a_user)
+        payload = {
+            'lote': self.lote_a.id,
+            'tipo': Labor.TipoLabor.COSECHA,
+            'fecha': '2026-01-05',
+            'hectareas': 93.00,
+            'precio_por_ha': 6.50,
+            'insumos': [{
+                'insumo': insumo.id,
+                'total_aplicado': 15,
+                'unidad_dosis': 'L/ha',
+                'precio_unitario': 40,
+            }],
+        }
+
+        res = client.post('/api/core/labores/', payload, format='json')
+        self.assertEqual(res.status_code, 201, res.data)
+        labor = Labor.objects.get(id=res.data['id'])
+        self.assertEqual(labor.insumos.count(), 1)
+        li = labor.insumos.get()
+        self.assertEqual(float(li.total_aplicado), 15.0)
+        self.assertAlmostEqual(float(li.dosis_calculada), 15 / 93, places=3)
+        self.assertEqual(float(li.costo_total), 600.0)
+
+        res_put = client.put(f'/api/core/labores/{labor.id}/', payload, format='json')
+        self.assertEqual(res_put.status_code, 200, res_put.data)
+        labor.refresh_from_db()
+        self.assertEqual(labor.insumos.count(), 1)
+        self.assertEqual(float(labor.insumos.get().total_aplicado), 15.0)
+
+        payload_sin_insumos = {k: v for k, v in payload.items() if k != 'insumos'}
+        res_put2 = client.put(f'/api/core/labores/{labor.id}/', payload_sin_insumos, format='json')
+        self.assertEqual(res_put2.status_code, 200, res_put2.data)
+        labor.refresh_from_db()
+        self.assertEqual(labor.insumos.count(), 0)
