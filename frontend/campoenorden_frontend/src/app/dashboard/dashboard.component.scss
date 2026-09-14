@@ -138,7 +138,20 @@
   flex-direction: column;
   gap: 10px;
   box-shadow: 0 2px 8px rgba(var(--ion-color-dark-rgb), 0.08);
-  
+  position: relative;
+
+  &.tappable {
+    cursor: pointer;
+
+    .tappable-chevron {
+      position: absolute;
+      top: 14px;
+      right: 12px;
+      color: var(--ion-color-medium);
+      font-size: 16px;
+    }
+  }
+
   &.highlight {
     background: linear-gradient(135deg, var(--ion-color-primary) 0%, var(--ion-color-secondary) 100%);
     

@@ -8,6 +8,16 @@
   @include grid-2cols;
 }
 
+::ng-deep .ceo-card .card-header {
+  justify-content: center;
+  text-align: center;
+
+  @include responsive(tablet) {
+    justify-content: space-between;
+    text-align: left;
+  }
+}
+
 .ceo-header-left {
   display: flex;
   align-items: center;
@@ -27,12 +37,22 @@
 
 .ceo-info-row {
   @include info-row;
+  justify-content: center;
+
+  @include responsive(tablet) {
+    justify-content: flex-start;
+  }
 }
 
 .ceo-persona-row {
   font-size: var(--ceo-font-size-sm);
   color: var(--ion-color-medium);
   margin-bottom: 4px;
+  text-align: center;
+
+  @include responsive(tablet) {
+    text-align: left;
+  }
 
   strong {
     color: var(--ion-text-color);
@@ -49,11 +69,16 @@
 
 .ceo-info-row-bordered {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
+  gap: 8px;
   font-size: var(--ceo-font-size-body);
   padding: 8px 0;
   border-top: 1px solid var(--ion-color-step-150);
   margin-top: 8px;
+
+  @include responsive(tablet) {
+    justify-content: space-between;
+  }
 
   .info-label {
     color: var(--ion-color-medium);

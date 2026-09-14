@@ -86,9 +86,13 @@
 
 @mixin grid-2cols {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: 1fr;
   gap: 12px;
   padding-bottom: 24px;
+
+  @include responsive(tablet) {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 @mixin stats-grid {

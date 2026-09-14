@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { ApiService } from '../services/api.service';
+import { DeleteConfirmService } from '../services/delete-confirm.service';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { forkJoin } from 'rxjs';
 
@@ -54,7 +55,12 @@ export class LotesPage {
   filtroCampo: number | null = null;
   pageTitle = 'Lotes';
 
-  constructor(private api: ApiService, private router: Router, private route: ActivatedRoute) {}
+  constructor(
+    private api: ApiService,
+    private router: Router,
+    private route: ActivatedRoute,
+    private deleteConfirm: DeleteConfirmService
+  ) {}
 
   ionViewWillEnter() {
     this.route.queryParams.subscribe(params => {
@@ -129,5 +135,14 @@ export class LotesPage {
 
   verDetalleLote(lote: Lote) {
     this.router.navigate(['/tabs/lotes/editar', lote.id]);
+  }
+
+  async eliminarLote(lote: Lote) {
+    const confirmado = await this.deleteConfirm.confirmar(`${lote.campo_nombre} - ${lote.nombre}`);
+    if (!confirmado) return;
+    this.api.delete(`core/lotes/${lote.id}/`).subscribe(() => {
+      this.lotes = this.lotes.filter(l => l.id !== lote.id);
+      this.filtrarLotes();
+    });
   }
 }

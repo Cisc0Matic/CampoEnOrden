@@ -156,6 +156,17 @@ class MeView(APIView):
         return Response(UserSerializer(request.user).data)
 
 
+class VerifyPasswordView(APIView):
+    """Confirma la contraseña del usuario logueado antes de una acción sensible (ej. eliminar)."""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        password = request.data.get('password', '')
+        if not password or not request.user.check_password(password):
+            return Response({'valid': False, 'detail': 'Contraseña incorrecta.'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'valid': True})
+
+
 # ─── Gestión de usuarios (admin) ──────────────────────────────────────────────
 
 class UserListView(APIView):

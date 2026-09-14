@@ -103,6 +103,17 @@ export class AuthService {
     await this._saveSession(res.access, res.refresh, username);
   }
 
+  async verifyPassword(password: string): Promise<boolean> {
+    try {
+      await firstValueFrom(
+        this.http.post(`${this.API}/auth/verify-password/`, { password })
+      );
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
   async logout(): Promise<void> {
     try {
       const refresh = await this.storage.get('refresh_token');

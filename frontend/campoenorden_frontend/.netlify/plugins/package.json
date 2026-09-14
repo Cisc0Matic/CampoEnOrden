@@ -6,6 +6,6 @@
   "author": "Netlify",
   "license": "MIT",
   "dependencies": {
-    "@netlify/angular-runtime": "4.0.0"
+    "@netlify/angular-runtime": "3.0.1"
   }
 }

@@ -1,0 +1,50 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/campos"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{campo?.nombre || 'Campo'}} — Actividad</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <div class="ceo-page-container">
+    <ui-loading-state *ngIf="loading" message="Cargando actividad..."></ui-loading-state>
+
+    <ui-error-state *ngIf="error && !loading" [message]="error" (retry)="cargarDetalle()"></ui-error-state>
+
+    <div *ngIf="!loading && !error && campo" class="detalle-container">
+      <div class="detalle-stats">
+        <div class="stat-box">
+          <span class="stat-value">{{campo.superficie_total | number:'1.0-0'}}</span>
+          <span class="stat-label">HA</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-value">{{labores.length}}</span>
+          <span class="stat-label">LABORES</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-value">${{campo.costo_total | number:'1.0-0'}}</span>
+          <span class="stat-label">COSTO TOTAL</span>
+        </div>
+      </div>
+
+      <ui-empty-state *ngIf="labores.length === 0"
+        icon="construct-outline"
+        title="Sin labores registradas"
+        message="Todavía no se cargaron labores para este campo.">
+      </ui-empty-state>
+
+      <div class="actividad-list" *ngIf="labores.length > 0">
+        <div class="actividad-item" *ngFor="let labor of labores" (click)="verLabor(labor)">
+          <span class="actividad-dot" [class]="'dot-' + getEstadoColor(labor.estado)"></span>
+          <ion-icon class="actividad-icon" [name]="getTipoIcon(labor.tipo)"></ion-icon>
+          <div class="actividad-info">
+            <span class="actividad-tipo">{{labor.tipo_display}}</span>
+            <span class="actividad-meta">{{labor.fecha | date:'dd/MM/yy'}} · {{labor.hectareas | number:'1.0-0'}} ha</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</ion-content>

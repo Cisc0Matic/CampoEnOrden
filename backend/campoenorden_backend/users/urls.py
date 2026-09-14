@@ -21,6 +21,7 @@ from .views import (
     RegisterView,
     ResendActivationView,
     UserListView,
+    VerifyPasswordView,
 )
 
 urlpatterns = [
@@ -30,6 +31,7 @@ urlpatterns = [
     path('auth/resend-activation/', ResendActivationView.as_view(), name='auth-resend-activation'),
     path('auth/logout/', LogoutView.as_view(), name='auth-logout'),
     path('auth/me/', MeView.as_view(), name='auth-me'),
+    path('auth/verify-password/', VerifyPasswordView.as_view(), name='auth-verify-password'),
     path('auth/password-reset/', PasswordResetRequestView.as_view(), name='auth-password-reset'),
     path('auth/password-reset/confirm/', PasswordResetConfirmView.as_view(), name='auth-password-reset-confirm'),
     # Gestión de usuarios (admin)

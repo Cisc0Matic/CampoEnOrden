@@ -69,6 +69,7 @@ class Campo(models.Model):
     costo_por_ha = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     margen = models.DecimalField(max_digits=14, decimal_places=2, blank=True, null=True)
     alquiler_pendiente = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
+    eliminado = models.BooleanField(default=False)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     fecha_modificacion = models.DateTimeField(auto_now=True)
 
@@ -170,6 +171,7 @@ class Lote(models.Model):
     tipo_cambio = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     ubicacion = models.CharField(max_length=255, blank=True, null=True)
     activo = models.BooleanField(default=True)
+    eliminado = models.BooleanField(default=False)
     observaciones = models.TextField(blank=True, null=True)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     fecha_modificacion = models.DateTimeField(auto_now=True)

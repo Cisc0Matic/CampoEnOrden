@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://pam-prefix-effectively-macro.trycloudflare.com/api'
+  apiUrl: 'https://nat-produces-nearby-daughter.trycloudflare.com/api'
 };

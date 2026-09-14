@@ -14,7 +14,7 @@
     </ui-empty-state>
 
     <div *ngIf="!loading && campos.length > 0" class="ceo-grid-2cols">
-      <ui-card *ngFor="let campo of campos" (click)="verLotes(campo)">
+      <ui-card *ngFor="let campo of campos" (click)="verDetalle(campo)">
         <div card-header>
           <div class="ceo-header-left">
             <ion-icon name="leaf"></ion-icon>
@@ -86,6 +86,10 @@
           <ion-button fill="clear" size="small" (click)="editarCampo(campo); $event.stopPropagation()">
             <ion-icon slot="start" name="create"></ion-icon>
             Editar
+          </ion-button>
+          <ion-button fill="clear" size="small" color="danger" (click)="eliminarCampo(campo); $event.stopPropagation()">
+            <ion-icon slot="start" name="trash"></ion-icon>
+            Eliminar
           </ion-button>
         </div>
       </ui-card>

@@ -98,7 +98,10 @@ class CampoViewSet(viewsets.ModelViewSet):
     filterset_fields = ['estado_contrato']
 
     def get_queryset(self):
-        queryset = super().get_queryset().filter(filtro_campo(self.request.user, empresa_id=_empresa_param(self.request)))
+        queryset = super().get_queryset().filter(
+            filtro_campo(self.request.user, empresa_id=_empresa_param(self.request)),
+            eliminado=False,
+        )
         include_stats = self.request.query_params.get('include_stats', False)
         if include_stats:
             queryset = queryset.annotate(
@@ -117,6 +120,12 @@ class CampoViewSet(viewsets.ModelViewSet):
                 campo['locatarios_nombres'] = ', '.join(campo_obj.locatarios.values_list('nombre', flat=True)[:3])
         return response
 
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.eliminado = True
+        instance.save(update_fields=['eliminado'])
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 class LoteViewSet(viewsets.ModelViewSet):
     queryset = Lote.objects.all()
@@ -124,7 +133,17 @@ class LoteViewSet(viewsets.ModelViewSet):
     filterset_fields = ['campo', 'campana', 'cultivo', 'activo']
 
     def get_queryset(self):
-        return super().get_queryset().filter(filtro_lote(self.request.user, empresa_id=_empresa_param(self.request)))
+        return super().get_queryset().filter(
+            filtro_lote(self.request.user, empresa_id=_empresa_param(self.request)),
+            eliminado=False,
+            campo__eliminado=False,
+        )
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.eliminado = True
+        instance.save(update_fields=['eliminado'])
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class LaborViewSet(viewsets.ModelViewSet):
@@ -137,7 +156,9 @@ class LaborViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return super().get_queryset().filter(
-            filtro_via_campo(self.request.user, empresa_id=_empresa_param(self.request))
+            filtro_via_campo(self.request.user, empresa_id=_empresa_param(self.request)),
+            lote__eliminado=False,
+            lote__campo__eliminado=False,
         )
 
     def perform_create(self, serializer):
@@ -157,6 +178,8 @@ class FleteViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         return super().get_queryset().filter(
             filtro_via_campo(self.request.user, empresa_id=_empresa_param(self.request))
+        ).exclude(
+            Q(lote__eliminado=True) | Q(lote__campo__eliminado=True)
         )
 
 
@@ -217,22 +240,30 @@ def dashboard(request):
     q_flete = filtro_via_campo(request.user, empresa_id=emp)
     q_doc = filtro_documento(request.user, empresa_id=emp)
 
-    campos_activos = Campo.objects.filter(q_campo, estado_contrato='ACTIVO').count()
-    hectareas_totales = Campo.objects.filter(q_campo).aggregate(
+    campos_activos = Campo.objects.filter(q_campo, estado_contrato='ACTIVO', eliminado=False).count()
+    hectareas_totales = Campo.objects.filter(q_campo, eliminado=False).aggregate(
         total=Coalesce(Sum('superficie_total'), Value(0, output_field=DecimalField()))
     )['total']
-    hectareas_trabajadas = Campo.objects.filter(q_campo).aggregate(
+    hectareas_trabajadas = Campo.objects.filter(q_campo, eliminado=False).aggregate(
         total=Coalesce(Sum('superficie_trabajada'), Value(0, output_field=DecimalField()))
     )['total']
-    labors_count = Labor.objects.filter(q_labor).count()
+    labors_count = Labor.objects.filter(q_labor).exclude(
+        Q(lote__eliminado=True) | Q(lote__campo__eliminado=True)
+    ).count()
 
-    costos_labores = Labor.objects.filter(q_labor).aggregate(
+    costos_labores = Labor.objects.filter(q_labor).exclude(
+        Q(lote__eliminado=True) | Q(lote__campo__eliminado=True)
+    ).aggregate(
         total=Coalesce(Sum('costo_total'), Value(0, output_field=DecimalField()))
     )['total']
-    costos_fletes_corto = Flete.objects.filter(q_flete).aggregate(
+    costos_fletes_corto = Flete.objects.filter(q_flete).exclude(
+        Q(lote__eliminado=True) | Q(lote__campo__eliminado=True)
+    ).aggregate(
         total=Coalesce(Sum('flete_corto'), Value(0, output_field=DecimalField()))
     )['total']
-    costos_fletes_largo = Flete.objects.filter(q_flete).aggregate(
+    costos_fletes_largo = Flete.objects.filter(q_flete).exclude(
+        Q(lote__eliminado=True) | Q(lote__campo__eliminado=True)
+    ).aggregate(
         total=Coalesce(Sum('flete_largo'), Value(0, output_field=DecimalField()))
     )['total']
     costos_fletes = costos_fletes_corto + costos_fletes_largo
@@ -246,7 +277,7 @@ def dashboard(request):
     documentos_pendientes = Documento.objects.filter(q_doc, estado='PENDIENTE').count()
 
     alertas = []
-    campos_vencidos = Campo.objects.filter(q_campo, estado_contrato='VENCIDO')
+    campos_vencidos = Campo.objects.filter(q_campo, estado_contrato='VENCIDO', eliminado=False)
     if campos_vencidos.exists():
         alertas.append(f"{campos_vencidos.count()} campo(s) con contrato vencido(s)")
 
@@ -270,7 +301,7 @@ def dashboard(request):
 @api_view(['GET'])
 def indicadores_campo(request, campo_id):
     try:
-        campo = Campo.objects.get(pk=campo_id)
+        campo = Campo.objects.get(pk=campo_id, eliminado=False)
     except Campo.DoesNotExist:
         return Response({'error': 'Campo no encontrado'}, status=status.HTTP_404_NOT_FOUND)
 
@@ -298,7 +329,9 @@ def margen_view(request):
     lote_id = request.query_params.get('lote')
     campana_id = request.query_params.get('campana')
 
-    labores_qs = Labor.objects.filter(filtro_via_campo(request.user, empresa_id=_empresa_param(request)))
+    labores_qs = Labor.objects.filter(
+        filtro_via_campo(request.user, empresa_id=_empresa_param(request))
+    ).exclude(Q(lote__eliminado=True) | Q(lote__campo__eliminado=True))
     if campo_id:
         labores_qs = labores_qs.filter(lote__campo_id=campo_id)
     if lote_id:
@@ -321,7 +354,11 @@ def margen_view(request):
     )['total']
 
     ingresos = 0
-    lotes_qs = Lote.objects.filter(filtro_lote(request.user, empresa_id=_empresa_param(request)))
+    lotes_qs = Lote.objects.filter(
+        filtro_lote(request.user, empresa_id=_empresa_param(request)),
+        eliminado=False,
+        campo__eliminado=False,
+    )
     if campo_id:
         lotes_qs = lotes_qs.filter(campo_id=campo_id)
     if lote_id:

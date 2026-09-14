@@ -21,6 +21,10 @@ const routes: Routes = [
              loadComponent: () => import('../campos/campos.page').then(m => m.CamposPage)
            },
            {
+             path: 'detalle/:id',
+             loadComponent: () => import('../campos/detalle/campo-detalle.component').then(m => m.CampoDetalleComponent)
+           },
+           {
              path: 'crear',
              loadComponent: () => import('../campos/form/campo-form.component').then(m => m.CampoFormComponent)
            },

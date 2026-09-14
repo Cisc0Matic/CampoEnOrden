@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { ApiService } from '../services/api.service';
+import { DeleteConfirmService } from '../services/delete-confirm.service';
 import { Router, RouterModule } from '@angular/router';
 import { SharedModule } from '../shared/shared.module';
 
@@ -39,7 +40,11 @@ export class CamposPage {
   loading = true;
   error: string | null = null;
 
-  constructor(private api: ApiService, private router: Router) {}
+  constructor(
+    private api: ApiService,
+    private router: Router,
+    private deleteConfirm: DeleteConfirmService
+  ) {}
 
   ionViewWillEnter() {
     this.cargarCampos();
@@ -96,7 +101,15 @@ export class CamposPage {
     this.router.navigate(['/tabs/documentos'], { queryParams: { campo_id: campo.id } });
   }
 
-  verLotes(campo: Campo) {
-    this.router.navigate(['/tabs/lotes'], { queryParams: { campo_id: campo.id, campo_nombre: campo.nombre } });
+  verDetalle(campo: Campo) {
+    this.router.navigate(['/tabs/campos/detalle', campo.id]);
+  }
+
+  async eliminarCampo(campo: Campo) {
+    const confirmado = await this.deleteConfirm.confirmar(campo.nombre);
+    if (!confirmado) return;
+    this.api.delete(`core/campos/${campo.id}/`).subscribe(() => {
+      this.campos = this.campos.filter(c => c.id !== campo.id);
+    });
   }
 }
